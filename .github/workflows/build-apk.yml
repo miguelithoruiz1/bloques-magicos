@@ -1,0 +1,58 @@
+name: Build Android APK (Godot 4.3)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: "4.3"
+  EXPORT_NAME: "BloquesMagicos"
+
+jobs:
+  export-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Java 17 (para el keytool)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Instalar el SDK de Android
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar Godot 4.3 y las plantillas de exportación
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
+          unzip -q Godot_v4.3-stable_linux.x86_64.zip -d godot-bin
+          sudo install -m 755 godot-bin/Godot_v4.3-stable_linux.x86_64 /usr/local/bin/godot
+          mkdir -p ~/.local/share/godot/export_templates/4.3.stable
+          unzip -q Godot_v4.3-stable_export_templates.tpz -d /tmp/tpz
+          cp -r /tmp/tpz/templates/. ~/.local/share/godot/export_templates/4.3.stable/
+          godot --version
+
+      - name: Generar keystore de depuración y apuntarla en el preset
+        run: |
+          keytool -genkeypair -v -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          sed -i 's#keystore/debug=""#keystore/debug="debug.keystore"#' export_presets.cfg
+          sed -i 's#keystore/debug_user=""#keystore/debug_user="androiddebugkey"#' export_presets.cfg
+          sed -i 's#keystore/debug_password=""#keystore/debug_password="android"#' export_presets.cfg
+
+      - name: Importar el proyecto
+        run: godot --headless --import
+
+      - name: Exportar el APK (debug)
+        run: |
+          mkdir -p build
+          godot --headless --export-release "Android" "build/${EXPORT_NAME}.apk"
+
+      - name: Subir el APK como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: build/*.apk

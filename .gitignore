@@ -1,0 +1,14 @@
+# Godot 4 — caché y archivos generados por el editor
+.godot/
+
+# Exportaciones locales
+/build/
+*.apk
+*.aab
+
+# Keystore de depuración local (lo genera cada quien o el CI; nunca se sube)
+debug.keystore
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

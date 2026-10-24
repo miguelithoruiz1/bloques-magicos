@@ -171,7 +171,7 @@ func _build_top_bar(root: Control) -> void:
 
 func _build_message_label(root: Control) -> void:
 	_message_label = Label.new()
-	_message_label.set_anchors_preset(Control.PRESET_CENTER_WIDE)
+	_message_label.set_anchors_preset(Control.PRESET_HCENTER_WIDE)
 	_message_label.offset_top = -140.0
 	_message_label.offset_bottom = -80.0
 	_message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

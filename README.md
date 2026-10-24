@@ -9,7 +9,9 @@ y cubos con números, con voz en español que nombra cada bloque al colocarlo.
 - **Sin red, sin anuncios, sin cuentas, sin compras.** Todo funciona sin conexión.
 - **Plataformas:** Android y Google TV (APK), orientación horizontal.
 
-> Estado: **Fase 1** — construir libre, guardar automático y controles de mando + táctil.
+> Estado: **Fase 1.1** — construir libre, guardar automático y controles
+> corregidos: paleta alcanzable con el control del TV (sin puntero) y
+> pantalla táctil funcional en el celular (ver «Controles»).
 
 ## Qué trae la Fase 1
 
@@ -27,12 +29,12 @@ y cubos con números, con voz en español que nombra cada bloque al colocarlo.
 
 ## Controles
 
-### Con mando (gamepad / control de TV)
+### Con mando (gamepad)
 
 | Acción | Botón |
 |---|---|
 | Mover el cursor | Stick izquierdo o cruceta (D-pad) |
-| Poner bloque | **A** / Cross (✕) |
+| Poner bloque | **A** / Cross (✕) — pulsación corta |
 | Quitar bloque | **B** / Circle (○) |
 | Subir el cursor (altura) | Gatillo derecho (RT) o RB |
 | Bajar el cursor (altura) | Gatillo izquierdo (LT) o LB |
@@ -42,6 +44,27 @@ La cámara orbital sigue al cursor con un giro suave. El cursor se mueve
 relativo a la cámara (redondeado a 90°), así «hacia adelante» siempre es
 hacia donde se está mirando.
 
+### Con el control del TV (sin puntero, sin gatillos)
+
+El control de un stick de TV solo tiene cruceta, **OK** y **Atrás**; por
+eso la paleta se maneja con un modo dedicado:
+
+| Acción | Botón |
+|---|---|
+| Mover el cursor | Cruceta |
+| Poner bloque | **OK corto** (soltar antes de 0,35 s) |
+| Quitar bloque | **Atrás** |
+| **Abrir la paleta** (colores, números 1–5 y Borrar) | **Mantener OK** (≥ 0,35 s) — al mantenerlo NO se coloca ningún bloque |
+| Elegir dentro de la paleta | Cruceta ◀ ▶ (la opción resaltada se ve con borde dorado) |
+| Subir / Bajar la altura del cursor (con la paleta abierta) | Cruceta ▲ ▼ |
+| Confirmar la opción y cerrar la paleta | **OK** |
+| Cerrar la paleta sin cambiar nada | **Atrás** |
+
+Mientras la paleta está abierta, el mundo queda en pausa (el cursor no se
+mueve ni se colocan bloques). En pantalla se lee siempre la ayuda
+«Control TV: mantén OK para elegir color o número» y, con la paleta
+abierta, «Eligiendo: …» muestra la opción resaltada antes de confirmar.
+
 ### Con pantalla táctil (celular o tableta)
 
 | Acción | Cómo |
@@ -49,7 +72,14 @@ hacia donde se está mirando.
 | Mover el cursor | Tocar el suelo o un bloque (el fantasma salta ahí; si tocas la parte de arriba de un bloque, el cursor sube sobre él) |
 | Poner / Quitar | Botones grandes **Poner** y **Quitar** |
 | Subir / Bajar el cursor | Botones **Subir** y **Bajar** |
+| Elegir color o número | Tocar directamente los botones de la paleta inferior |
 | Girar la cámara | Arrastrar el dedo sobre la pantalla, o mantener **Girar ← / →** |
+
+> En la Fase 1 el tacto no respondía en el celular: `project.godot`
+> desactivaba la emulación de ratón desde el tacto y los botones de la
+> interfaz (controles GUI) solo reciben eventos de ratón. Desde la
+> Fase 1.1 la emulación está activa y todo el tacto entra por un único
+> camino (ratón emulado), así botones y mundo responden sin duplicados.
 
 ### Con teclado (para probar en el PC)
 
@@ -128,6 +158,10 @@ jobs:
 
       - name: Instalar el SDK de Android
         uses: android-actions/setup-android@v3
+        with:
+          # Sin «tools»: el paquete legado ya no existe en las
+          # cmdline-tools nuevas y sdkmanager falla (run 1, 2026-10-23).
+          packages: "platform-tools platforms;android-34 build-tools;34.0.0"
 
       - name: Instalar Godot 4.3 y las plantillas de exportación
         run: |
@@ -153,7 +187,10 @@ jobs:
       - name: Exportar el APK (debug)
         run: |
           mkdir -p build
-          godot --headless --export-release "Android" "build/${EXPORT_NAME}.apk"
+          # Debe ser --export-debug: el preset solo configura la keystore
+          # de depuración; con --export-release Godot busca la de release
+          # (vacía) y falla al firmar (corregido en v3, 2026-10-23).
+          godot --headless --export-debug "Android" "build/${EXPORT_NAME}.apk"
 
       - name: Subir el APK como artefacto
         uses: actions/upload-artifact@v4
@@ -197,9 +234,17 @@ bloques-magicos/
 - **Botones sin foco:** todos los botones de la interfaz usan `FOCUS_NONE`;
   el mando se lee por sondeo de acciones (`Input.is_action_pressed`), así la
   interfaz nunca «roba» los botones del gamepad.
-- **Sin emulación cruzada:** `emulate_mouse_from_touch` y
-  `emulate_touch_from_mouse` están desactivados en `project.godot` para que
-  un toque no se procese dos veces.
+- **Tacto como ratón emulado (Fase 1.1):** `emulate_mouse_from_touch` y
+  `emulate_touch_from_mouse` están **activados** en `project.godot`. Los
+  botones GUI solo entienden eventos de ratón, así que sin emulación el
+  dedo no accionaba ningún botón en Android. Para no procesar nada dos
+  veces, `main.gd` ya no escucha los eventos táctiles crudos
+  (`InputEventScreenTouch`/`Drag`): ratón real y dedo comparten el mismo
+  camino (`InputEventMouseButton`/`Motion`).
+- **Paleta sin puntero (Fase 1.1):** la pulsación de OK se mide por
+  duración (`_poll_ok` en `main.gd`): corta coloca, larga (≥ 0,35 s)
+  abre el modo paleta, donde la cruceta navega las 13 opciones y ▲ ▼
+  ajustan la altura. El OK que abre la paleta nunca coloca un bloque.
 - **TTS protegido:** se busca una voz cuyo idioma empiece por «es»; si el
   dispositivo no tiene voces, todo el sistema de voz se desactiva en silencio.
 - **Guardado defensivo:** al cargar, cada bloque se valida (posición dentro

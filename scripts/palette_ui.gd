@@ -34,6 +34,13 @@ const ERASER_FG := Color(0.55, 0.15, 0.15)
 ## main.gd la lee en cada frame y la suma a la rotación del mando.
 var touch_rotate := 0.0
 
+## Modo paleta para control de TV (sin puntero): la franja de botones se
+## recorre con la cruceta y una opción queda resaltada (borde dorado).
+var tv_palette_open := false
+var _tv_highlight := 0
+var _tv_hint_label: Label
+var _help_label: Label
+
 var _selection: Dictionary = {"modo": "color", "dato": 0}
 var _palette_buttons: Array = []
 var _selection_label: Label
@@ -106,6 +113,7 @@ func _build_ui() -> void:
 	add_child(root)
 	_build_top_bar(root)
 	_build_message_label(root)
+	_build_help_label(root)
 	_build_palette(root)
 	_build_action_buttons(root)
 	_build_rotate_buttons(root)
@@ -181,6 +189,21 @@ func _build_message_label(root: Control) -> void:
 	root.add_child(_message_label)
 
 
+## Ayuda breve y permanente, pensada para el TV: sin ella no se descubre
+## que manteniendo OK se abre la paleta de colores y números.
+func _build_help_label(root: Control) -> void:
+	_help_label = Label.new()
+	_help_label.text = "Control TV: mantén OK para elegir color o número"
+	_help_label.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_help_label.offset_left = 14.0
+	_help_label.offset_top = 78.0
+	_help_label.offset_right = 800.0
+	_help_label.offset_bottom = 108.0
+	_help_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_style_label(_help_label, 16)
+	root.add_child(_help_label)
+
+
 func _build_palette(root: Control) -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
@@ -243,6 +266,14 @@ func _build_palette(root: Control) -> void:
 		"button": eraser, "modo": "borrador", "dato": 0, "bg": ERASER_BG,
 	})
 	eraser.pressed.connect(_on_palette_pressed.bind("borrador", 0))
+
+	_tv_hint_label = Label.new()
+	_tv_hint_label.text = "Elige con ◀ ▶ · Altura con ▲ ▼ · OK confirma · Atrás cancela"
+	_tv_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_tv_hint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tv_hint_label.visible = false
+	_style_label(_tv_hint_label, 18)
+	vbox.add_child(_tv_hint_label)
 
 
 func _build_action_buttons(root: Control) -> void:
@@ -349,23 +380,104 @@ func _on_palette_pressed(modo: String, dato: int) -> void:
 func _select(modo: String, dato: int) -> void:
 	_selection = {"modo": modo, "dato": dato}
 	_refresh_palette_styles()
-	match modo:
-		"color":
-			_selection_label.text = "Bloque elegido: " + String(COLOR_DATA[dato]["nombre"])
-		"numero":
-			_selection_label.text = "Bloque elegido: Número " + str(dato)
-		_:
-			_selection_label.text = "Herramienta: Borrar bloques"
+	_refresh_selection_label()
 	selection_changed.emit(_selection.duplicate())
 
 
+func _option_name(modo: String, dato: int) -> String:
+	match modo:
+		"color":
+			return String(COLOR_DATA[dato]["nombre"])
+		"numero":
+			return "Número " + str(dato)
+		_:
+			return "Borrar bloques"
+
+
+func _refresh_selection_label() -> void:
+	if _selection_label == null:
+		return
+	if tv_palette_open and not _palette_buttons.is_empty():
+		var entry: Dictionary = _palette_buttons[_tv_highlight]
+		_selection_label.text = "Eligiendo: " + _option_name(String(entry["modo"]), int(entry["dato"]))
+		return
+	match String(_selection["modo"]):
+		"color":
+			_selection_label.text = "Bloque elegido: " + _option_name("color", int(_selection["dato"]))
+		"numero":
+			_selection_label.text = "Bloque elegido: " + _option_name("numero", int(_selection["dato"]))
+		_:
+			_selection_label.text = "Herramienta: Borrar bloques"
+
+
+# ---------------------------------------------------------------------------
+# Modo paleta con control de TV (sin puntero)
+# ---------------------------------------------------------------------------
+
+func _index_of_selection() -> int:
+	for i in range(_palette_buttons.size()):
+		var entry: Dictionary = _palette_buttons[i]
+		if String(entry["modo"]) == String(_selection["modo"]) \
+				and int(entry["dato"]) == int(_selection["dato"]):
+			return i
+	return 0
+
+
+func open_tv_palette() -> void:
+	tv_palette_open = true
+	_tv_highlight = _index_of_selection()
+	if _tv_hint_label != null:
+		_tv_hint_label.visible = true
+	_refresh_selection_label()
+	_refresh_palette_styles()
+
+
+func move_tv_highlight(dir: int) -> void:
+	if _palette_buttons.is_empty():
+		return
+	_tv_highlight = (_tv_highlight + dir) % _palette_buttons.size()
+	if _tv_highlight < 0:
+		_tv_highlight += _palette_buttons.size()
+	_refresh_selection_label()
+	_refresh_palette_styles()
+
+
+func confirm_tv_palette() -> void:
+	if _palette_buttons.is_empty():
+		close_tv_palette()
+		return
+	var entry: Dictionary = _palette_buttons[_tv_highlight]
+	var modo := String(entry["modo"])
+	var dato := int(entry["dato"])
+	close_tv_palette()
+	_select(modo, dato)
+
+
+func cancel_tv_palette() -> void:
+	close_tv_palette()
+	_refresh_selection_label()
+
+
+func close_tv_palette() -> void:
+	tv_palette_open = false
+	if _tv_hint_label != null:
+		_tv_hint_label.visible = false
+	_refresh_palette_styles()
+
+
 func _refresh_palette_styles() -> void:
-	for entry in _palette_buttons:
+	for idx in range(_palette_buttons.size()):
+		var entry: Dictionary = _palette_buttons[idx]
 		var b: Button = entry["button"]
 		var bg: Color = entry["bg"]
 		var selected := String(entry["modo"]) == String(_selection["modo"]) \
 			and int(entry["dato"]) == int(_selection["dato"])
-		if selected:
+		if tv_palette_open and idx == _tv_highlight:
+			# Resaltado de navegación con el control de TV: borde dorado
+			# grueso, distinto del borde blanco de la opción ya elegida.
+			b.add_theme_stylebox_override("normal", _style_box(bg.lightened(0.10), Color(1.0, 0.85, 0.20), 6))
+			b.add_theme_stylebox_override("pressed", _style_box(bg, Color(1.0, 0.85, 0.20), 6))
+		elif selected:
 			b.add_theme_stylebox_override("normal", _style_box(bg, Color.WHITE, 5))
 			b.add_theme_stylebox_override("pressed", _style_box(bg, Color.WHITE, 5))
 		else:

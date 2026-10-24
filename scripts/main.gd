@@ -20,6 +20,7 @@ const GRID_SIZE := 16
 const MAX_HEIGHT := 8
 const MAX_BLOCKS := 600
 const SAVE_DELAY := 0.6
+const OK_HOLD_SECONDS := 0.35
 
 const BLOCK_COLORS: Array = [
 	{"nombre": "Rojo", "color": Color(0.90, 0.25, 0.22)},
@@ -54,6 +55,11 @@ var _ghost_state := ""
 
 var _palette = null
 var _move_timer := 0.0
+var _palette_mode := false
+var _pal_move_timer := 0.0
+var _ok_prev_down := false
+var _ok_hold_time := 0.0
+var _ok_long_fired := false
 var _dirty := false
 var _save_delay := 0.0
 
@@ -64,9 +70,6 @@ var _toc_stream: AudioStream
 
 var _tts_voice := ""
 
-var _touching := false
-var _touch_start := Vector2.ZERO
-var _touch_dragged := false
 var _mouse_down := false
 var _mouse_start := Vector2.ZERO
 var _mouse_dragged := false
@@ -95,45 +98,55 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	# Rotación de la cámara (mando y botones táctiles).
-	var rot := 0.0
-	if Input.is_action_pressed("camera_left"):
-		rot += 1.0
-	if Input.is_action_pressed("camera_right"):
-		rot -= 1.0
-	if _palette != null:
-		rot += float(_palette.get("touch_rotate"))
-	if rot != 0.0:
-		_yaw_target += rot * deg_to_rad(100.0) * delta
-	_pivot.rotation.y = lerp_angle(_pivot.rotation.y, _yaw_target, minf(1.0, delta * 10.0))
+	# Pulsación OK con duración: corta = colocar (o confirmar dentro de
+	# la paleta TV); larga (OK_HOLD_SECONDS) = abrir la paleta en el TV.
+	var ok_event := _poll_ok(delta)
 
-	# Movimiento del cursor por la cuadrícula (con repetición al mantener).
-	var iv := Vector2i.ZERO
-	if Input.is_action_pressed("move_right"):
-		iv.x += 1
-	if Input.is_action_pressed("move_left"):
-		iv.x -= 1
-	if Input.is_action_pressed("move_back"):
-		iv.y += 1
-	if Input.is_action_pressed("move_forward"):
-		iv.y -= 1
-	if iv != Vector2i.ZERO:
-		_move_timer -= delta
-		if _move_timer <= 0.0:
-			_step_cursor(iv)
-			_move_timer = 0.16
+	if _palette_mode:
+		# Con la paleta TV abierta, el input del mundo queda en pausa.
+		_handle_palette_mode(delta, ok_event)
 	else:
-		_move_timer = 0.0
+		# Rotación de la cámara (mando y botones táctiles).
+		var rot := 0.0
+		if Input.is_action_pressed("camera_left"):
+			rot += 1.0
+		if Input.is_action_pressed("camera_right"):
+			rot -= 1.0
+		if _palette != null:
+			rot += float(_palette.get("touch_rotate"))
+		if rot != 0.0:
+			_yaw_target += rot * deg_to_rad(100.0) * delta
+		_pivot.rotation.y = lerp_angle(_pivot.rotation.y, _yaw_target, minf(1.0, delta * 10.0))
 
-	# Acciones puntuales.
-	if Input.is_action_just_pressed("place_block"):
-		place_at_cursor()
-	if Input.is_action_just_pressed("remove_block"):
-		remove_at_cursor()
-	if Input.is_action_just_pressed("cursor_up_level"):
-		set_cursor_height(1)
-	if Input.is_action_just_pressed("cursor_down_level"):
-		set_cursor_height(-1)
+		# Movimiento del cursor por la cuadrícula (con repetición al mantener).
+		var iv := Vector2i.ZERO
+		if Input.is_action_pressed("move_right"):
+			iv.x += 1
+		if Input.is_action_pressed("move_left"):
+			iv.x -= 1
+		if Input.is_action_pressed("move_back"):
+			iv.y += 1
+		if Input.is_action_pressed("move_forward"):
+			iv.y -= 1
+		if iv != Vector2i.ZERO:
+			_move_timer -= delta
+			if _move_timer <= 0.0:
+				_step_cursor(iv)
+				_move_timer = 0.16
+		else:
+			_move_timer = 0.0
+
+		# Acciones puntuales.
+		if ok_event == "long":
+			_open_palette_mode()
+		elif ok_event == "short":
+			place_at_cursor()
+		if Input.is_action_just_pressed("remove_block"):
+			remove_at_cursor()
+		if Input.is_action_just_pressed("cursor_up_level"):
+			set_cursor_height(1)
+		if Input.is_action_just_pressed("cursor_down_level"):
+			set_cursor_height(-1)
 
 	# La cámara sigue al cursor con suavidad.
 	var target := Vector3(
@@ -152,25 +165,76 @@ func _process(delta: float) -> void:
 			_save_now()
 
 
+## Sigue la pulsación de «place_block» (OK del control de TV, botón A del
+## mando, Espacio/Enter en teclado) distinguiendo corta de larga.
+## Devuelve "long" una sola vez al cumplir OK_HOLD_SECONDS con el botón
+## aún presionado, "short" al soltar una pulsación corta, y "" si nada.
+## Así, mantener OK para abrir la paleta NUNCA coloca un bloque al soltar.
+func _poll_ok(delta: float) -> String:
+	var ev := ""
+	var down := Input.is_action_pressed("place_block")
+	if down and not _ok_prev_down:
+		_ok_hold_time = 0.0
+		_ok_long_fired = false
+	elif down:
+		_ok_hold_time += delta
+		if _ok_hold_time >= OK_HOLD_SECONDS and not _ok_long_fired:
+			_ok_long_fired = true
+			ev = "long"
+	if not down and _ok_prev_down and not _ok_long_fired:
+		ev = "short"
+	_ok_prev_down = down
+	return ev
+
+
+func _open_palette_mode() -> void:
+	_palette_mode = true
+	_pal_move_timer = 0.0
+	_move_timer = 0.0
+	_palette.open_tv_palette()
+
+
+## Input mientras la paleta TV está abierta: ◀ ▶ mueven el resaltado
+## entre las 13 opciones, ▲ ▼ suben/bajan la altura del cursor,
+## OK corto confirma y cierra, Atrás cierra sin cambiar nada.
+func _handle_palette_mode(delta: float, ok_event: String) -> void:
+	if ok_event == "short":
+		_palette.confirm_tv_palette()
+		_palette_mode = false
+		return
+	if Input.is_action_just_pressed("remove_block"):
+		_palette.cancel_tv_palette()
+		_palette_mode = false
+		return
+	var iv := Vector2i.ZERO
+	if Input.is_action_pressed("move_right"):
+		iv.x += 1
+	if Input.is_action_pressed("move_left"):
+		iv.x -= 1
+	if Input.is_action_pressed("move_back"):
+		iv.y += 1
+	if Input.is_action_pressed("move_forward"):
+		iv.y -= 1
+	if iv != Vector2i.ZERO:
+		_pal_move_timer -= delta
+		if _pal_move_timer <= 0.0:
+			if iv.x != 0:
+				_palette.move_tv_highlight(iv.x)
+			elif iv.y != 0:
+				set_cursor_height(-iv.y)
+			_pal_move_timer = 0.16
+	else:
+		_pal_move_timer = 0.0
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventScreenTouch:
-		var t := event as InputEventScreenTouch
-		if t.pressed:
-			_touching = true
-			_touch_start = t.position
-			_touch_dragged = false
-		else:
-			if _touching and not _touch_dragged:
-				_handle_tap(t.position)
-			_touching = false
-	elif event is InputEventScreenDrag:
-		var d := event as InputEventScreenDrag
-		if _touching:
-			if (d.position - _touch_start).length() > 26.0:
-				_touch_dragged = true
-			if _touch_dragged:
-				_yaw_target -= d.relative.x * 0.01
-	elif event is InputEventMouseButton:
+	# Con la paleta TV abierta, el mundo no recibe clics/toques ni teclas.
+	if _palette_mode:
+		return
+	# El tacto llega como ratón emulado (emulate_mouse_from_touch=true en
+	# project.godot): UN solo camino de entrada para ratón real (PC) y
+	# dedo (Android), sin procesar ningún toque dos veces.
+	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_LEFT:
 			if mb.pressed:
@@ -184,7 +248,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseMotion:
 		var mm := event as InputEventMouseMotion
 		if _mouse_down:
-			if (mm.position - _mouse_start).length() > 8.0:
+			if (mm.position - _mouse_start).length() > 24.0:
 				_mouse_dragged = true
 			if _mouse_dragged:
 				_yaw_target -= mm.relative.x * 0.01

@@ -276,3 +276,57 @@ bloques-magicos/
 - **Fase 3 — Más mundo:** piezas nuevas (rampas, ruedas, puertas), mundos
   guardados con nombre (varias creaciones), música suave de fondo y efectos
   de celebración al completar construcciones.
+
+---
+
+## Fase 2 — Mundos y niveles para aprender jugando (2026-10-24)
+
+Al abrir el juego aparece un **menú**: «Jugar libre» (todo lo de F1, intacto)
+o «Mundos». El menú se navega con la cruceta + OK del control, con el dedo
+o con el teclado, y **la voz lee cada pantalla y cada botón** (el niño no
+necesita saber leer para jugar).
+
+### Los 4 mundos (5 niveles cada uno, desbloqueo en orden)
+
+Cada nivel superado da **1 estrella** (20 en total). El siguiente nivel se
+abre al superar el anterior. El progreso vive en `user://progreso.json`,
+**separado** de `user://mundo.json`: el mundo libre nunca se toca desde los
+niveles (el tablero del nivel empieza vacío y no se guarda).
+
+| Mundo | Niveles |
+|---|---|
+| 🌈 Colores | 1. Pon 2 rojos · 2. Pon 3 azules · 3. La voz pide un color al azar · 4. Pon 4 amarillos · 5. Arcoíris en orden (rojo, naranja, amarillo, verde, azul, morado) |
+| 🔢 Números | 1. Pon 3 bloques · 2. Pon 6 bloques · 3. Pon el cubo 4 · 4. Pon el cubo 2 · 5. Números en orden 1→5 |
+| 🔤 Letras | 1. La voz pide una vocal al azar · 2. Forma MAMÁ · 3. Forma PAPÁ · 4. Forma SOL · 5. Forma LUNA (cubos con letras nuevos: A, E, I, O, U, M, P, S, T, L, N) |
+| ➕ Sumas | 1. 1+1 · 2. 2+1 · 3. 3+2 · 4. 4+3 · 5. 5+5 — la voz pregunta y el niño pone esa cantidad de bloques (la respuesta no se dice) |
+
+Al completar un nivel: voz + cartel «¡Lo lograste! ⭐» y OK vuelve al menú.
+Al completar un mundo entero: celebración especial con voz. Borrar corrige:
+si el niño pone un bloque de más o equivocado, quitarlo lo descuenta de la
+meta. «Empezar de nuevo» dentro de un nivel reinicia solo ese nivel.
+
+### Controles en un nivel
+
+Los mismos de F1.1 (paleta TV con OK sostenido, táctil, teclado). En el
+Mundo Letras aparece una segunda fila de paleta con las letras. Botón
+«Menú» en la barra superior y botón Atrás del control vuelven al menú
+sin tocar el mundo libre.
+
+### Archivos nuevos de F2
+
+- `scripts/menu.gd` + `menu.tscn` — menú inicial (ahora es la escena principal).
+- `scripts/levels_data.gd` — tabla de niveles guiada por datos (mundo, tipo
+  de meta, parámetros); no hay una escena por nivel.
+- `scripts/level_logic.gd` — verificación pura de metas (sin nodos).
+- `scripts/progress_save.gd` — estrellas y desbloqueos (`progreso.json`).
+- `scripts/game_state.gd` — autoload con el modo (libre/nivel) y el nivel
+  elegido. `main.gd` y `palette_ui.gd` ganaron el modo nivel y los cubos
+  con letras; el juego libre no cambió de comportamiento.
+
+### Verificación F2 (local, sin subir a GitHub)
+
+Import headless sin errores; 97 pruebas de lógica (tabla, 9 tipos de meta
+con éxito y fallo, progreso con round-trip) en verde; smoke de 300 frames
+del menú, del juego libre y de niveles de Colores y Letras sin errores de
+script; APK exportado con el mismo keystore de depuración de F1.1 y
+certificado SHA-256 idéntico (instala encima y conserva el mundo).

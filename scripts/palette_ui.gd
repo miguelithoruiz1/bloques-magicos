@@ -14,6 +14,7 @@ signal remove_requested
 signal up_requested
 signal down_requested
 signal world_reset
+signal menu_requested
 
 const HOLD_SECONDS := 1.5
 
@@ -29,6 +30,10 @@ const NUMBER_BG := Color(1.0, 0.95, 0.78)
 const NUMBER_FG := Color(0.10, 0.16, 0.45)
 const ERASER_BG := Color(0.99, 0.87, 0.87)
 const ERASER_FG := Color(0.55, 0.15, 0.15)
+## Cubos con letras (Fase 2): vocales + M, P, S, T, L, N.
+const LETTER_DATA: Array = ["A", "E", "I", "O", "U", "M", "P", "S", "T", "L", "N"]
+const LETTER_BG := Color(0.62, 0.85, 1.0)
+const LETTER_FG := Color(0.05, 0.15, 0.45)
 
 ## Rotación de cámara pedida desde los botones táctiles: -1.0, 0.0 o 1.0.
 ## main.gd la lee en cada frame y la suma a la rotación del mando.
@@ -43,10 +48,15 @@ var _help_label: Label
 
 var _selection: Dictionary = {"modo": "color", "dato": 0}
 var _palette_buttons: Array = []
+var _base_buttons: Array = []
+var _letter_buttons: Array = []
+var _letters_row: HBoxContainer
 var _selection_label: Label
 var _info_label: Label
 var _message_label: Label
 var _message_tween: Tween
+var _goal_label: Label
+var _celebration_label: Label
 var _reset_button: Button
 var _reset_bar: ProgressBar
 var _reset_hold := 0.0
@@ -114,6 +124,8 @@ func _build_ui() -> void:
 	_build_top_bar(root)
 	_build_message_label(root)
 	_build_help_label(root)
+	_build_goal_label(root)
+	_build_celebration_label(root)
 	_build_palette(root)
 	_build_action_buttons(root)
 	_build_rotate_buttons(root)
@@ -176,6 +188,11 @@ func _build_top_bar(root: Control) -> void:
 	_style_label(hint, 12)
 	reset_box.add_child(hint)
 
+	var menu_button := _make_button("Menú", Vector2(130, 52), 18)
+	_apply_button_colors(menu_button, Color(0.45, 0.45, 0.55))
+	menu_button.pressed.connect(func() -> void: menu_requested.emit())
+	top.add_child(menu_button)
+
 
 func _build_message_label(root: Control) -> void:
 	_message_label = Label.new()
@@ -202,6 +219,51 @@ func _build_help_label(root: Control) -> void:
 	_help_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_style_label(_help_label, 16)
 	root.add_child(_help_label)
+
+
+## Cartel grande con la meta del nivel (Fase 2). Vacío en juego libre.
+func _build_goal_label(root: Control) -> void:
+	_goal_label = Label.new()
+	_goal_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_goal_label.offset_top = 112.0
+	_goal_label.offset_bottom = 164.0
+	_goal_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_goal_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_style_label(_goal_label, 34)
+	root.add_child(_goal_label)
+
+
+func set_goal(text: String) -> void:
+	if _goal_label != null:
+		_goal_label.text = text
+
+
+## Cartel central de celebración (Fase 2): estrella al completar el nivel.
+func _build_celebration_label(root: Control) -> void:
+	_celebration_label = Label.new()
+	_celebration_label.set_anchors_preset(Control.PRESET_CENTER)
+	_celebration_label.offset_left = -460.0
+	_celebration_label.offset_top = -80.0
+	_celebration_label.offset_right = 460.0
+	_celebration_label.offset_bottom = 80.0
+	_celebration_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_celebration_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_celebration_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_celebration_label.visible = false
+	_style_label(_celebration_label, 56)
+	_celebration_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.20))
+	root.add_child(_celebration_label)
+
+
+func show_celebration(text: String) -> void:
+	if _celebration_label != null:
+		_celebration_label.text = text
+		_celebration_label.visible = true
+
+
+func hide_celebration() -> void:
+	if _celebration_label != null:
+		_celebration_label.visible = false
 
 
 func _build_palette(root: Control) -> void:
@@ -240,10 +302,12 @@ func _build_palette(root: Control) -> void:
 	for i in range(COLOR_DATA.size()):
 		var b := _make_button("", Vector2(74, 74), 30)
 		row.add_child(b)
-		_palette_buttons.append({
+		var entry_c := {
 			"button": b, "modo": "color", "dato": i,
 			"bg": COLOR_DATA[i]["color"],
-		})
+		}
+		_palette_buttons.append(entry_c)
+		_base_buttons.append(entry_c)
 		b.pressed.connect(_on_palette_pressed.bind("color", i))
 
 	for n in range(1, 6):
@@ -252,9 +316,11 @@ func _build_palette(root: Control) -> void:
 		b.add_theme_color_override("font_hover_color", NUMBER_FG)
 		b.add_theme_color_override("font_pressed_color", NUMBER_FG)
 		row.add_child(b)
-		_palette_buttons.append({
+		var entry_n := {
 			"button": b, "modo": "numero", "dato": n, "bg": NUMBER_BG,
-		})
+		}
+		_palette_buttons.append(entry_n)
+		_base_buttons.append(entry_n)
 		b.pressed.connect(_on_palette_pressed.bind("numero", n))
 
 	var eraser := _make_button("Borrar", Vector2(100, 74), 20)
@@ -262,10 +328,31 @@ func _build_palette(root: Control) -> void:
 	eraser.add_theme_color_override("font_hover_color", ERASER_FG)
 	eraser.add_theme_color_override("font_pressed_color", ERASER_FG)
 	row.add_child(eraser)
-	_palette_buttons.append({
+	var entry_e := {
 		"button": eraser, "modo": "borrador", "dato": 0, "bg": ERASER_BG,
-	})
+	}
+	_palette_buttons.append(entry_e)
+	_base_buttons.append(entry_e)
 	eraser.pressed.connect(_on_palette_pressed.bind("borrador", 0))
+
+	# Segunda fila (Fase 2): cubos con letras. Oculta salvo en el Mundo
+	# Letras; al mostrarse entra también en la navegación con mando.
+	_letters_row = HBoxContainer.new()
+	_letters_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_letters_row.add_theme_constant_override("separation", 10)
+	_letters_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_letters_row.visible = false
+	vbox.add_child(_letters_row)
+	for li in range(LETTER_DATA.size()):
+		var lb := _make_button(String(LETTER_DATA[li]), Vector2(74, 74), 36)
+		lb.add_theme_color_override("font_color", LETTER_FG)
+		lb.add_theme_color_override("font_hover_color", LETTER_FG)
+		lb.add_theme_color_override("font_pressed_color", LETTER_FG)
+		_letters_row.add_child(lb)
+		_letter_buttons.append({
+			"button": lb, "modo": "letra", "dato": li, "bg": LETTER_BG,
+		})
+		lb.pressed.connect(_on_palette_pressed.bind("letra", li))
 
 	_tv_hint_label = Label.new()
 	_tv_hint_label.text = "Elige con ◀ ▶ · Altura con ▲ ▼ · OK confirma · Atrás cancela"
@@ -390,8 +477,23 @@ func _option_name(modo: String, dato: int) -> String:
 			return String(COLOR_DATA[dato]["nombre"])
 		"numero":
 			return "Número " + str(dato)
+		"letra":
+			return "Letra " + String(LETTER_DATA[clampi(dato, 0, LETTER_DATA.size() - 1)])
 		_:
 			return "Borrar bloques"
+
+
+## Muestra la fila de letras solo en el Mundo Letras (Fase 2) y ajusta
+## la lista de navegación con mando. En juego libre no cambia nada.
+func set_level_world(mundo: String) -> void:
+	var show_letters := mundo == "letras"
+	if _letters_row != null:
+		_letters_row.visible = show_letters
+	_palette_buttons = _base_buttons.duplicate()
+	if show_letters:
+		_palette_buttons.append_array(_letter_buttons)
+	_refresh_palette_styles()
+	_refresh_selection_label()
 
 
 func _refresh_selection_label() -> void:
@@ -406,6 +508,8 @@ func _refresh_selection_label() -> void:
 			_selection_label.text = "Bloque elegido: " + _option_name("color", int(_selection["dato"]))
 		"numero":
 			_selection_label.text = "Bloque elegido: " + _option_name("numero", int(_selection["dato"]))
+		"letra":
+			_selection_label.text = "Bloque elegido: " + _option_name("letra", int(_selection["dato"]))
 		_:
 			_selection_label.text = "Herramienta: Borrar bloques"
 

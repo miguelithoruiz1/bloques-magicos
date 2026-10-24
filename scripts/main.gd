@@ -15,6 +15,9 @@ extends Node3D
 
 const PaletteUI := preload("res://scripts/palette_ui.gd")
 const WorldSave := preload("res://scripts/world_save.gd")
+const LevelsData := preload("res://scripts/levels_data.gd")
+const LevelLogic := preload("res://scripts/level_logic.gd")
+const ProgressSave := preload("res://scripts/progress_save.gd")
 
 const GRID_SIZE := 16
 const MAX_HEIGHT := 8
@@ -33,6 +36,9 @@ const BLOCK_COLORS: Array = [
 const NUMBER_NAMES: Array = ["Uno", "Dos", "Tres", "Cuatro", "Cinco"]
 const NUMBER_CUBE_COLOR := Color(1.0, 0.95, 0.78)
 const NUMBER_TEXT_COLOR := Color(0.10, 0.16, 0.45)
+## Cubos con letras (Fase 2, Mundo Letras). Los textos vienen de
+## LevelsData.LETRAS para no duplicar la lista.
+const LETTER_CUBE_COLOR := Color(0.62, 0.85, 1.0)
 
 var blocks: Dictionary = {} ## Vector3i -> {"tipo": String, "dato": int}
 var block_nodes: Dictionary = {} ## Vector3i -> Node3D
@@ -43,6 +49,15 @@ var _blocks_root: Node3D
 var _box_mesh: BoxMesh
 var _materials: Dictionary = {}
 var _number_material: StandardMaterial3D
+var _letter_material: StandardMaterial3D
+
+## Estado de la Fase 2 (modo nivel). En juego libre no se usa.
+var _level_mode := false
+var _level_def: Dictionary = {}
+var _level_target := -1
+var _level_placed: Array = []
+var _level_completed := false
+var _level_progress: Dictionary = {}
 
 var _pivot: Node3D
 var _camera: Camera3D
@@ -67,6 +82,7 @@ var _audio_players: Array[AudioStreamPlayer] = []
 var _audio_next := 0
 var _pop_stream: AudioStream
 var _toc_stream: AudioStream
+var _win_stream: AudioStream
 
 var _tts_voice := ""
 
@@ -92,7 +108,15 @@ func _ready() -> void:
 	_palette.up_requested.connect(func() -> void: set_cursor_height(1))
 	_palette.down_requested.connect(func() -> void: set_cursor_height(-1))
 	_palette.world_reset.connect(_on_world_reset)
-	_load_world()
+	_palette.menu_requested.connect(_go_to_menu)
+	# Fase 2: en modo nivel se empieza con un tablero vacío (la meta se
+	# mide solo con lo colocado en el nivel) y el mundo libre NO se toca:
+	# ni se carga ni se guarda. En juego libre todo sigue igual que F1.
+	_level_mode = GameState.modo == "nivel"
+	if _level_mode:
+		_start_level()
+	else:
+		_load_world()
 	_update_info()
 	_update_ghost(true)
 
@@ -102,7 +126,11 @@ func _process(delta: float) -> void:
 	# la paleta TV); larga (OK_HOLD_SECONDS) = abrir la paleta en el TV.
 	var ok_event := _poll_ok(delta)
 
-	if _palette_mode:
+	if _level_completed:
+		# Nivel superado: el mundo queda en pausa y OK vuelve al menú.
+		if ok_event == "short":
+			_go_to_menu()
+	elif _palette_mode:
 		# Con la paleta TV abierta, el input del mundo queda en pausa.
 		_handle_palette_mode(delta, ok_event)
 	else:
@@ -195,7 +223,7 @@ func _open_palette_mode() -> void:
 
 
 ## Input mientras la paleta TV está abierta: ◀ ▶ mueven el resaltado
-## entre las 13 opciones, ▲ ▼ suben/bajan la altura del cursor,
+## entre las opciones, ▲ ▼ suben/bajan la altura del cursor,
 ## OK corto confirma y cierra, Atrás cierra sin cambiar nada.
 func _handle_palette_mode(delta: float, ok_event: String) -> void:
 	if ok_event == "short":
@@ -228,6 +256,17 @@ func _handle_palette_mode(delta: float, ok_event: String) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Nivel superado: el mundo no recibe más input, solo OK → menú.
+	if _level_completed:
+		return
+	# Botón Atrás del control de TV (tecla Escape en Android): vuelve al
+	# menú. Se distingue a propósito del botón B del mando (que borra),
+	# que llega como evento de mando y no como tecla.
+	if event is InputEventKey:
+		var k0 := event as InputEventKey
+		if k0.keycode == KEY_ESCAPE and k0.pressed and not k0.echo:
+			_go_to_menu()
+			return
 	# Con la paleta TV abierta, el mundo no recibe clics/toques ni teclas.
 	if _palette_mode:
 		return
@@ -282,13 +321,26 @@ func place_at_cursor() -> void:
 	var data := {"tipo": "color", "dato": int(selection.get("dato", 0))}
 	if String(selection.get("modo", "color")) == "numero":
 		data = {"tipo": "numero", "dato": int(selection.get("dato", 1))}
+	elif String(selection.get("modo", "color")) == "letra":
+		data = {"tipo": "letra", "dato": int(selection.get("dato", 0))}
 	blocks[cursor] = data
 	_spawn_block_node(cursor, data)
 	_play_sound(_pop_stream)
 	if String(data["tipo"]) == "numero":
 		speak("¡" + NUMBER_NAMES[clampi(int(data["dato"]) - 1, 0, NUMBER_NAMES.size() - 1)] + "!")
+	elif String(data["tipo"]) == "letra":
+		var letras: Array = LevelsData.LETRAS
+		speak("¡" + String(letras[clampi(int(data["dato"]), 0, letras.size() - 1)]) + "!")
 	else:
 		speak("¡" + String(BLOCK_COLORS[int(data["dato"])]["nombre"]) + "!")
+	# Fase 2: registrar lo colocado en el nivel y comprobar la meta.
+	if _level_mode and not _level_completed:
+		var placed := {"tipo": String(data["tipo"]), "dato": int(data["dato"]), "celda": cursor}
+		_level_placed.append(placed)
+		var tipo_meta := String(_level_def.get("tipo", ""))
+		var params: Dictionary = _level_def.get("params", {})
+		if LevelLogic.check_goal(tipo_meta, params, _level_target, _level_placed):
+			_complete_level()
 	_mark_dirty()
 	_update_info()
 	_update_ghost(true)
@@ -298,6 +350,13 @@ func remove_at_cursor() -> void:
 	var target := _remove_target()
 	if target.x < 0:
 		return
+	# Fase 2: quitar el bloque también de la lista del nivel, para que
+	# borrar corrija (p. ej. si se pasó de la cantidad o puso uno mal).
+	if _level_mode:
+		for i in range(_level_placed.size() - 1, -1, -1):
+			if Vector3i(_level_placed[i].get("celda", Vector3i(-1, -1, -1))) == target:
+				_level_placed.remove_at(i)
+				break
 	blocks.erase(target)
 	if block_nodes.has(target):
 		(block_nodes[target] as Node).queue_free()
@@ -361,13 +420,25 @@ func _on_world_reset() -> void:
 	_mark_dirty()
 	_update_info()
 	_update_ghost(true)
-	_palette.show_message("¡Mundo nuevo! A construir.")
-	speak("¡A construir!")
+	if _level_mode:
+		# En un nivel, «Empezar de nuevo» reinicia el nivel, no el mundo.
+		_level_placed.clear()
+		_level_completed = false
+		_palette.hide_celebration()
+		_palette.set_goal(_level_instruction_text())
+		speak(_level_instruction_voice())
+	else:
+		_palette.show_message("¡Mundo nuevo! A construir.")
+		speak("¡A construir!")
 
 
 func _update_info() -> void:
-	if _palette != null:
-		_palette.set_info("Altura: %d · Bloques: %d/%d" % [cursor.y + 1, blocks.size(), MAX_BLOCKS])
+	if _palette == null:
+		return
+	if _level_mode:
+		_update_level_info()
+		return
+	_palette.set_info("Altura: %d · Bloques: %d/%d" % [cursor.y + 1, blocks.size(), MAX_BLOCKS])
 
 
 # ---------------------------------------------------------------------------
@@ -458,18 +529,23 @@ func _spawn_block_node(cell: Vector3i, data: Dictionary) -> void:
 	mi.mesh = _box_mesh
 	if String(data.get("tipo", "color")) == "numero":
 		mi.material_override = _number_material
+	elif String(data.get("tipo", "color")) == "letra":
+		mi.material_override = _letter_material
 	else:
 		mi.material_override = _materials[int(data.get("dato", 0))]
 	root.add_child(mi)
 	if String(data.get("tipo", "color")) == "numero":
-		_add_number_labels(root, int(data.get("dato", 1)))
+		_add_text_labels(root, str(int(data.get("dato", 1))))
+	elif String(data.get("tipo", "color")) == "letra":
+		var letras: Array = LevelsData.LETRAS
+		_add_text_labels(root, String(letras[clampi(int(data.get("dato", 0)), 0, letras.size() - 1)]))
 	_blocks_root.add_child(root)
 	block_nodes[cell] = root
 
 
-## El número se dibuja con Label3D en la cara superior y las 4 laterales,
-## para que se vea desde cualquier ángulo de la cámara orbital.
-func _add_number_labels(parent: Node3D, valor: int) -> void:
+## El texto (número o letra) se dibuja con Label3D en la cara superior
+## y las 4 laterales, para que se vea desde cualquier ángulo de cámara.
+func _add_text_labels(parent: Node3D, texto: String) -> void:
 	var faces: Array = [
 		[Vector3(0.0, 0.51, 0.0), Vector3(-90.0, 0.0, 0.0)],
 		[Vector3(0.0, 0.0, 0.51), Vector3(0.0, 0.0, 0.0)],
@@ -479,7 +555,7 @@ func _add_number_labels(parent: Node3D, valor: int) -> void:
 	]
 	for face in faces:
 		var label := Label3D.new()
-		label.text = str(valor)
+		label.text = texto
 		label.font_size = 160
 		label.pixel_size = 0.0035
 		label.modulate = NUMBER_TEXT_COLOR
@@ -529,6 +605,10 @@ func _update_ghost(force := false) -> void:
 	elif modo == "numero":
 		base_color = NUMBER_CUBE_COLOR
 		number_text = str(dato)
+	elif modo == "letra":
+		base_color = LETTER_CUBE_COLOR
+		var letras: Array = LevelsData.LETRAS
+		number_text = String(letras[clampi(dato, 0, letras.size() - 1)])
 	else:
 		var c: Color = BLOCK_COLORS[dato]["color"]
 		base_color = c
@@ -559,6 +639,7 @@ func _build_shared() -> void:
 		var c: Color = BLOCK_COLORS[i]["color"]
 		_materials[i] = _make_material(c)
 	_number_material = _make_material(NUMBER_CUBE_COLOR)
+	_letter_material = _make_material(LETTER_CUBE_COLOR)
 
 
 func _make_material(c: Color) -> StandardMaterial3D:
@@ -715,6 +796,7 @@ func speak(text: String) -> void:
 func _build_audio() -> void:
 	_pop_stream = _make_tone(520.0, 160.0, 0.16, 0.5)
 	_toc_stream = _make_tone(210.0, 140.0, 0.09, 0.45)
+	_win_stream = _make_tone(600.0, 1400.0, 0.6, 0.5)
 	for i in range(4):
 		var p := AudioStreamPlayer.new()
 		add_child(p)
@@ -753,6 +835,78 @@ func _play_sound(stream: AudioStream) -> void:
 
 
 # ---------------------------------------------------------------------------
+# Fase 2: niveles de Mundos
+# ---------------------------------------------------------------------------
+
+## Prepara un nivel: tablero vacío, meta al azar si aplica, cartel con la
+## instrucción y voz. El mundo libre no se carga ni se guarda aquí.
+func _start_level() -> void:
+	_level_def = LevelsData.get_nivel(GameState.mundo, GameState.nivel)
+	_level_placed = []
+	_level_completed = false
+	_level_progress = ProgressSave.load_progress()
+	_level_target = -1
+	var tipo := String(_level_def.get("tipo", ""))
+	if tipo == "color_voz" or tipo == "letra_voz":
+		var opciones: Array = _level_def.get("params", {}).get("opciones", [])
+		if not opciones.is_empty():
+			_level_target = int(opciones[randi() % opciones.size()])
+	_palette.set_level_world(GameState.mundo)
+	_palette.set_goal(_level_instruction_text())
+	_palette.hide_celebration()
+	_update_level_info()
+	speak(_level_instruction_voice())
+
+
+func _level_instruction_text() -> String:
+	var tipo := String(_level_def.get("tipo", ""))
+	if (tipo == "color_voz" or tipo == "letra_voz") and _level_target >= 0:
+		return String(LevelsData.instruccion_aleatoria(tipo, _level_target).get("texto", ""))
+	return String(_level_def.get("texto", ""))
+
+
+func _level_instruction_voice() -> String:
+	var tipo := String(_level_def.get("tipo", ""))
+	if (tipo == "color_voz" or tipo == "letra_voz") and _level_target >= 0:
+		return String(LevelsData.instruccion_aleatoria(tipo, _level_target).get("voz", ""))
+	return String(_level_def.get("voz", ""))
+
+
+func _update_level_info() -> void:
+	if _palette == null:
+		return
+	var mundo := LevelsData.get_mundo(GameState.mundo)
+	var nombre := String(mundo.get("nombre", ""))
+	var estrellas := ProgressSave.stars_for(_level_progress, GameState.mundo)
+	_palette.set_info("%s · Nivel %d · ⭐ %d/5" % [nombre, GameState.nivel + 1, estrellas])
+
+
+## Nivel superado: estrella, desbloqueo del siguiente, celebración con
+## voz y cartel. OK (o el botón Menú) vuelve al menú de niveles.
+func _complete_level() -> void:
+	_level_completed = true
+	var nuevo := ProgressSave.mark_completed(_level_progress, GameState.mundo, GameState.nivel)
+	if nuevo:
+		ProgressSave.save_progress(_level_progress)
+	_palette.show_celebration("¡Lo lograste! ⭐")
+	_play_sound(_win_stream)
+	var mundo_nombre := String(LevelsData.get_mundo(GameState.mundo).get("nombre", ""))
+	if ProgressSave.stars_for(_level_progress, GameState.mundo) >= 5:
+		speak("¡Muy bien! ¡Ganaste una estrella! ¡Completaste el mundo " + mundo_nombre + "! ¡Eres increíble!")
+	else:
+		speak("¡Muy bien! ¡Ganaste una estrella!")
+	_update_level_info()
+
+
+## Vuelve al menú inicial. En juego libre guarda antes si hay cambios;
+## en un nivel no hay nada que guardar (mundo.json queda intacto).
+func _go_to_menu() -> void:
+	if not _level_mode and _dirty:
+		_save_now()
+	get_tree().change_scene_to_file("res://menu.tscn")
+
+
+# ---------------------------------------------------------------------------
 # Guardado
 # ---------------------------------------------------------------------------
 
@@ -762,6 +916,11 @@ func _mark_dirty() -> void:
 
 
 func _save_now() -> void:
+	# En modo nivel el mundo libre NO se guarda: el tablero del nivel es
+	# temporal y mundo.json queda intacto.
+	if _level_mode:
+		_dirty = false
+		return
 	WorldSave.save_world(blocks)
 	_dirty = false
 

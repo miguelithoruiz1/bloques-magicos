@@ -205,7 +205,7 @@ func _build_top_bar(root: Control) -> void:
 	title.text = "Bloques Mágicos"
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_style_label(title, 30)
+	_style_label(title, 26)
 	top.add_child(title)
 
 	var spacer := Control.new()
@@ -217,7 +217,7 @@ func _build_top_bar(root: Control) -> void:
 	_info_label.text = "Altura: 1 · Bloques: 0/600"
 	_info_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_info_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_style_label(_info_label, 20)
+	_style_label(_info_label, 18)
 	top.add_child(_info_label)
 
 	var reset_box := VBoxContainer.new()
@@ -225,7 +225,7 @@ func _build_top_bar(root: Control) -> void:
 	reset_box.add_theme_constant_override("separation", 4)
 	top.add_child(reset_box)
 
-	_reset_button = _make_button("Empezar de nuevo", Vector2(196, 52), 18)
+	_reset_button = _make_button("Empezar de nuevo", Vector2(160, 44), 16)
 	_apply_button_colors(_reset_button, Color(0.85, 0.45, 0.40))
 	reset_box.add_child(_reset_button)
 
@@ -234,7 +234,7 @@ func _build_top_bar(root: Control) -> void:
 	_reset_bar.max_value = HOLD_SECONDS
 	_reset_bar.value = 0.0
 	_reset_bar.show_percentage = false
-	_reset_bar.custom_minimum_size = Vector2(196, 10)
+	_reset_bar.custom_minimum_size = Vector2(160, 10)
 	_reset_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	reset_box.add_child(_reset_bar)
 
@@ -244,7 +244,7 @@ func _build_top_bar(root: Control) -> void:
 	_style_label(hint, 12)
 	reset_box.add_child(hint)
 
-	var menu_button := _make_button("Menú", Vector2(130, 52), 18)
+	var menu_button := _make_button("Menú", Vector2(104, 44), 16)
 	_apply_button_colors(menu_button, Color(0.45, 0.45, 0.55))
 	menu_button.pressed.connect(func() -> void: menu_requested.emit())
 	top.add_child(menu_button)
@@ -340,24 +340,27 @@ func hide_celebration() -> void:
 
 
 func _build_palette(root: Control) -> void:
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	# 1.2.2: alto para 2 filas (254 px de panel, se conserva) + margen
-	# seguro de 96 px abajo (antes 64 px; el top baja a -350 para no
-	# encoger el panel). Con una sola fila el panel queda centrado.
-	center.offset_top = -350.0
-	center.offset_bottom = -96.0
-	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(center)
+	# Fase 1: paleta anclada abajo a la IZQUIERDA (antes centrada a lo
+	# ancho): el centro de la vista de construcción queda libre. El
+	# margen anti-overscan de 96 px se conserva.
+	var dock := Control.new()
+	dock.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	dock.offset_left = 96.0
+	dock.offset_top = -286.0
+	dock.offset_right = 916.0
+	dock.offset_bottom = -96.0
+	dock.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(dock)
 
 	var panel := PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.08, 0.10, 0.14, 0.72)
 	panel_style.set_corner_radius_all(20)
-	panel_style.set_content_margin_all(14.0)
+	panel_style.set_content_margin_all(10.0)
 	panel.add_theme_stylebox_override("panel", panel_style)
-	center.add_child(panel)
+	dock.add_child(panel)
 
 	var vbox := VBoxContainer.new()
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -367,16 +370,16 @@ func _build_palette(root: Control) -> void:
 	_selection_label = Label.new()
 	_selection_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_selection_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_style_label(_selection_label, 20)
+	_style_label(_selection_label, 18)
 	vbox.add_child(_selection_label)
 
 	var row := HBoxContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_theme_constant_override("separation", 10)
+	row.add_theme_constant_override("separation", 8)
 	vbox.add_child(row)
 
 	for i in range(COLOR_DATA.size()):
-		var b := _make_button("", Vector2(74, 74), 30)
+		var b := _make_button("", Vector2(56, 56), 30)
 		row.add_child(b)
 		var entry_c := {
 			"button": b, "modo": "color", "dato": i,
@@ -388,7 +391,7 @@ func _build_palette(root: Control) -> void:
 		b.pressed.connect(_on_palette_pressed.bind("color", i))
 
 	for n in range(1, 6):
-		var b := _make_button(str(n), Vector2(74, 74), 36)
+		var b := _make_button(str(n), Vector2(56, 56), 28)
 		b.add_theme_color_override("font_color", NUMBER_FG)
 		b.add_theme_color_override("font_hover_color", NUMBER_FG)
 		b.add_theme_color_override("font_pressed_color", NUMBER_FG)
@@ -401,7 +404,7 @@ func _build_palette(root: Control) -> void:
 		_base_buttons.append(entry_n)
 		b.pressed.connect(_on_palette_pressed.bind("numero", n))
 
-	var eraser := _make_button("Borrar", Vector2(100, 74), 20)
+	var eraser := _make_button("Borrar", Vector2(84, 56), 18)
 	eraser.add_theme_color_override("font_color", ERASER_FG)
 	eraser.add_theme_color_override("font_hover_color", ERASER_FG)
 	eraser.add_theme_color_override("font_pressed_color", ERASER_FG)
@@ -418,12 +421,12 @@ func _build_palette(root: Control) -> void:
 	# Letras; al mostrarse entra también en la navegación con mando.
 	_letters_row = HBoxContainer.new()
 	_letters_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_letters_row.add_theme_constant_override("separation", 10)
+	_letters_row.add_theme_constant_override("separation", 8)
 	_letters_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	_letters_row.visible = false
 	vbox.add_child(_letters_row)
 	for li in range(LETTER_DATA.size()):
-		var lb := _make_button(String(LETTER_DATA[li]), Vector2(74, 74), 36)
+		var lb := _make_button(String(LETTER_DATA[li]), Vector2(56, 56), 28)
 		lb.add_theme_color_override("font_color", LETTER_FG)
 		lb.add_theme_color_override("font_hover_color", LETTER_FG)
 		lb.add_theme_color_override("font_pressed_color", LETTER_FG)
@@ -441,12 +444,12 @@ func _build_palette(root: Control) -> void:
 	# porque sus entradas van en _base_buttons (filtro "libre").
 	_libre_row = HBoxContainer.new()
 	_libre_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_libre_row.add_theme_constant_override("separation", 10)
+	_libre_row.add_theme_constant_override("separation", 8)
 	_libre_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(_libre_row)
 	for entry_def in LIBRE_DATA:
 		var modo_l := String(entry_def["modo"])
-		var nb := _make_button(String(entry_def["emoji"]), Vector2(74, 74), 36)
+		var nb := _make_button(String(entry_def["emoji"]), Vector2(56, 56), 28)
 		_libre_row.add_child(nb)
 		var entry_l := {
 			"button": nb, "modo": modo_l, "dato": 0,
@@ -461,37 +464,37 @@ func _build_palette(root: Control) -> void:
 	_tv_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_tv_hint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_tv_hint_label.visible = false
-	_style_label(_tv_hint_label, 18)
+	_style_label(_tv_hint_label, 16)
 	vbox.add_child(_tv_hint_label)
 
 
 func _build_action_buttons(root: Control) -> void:
 	var actions := VBoxContainer.new()
 	actions.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	actions.offset_left = -242.0
+	actions.offset_left = -208.0
 	actions.offset_right = -96.0
-	actions.offset_top = -200.0
-	actions.offset_bottom = 200.0
+	actions.offset_top = -150.0
+	actions.offset_bottom = 150.0
 	actions.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	actions.add_theme_constant_override("separation", 10)
 	root.add_child(actions)
 
-	var place_b := _make_button("Poner", Vector2(146, 104), 28)
+	var place_b := _make_button("Poner", Vector2(112, 76), 22)
 	_apply_button_colors(place_b, Color(0.25, 0.75, 0.35))
 	place_b.pressed.connect(func() -> void: place_requested.emit())
 	actions.add_child(place_b)
 
-	var remove_b := _make_button("Quitar", Vector2(146, 78), 24)
+	var remove_b := _make_button("Quitar", Vector2(112, 60), 20)
 	_apply_button_colors(remove_b, Color(0.90, 0.45, 0.40))
 	remove_b.pressed.connect(func() -> void: remove_requested.emit())
 	actions.add_child(remove_b)
 
-	var up_b := _make_button("Subir", Vector2(146, 64), 22)
+	var up_b := _make_button("Subir", Vector2(112, 52), 18)
 	_apply_button_colors(up_b, Color(0.35, 0.55, 0.95))
 	up_b.pressed.connect(func() -> void: up_requested.emit())
 	actions.add_child(up_b)
 
-	var down_b := _make_button("Bajar", Vector2(146, 64), 22)
+	var down_b := _make_button("Bajar", Vector2(112, 52), 18)
 	_apply_button_colors(down_b, Color(0.35, 0.55, 0.95))
 	down_b.pressed.connect(func() -> void: down_requested.emit())
 	actions.add_child(down_b)
@@ -500,21 +503,21 @@ func _build_action_buttons(root: Control) -> void:
 func _build_rotate_buttons(root: Control) -> void:
 	var rot_box := HBoxContainer.new()
 	rot_box.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	rot_box.offset_left = 96.0
-	rot_box.offset_top = -166.0
-	rot_box.offset_right = 382.0
+	rot_box.offset_left = 80.0
+	rot_box.offset_top = -148.0
+	rot_box.offset_right = 298.0
 	rot_box.offset_bottom = -96.0
 	rot_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rot_box.add_theme_constant_override("separation", 10)
 	root.add_child(rot_box)
 
-	var rot_l := _make_button("Girar ←", Vector2(132, 70), 20)
+	var rot_l := _make_button("Girar ←", Vector2(104, 56), 18)
 	_apply_button_colors(rot_l, Color(0.45, 0.45, 0.55))
 	rot_l.button_down.connect(_on_rotate_down.bind(1.0))
 	rot_l.button_up.connect(_on_rotate_up)
 	rot_box.add_child(rot_l)
 
-	var rot_r := _make_button("Girar →", Vector2(132, 70), 20)
+	var rot_r := _make_button("Girar →", Vector2(104, 56), 18)
 	_apply_button_colors(rot_r, Color(0.45, 0.45, 0.55))
 	rot_r.button_down.connect(_on_rotate_down.bind(-1.0))
 	rot_r.button_up.connect(_on_rotate_up)

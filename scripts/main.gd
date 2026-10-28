@@ -122,6 +122,11 @@ var _ghost_eye_material: StandardMaterial3D
 var _ghost_label: Label3D
 var _ghost_state := ""
 
+# Fase 1: cuerpos del cielo (sol/luna por palabra). Se crean en
+# _build_environment y empiezan ocultos.
+var _sun_body = null
+var _moon_body = null
+
 var _palette = null
 var _move_timer := 0.0
 var _palette_mode := false
@@ -847,6 +852,7 @@ func _on_world_reset() -> void:
 		# En un nivel, «Empezar de nuevo» reinicia el nivel, no el mundo.
 		_level_placed.clear()
 		_level_completed = false
+		_hide_sky_bodies()
 		_palette.hide_celebration()
 		_palette.set_goal(_level_instruction_text())
 		speak(_level_instruction_voice())
@@ -956,6 +962,9 @@ func _spawn_block_node(cell: Vector3i, data: Dictionary, pop := true) -> void:
 	elif tipo == "flor":
 		# 1.3: flor decorativa procedural (tallo + pétalos) en la celda.
 		_spawn_flower(root)
+	elif tipo == "puerta":
+		# Fase 1: puerta real (marco + abertura), no un cubo café.
+		_spawn_door(root)
 	else:
 		var mi := MeshInstance3D.new()
 		mi.mesh = _box_mesh
@@ -1032,6 +1041,40 @@ func _spawn_flower(parent: Node3D) -> void:
 	head.material_override = _flower_material
 	head.position = Vector3(0.0, 0.22, 0.0)
 	parent.add_child(head)
+
+
+## Puerta real (Fase 1): marco de 4 postes en las esquinas + anillo
+## superior, con el centro ABIERTO. Se lee como puerta desde los 4 lados
+## (las casas se construyen en cualquier dirección) y es coherente con
+## la colisión: la celda ya era transitable (ver _walk_blocked: la
+## puerta es la entrada a la casa). No cambia el guardado: el tipo
+## sigue siendo "puerta".
+func _spawn_door(parent: Node3D) -> void:
+	for sx in [-0.41, 0.41]:
+		for sz in [-0.41, 0.41]:
+			var post := MeshInstance3D.new()
+			var pm := BoxMesh.new()
+			pm.size = Vector3(0.18, 1.0, 0.18)
+			post.mesh = pm
+			post.material_override = _door_material
+			post.position = Vector3(sx, 0.0, sz)
+			parent.add_child(post)
+	for sz in [-0.41, 0.41]:
+		var beam_x := MeshInstance3D.new()
+		var bm_x := BoxMesh.new()
+		bm_x.size = Vector3(1.0, 0.18, 0.18)
+		beam_x.mesh = bm_x
+		beam_x.material_override = _door_material
+		beam_x.position = Vector3(0.0, 0.41, sz)
+		parent.add_child(beam_x)
+	for sx in [-0.41, 0.41]:
+		var beam_z := MeshInstance3D.new()
+		var bm_z := BoxMesh.new()
+		bm_z.size = Vector3(0.18, 0.18, 1.0)
+		beam_z.mesh = bm_z
+		beam_z.material_override = _door_material
+		beam_z.position = Vector3(sx, 0.41, 0.0)
+		parent.add_child(beam_z)
 
 
 ## El texto (número o letra) se dibuja con Label3D en la cara superior
@@ -1220,6 +1263,43 @@ func _build_environment() -> void:
 	sun.shadow_enabled = true
 	add_child(sun)
 
+	# Fase 1: sol y luna visibles para las palabras SOL y LUNA. Empiezan
+	# ocultos; solo se muestran al completar la palabra (ver
+	# _complete_level). Son mallas simples con emisión, sin TTS ni
+	# micrófono, y quedan en el mismo punto alto del cielo (solo uno
+	# visible a la vez).
+	var sky_bodies := Node3D.new()
+	sky_bodies.name = "SkyBodies"
+	add_child(sky_bodies)
+	_sun_body = MeshInstance3D.new()
+	var sun_mesh := SphereMesh.new()
+	sun_mesh.radius = 3.0
+	sun_mesh.height = 6.0
+	_sun_body.mesh = sun_mesh
+	var sun_mat := StandardMaterial3D.new()
+	sun_mat.albedo_color = Color(1.0, 0.85, 0.15)
+	sun_mat.emission_enabled = true
+	sun_mat.emission = Color(1.0, 0.8, 0.2)
+	sun_mat.emission_energy_multiplier = 1.5
+	_sun_body.material_override = sun_mat
+	_sun_body.position = Vector3(8.0, 24.0, -26.0)
+	_sun_body.visible = false
+	sky_bodies.add_child(_sun_body)
+	_moon_body = MeshInstance3D.new()
+	var moon_mesh := SphereMesh.new()
+	moon_mesh.radius = 2.2
+	moon_mesh.height = 4.4
+	_moon_body.mesh = moon_mesh
+	var moon_mat := StandardMaterial3D.new()
+	moon_mat.albedo_color = Color(0.9, 0.93, 1.0)
+	moon_mat.emission_enabled = true
+	moon_mat.emission = Color(0.75, 0.8, 0.95)
+	moon_mat.emission_energy_multiplier = 0.8
+	_moon_body.material_override = moon_mat
+	_moon_body.position = Vector3(8.0, 24.0, -26.0)
+	_moon_body.visible = false
+	sky_bodies.add_child(_moon_body)
+
 
 func _build_ground() -> void:
 	var apron := MeshInstance3D.new()
@@ -1396,6 +1476,7 @@ func _start_level() -> void:
 	_level_def = LevelsData.get_nivel(GameState.mundo, GameState.nivel)
 	_level_placed = []
 	_level_completed = false
+	_hide_sky_bodies()
 	_level_progress = ProgressSave.load_progress()
 	_level_target = -1
 	var tipo := String(_level_def.get("tipo", ""))
@@ -1506,7 +1587,38 @@ func _complete_level() -> void:
 		speak("¡Muy bien! ¡Ganaste una estrella! ¡Completaste el mundo " + mundo_nombre + "! ¡Eres increíble!", "frase_mundo_completo")
 	else:
 		speak("¡Muy bien! ¡Ganaste una estrella!", "frase_muy_bien")
+	# Fase 1: si el nivel era una palabra, su astro sale en el cielo.
+	# Solo visual: el anuncio grande ya es la garantía sin TTS. Si la
+	# palabra no es SOL ni LUNA, ambos cuerpos quedan ocultos.
+	if String(_level_def.get("tipo", "")) == "palabra":
+		var letras_palabra: Array = _level_def.get("params", {}).get("letras", [])
+		var palabra := ""
+		for li in letras_palabra:
+			var idx := clampi(int(li), 0, LevelsData.LETRAS.size() - 1)
+			palabra += String(LevelsData.LETRAS[idx])
+		_set_sky_word(palabra)
+		if palabra == "SOL":
+			_palette.show_announcement("¡Salió el SOL! ☀️")
+		elif palabra == "LUNA":
+			_palette.show_announcement("¡Salió la LUNA! 🌙")
 	_update_level_info()
+
+
+## Fase 1: muestra el astro de la palabra en el cielo. SOL = sol visible,
+## LUNA = luna visible; cualquier otra palabra oculta ambos. Solo visual:
+## no usa micrófono, ni TTS, ni clips de audio.
+func _set_sky_word(palabra: String) -> void:
+	if _sun_body != null:
+		_sun_body.visible = (palabra == "SOL")
+	if _moon_body != null:
+		_moon_body.visible = (palabra == "LUNA")
+
+
+func _hide_sky_bodies() -> void:
+	if _sun_body != null:
+		_sun_body.visible = false
+	if _moon_body != null:
+		_moon_body.visible = false
 
 
 ## Vuelve al menú inicial. En juego libre guarda antes si hay cambios;

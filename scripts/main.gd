@@ -14,9 +14,11 @@ extends Node3D
 ## - Los números de los cubos se dibujan con Label3D en las 5 caras visibles.
 
 const PaletteUI := preload("res://scripts/palette_ui.gd")
+const AudioBank := preload("res://scripts/audio_bank.gd")
 const WorldSave := preload("res://scripts/world_save.gd")
 const LevelsData := preload("res://scripts/levels_data.gd")
 const LevelLogic := preload("res://scripts/level_logic.gd")
+const LevelHints := preload("res://scripts/level_hints.gd")
 const ProgressSave := preload("res://scripts/progress_save.gd")
 
 const GRID_SIZE := 16
@@ -39,6 +41,19 @@ const NUMBER_TEXT_COLOR := Color(0.10, 0.16, 0.45)
 ## Cubos con letras (Fase 2, Mundo Letras). Los textos vienen de
 ## LevelsData.LETRAS para no duplicar la lista.
 const LETTER_CUBE_COLOR := Color(0.62, 0.85, 1.0)
+## Contenido nuevo 1.3, solo mundo libre (lo pide el niño): agua, árbol,
+## flor y piezas de casa (pared, techo, puerta). El agua es un cubo
+## translúcido SÓLIDO como los demás (ocupa su celda, cuenta y se
+## guarda): una capa de agua no sólida habría complicado guardado,
+## borrado y fantasma sin beneficio para un niño de 5 años.
+const WATER_COLOR := Color(0.25, 0.62, 1.00)
+const WALL_COLOR := Color(0.95, 0.92, 0.82)
+const ROOF_COLOR := Color(0.85, 0.25, 0.22)
+const DOOR_COLOR := Color(0.55, 0.38, 0.22)
+const TRUNK_COLOR := Color(0.45, 0.32, 0.20)
+const LEAF_COLOR := Color(0.25, 0.60, 0.30)
+const FLOWER_HEAD_COLOR := Color(1.00, 0.55, 0.75)
+const LIBRE_NAMES := {"agua": "Agua", "arbol": "Árbol", "flor": "Flor", "pared": "Pared", "techo": "Techo", "puerta": "Puerta"}
 
 var blocks: Dictionary = {} ## Vector3i -> {"tipo": String, "dato": int}
 var block_nodes: Dictionary = {} ## Vector3i -> Node3D
@@ -50,6 +65,13 @@ var _box_mesh: BoxMesh
 var _materials: Dictionary = {}
 var _number_material: StandardMaterial3D
 var _letter_material: StandardMaterial3D
+var _water_material: StandardMaterial3D
+var _wall_material: StandardMaterial3D
+var _roof_material: StandardMaterial3D
+var _door_material: StandardMaterial3D
+var _trunk_material: StandardMaterial3D
+var _leaf_material: StandardMaterial3D
+var _flower_material: StandardMaterial3D
 
 ## Estado de la Fase 2 (modo nivel). En juego libre no se usa.
 var _level_mode := false
@@ -58,13 +80,45 @@ var _level_target := -1
 var _level_placed: Array = []
 var _level_completed := false
 var _level_progress: Dictionary = {}
+## 1.6: pistas visuales del nivel (solo muestran, nunca cuentan).
+## Viven en _hint_root, fuera de blocks/block_nodes: no se guardan,
+## no cuentan para la meta y no bloquean el paseo.
+var _hint_root = null
+var _hint_timer := 0.0
 
 var _pivot: Node3D
 var _camera: Camera3D
 var _yaw_target := 0.0
 
+## 1.5 (F3): presets de cámara para la VISTA DE CONSTRUCCIÓN (distintos
+## del modo caminar 1ª/2ª persona, que queda intacto). 0 = Arriba (la de
+## siempre, por defecto). Se ciclan con el extra «Cámara» de la paleta
+## TV; el giro yaw y el seguimiento del cursor no cambian.
+var _cam_preset := 0
+var _cam_presets: Array = [
+	{"nombre": "Arriba", "offset": Vector3(0.0, 10.5, 10.5), "rot_x": -45.0, "voz": "Cámara arriba"},
+	{"nombre": "Cerca", "offset": Vector3(0.0, 6.0, 6.0), "rot_x": -45.0, "voz": "Cámara cerca"},
+	{"nombre": "Lado", "offset": Vector3(0.0, 3.5, 13.0), "rot_x": -14.0, "voz": "Cámara de lado"},
+	{"nombre": "Lejos", "offset": Vector3(0.0, 16.0, 16.0), "rot_x": -45.0, "voz": "Cámara lejos"},
+]
+
+## 1.4: modo caminar (avatar). Primera persona obligatoria; segunda
+## persona (Blocky detrás) se cambia con OK largo dentro del modo.
+var _walk_mode := false
+var _walk_cell := Vector2i(8, 8)
+var _walk_yaw := 0.0
+var _walk_view := 0 # 0 = primera persona, 1 = segunda (Blocky)
+var _walk_move_timer := 0.0
+var _walk_avatar = null
+var _pet_node = null
+var _pet_body = null
+var _pet_tail = null
+var _pet_cell := Vector2i(8, 8)
+var _pet_timer := 0.0
+
 var _ghost_root: Node3D
 var _ghost_material: StandardMaterial3D
+var _ghost_eye_material: StandardMaterial3D
 var _ghost_label: Label3D
 var _ghost_state := ""
 
@@ -85,6 +139,7 @@ var _toc_stream: AudioStream
 var _win_stream: AudioStream
 
 var _tts_voice := ""
+var _audio_bank = null
 
 var _mouse_down := false
 var _mouse_start := Vector2.ZERO
@@ -99,6 +154,8 @@ func _ready() -> void:
 	_build_camera()
 	_build_ghost()
 	_build_audio()
+	_audio_bank = AudioBank.new()
+	add_child(_audio_bank)
 	_init_tts()
 	_palette = PaletteUI.new()
 	add_child(_palette)
@@ -109,6 +166,12 @@ func _ready() -> void:
 	_palette.down_requested.connect(func() -> void: set_cursor_height(-1))
 	_palette.world_reset.connect(_on_world_reset)
 	_palette.menu_requested.connect(_go_to_menu)
+	# 1.3: giro de cámara por pasos con el mando (desde la paleta TV).
+	_palette.rotate_step_requested.connect(_on_rotate_step)
+	# 1.4: entrar al modo caminar (desde la paleta TV).
+	_palette.walk_requested.connect(_enter_walk_mode)
+	# 1.5 (F3): ciclar la cámara de construcción (desde la paleta TV).
+	_palette.camera_cycle_requested.connect(_on_camera_cycle)
 	# Fase 2: en modo nivel se empieza con un tablero vacío (la meta se
 	# mide solo con lo colocado en el nivel) y el mundo libre NO se toca:
 	# ni se carga ni se guarda. En juego libre todo sigue igual que F1.
@@ -117,6 +180,9 @@ func _ready() -> void:
 		_start_level()
 	else:
 		_load_world()
+	# 1.4: avatar Blocky y mascota (después de cargar el mundo, para
+	# que la mascota nazca en una celda libre).
+	_build_walk_actors()
 	_update_info()
 	_update_ghost(true)
 
@@ -130,6 +196,10 @@ func _process(delta: float) -> void:
 		# Nivel superado: el mundo queda en pausa y OK vuelve al menú.
 		if ok_event == "short":
 			_go_to_menu()
+	elif _walk_mode:
+		# 1.4: en modo caminar el mando mueve al avatar (ver
+		# _handle_walk_mode); el mundo de construcción queda en pausa.
+		_handle_walk_mode(delta, ok_event)
 	elif _palette_mode:
 		# Con la paleta TV abierta, el input del mundo queda en pausa.
 		_handle_palette_mode(delta, ok_event)
@@ -144,7 +214,6 @@ func _process(delta: float) -> void:
 			rot += float(_palette.get("touch_rotate"))
 		if rot != 0.0:
 			_yaw_target += rot * deg_to_rad(100.0) * delta
-		_pivot.rotation.y = lerp_angle(_pivot.rotation.y, _yaw_target, minf(1.0, delta * 10.0))
 
 		# Movimiento del cursor por la cuadrícula (con repetición al mantener).
 		var iv := Vector2i.ZERO
@@ -176,15 +245,60 @@ func _process(delta: float) -> void:
 		if Input.is_action_just_pressed("cursor_down_level"):
 			set_cursor_height(-1)
 
-	# La cámara sigue al cursor con suavidad.
-	var target := Vector3(
-		float(cursor.x) + 0.5,
-		0.6 + float(cursor.y) * 0.35,
-		float(cursor.z) + 0.5
-	)
-	_pivot.position = _pivot.position.lerp(target, minf(1.0, delta * 5.0))
+	if _walk_mode:
+		# 1.4: la cámara va con el avatar. Primera persona: a la altura
+		# de los ojos (1.5 bloques) en la celda del avatar. Segunda:
+		# detrás y arriba de Blocky. El pivot sigue al avatar y la
+		# mascota lo sigue a él (ver _update_pet).
+		_pivot.rotation.y = lerp_angle(_pivot.rotation.y, _walk_yaw, minf(1.0, delta * 10.0))
+		var wtarget := Vector3(float(_walk_cell.x) + 0.5, 0.0, float(_walk_cell.y) + 0.5)
+		_pivot.position = _pivot.position.lerp(wtarget, minf(1.0, delta * 8.0))
+		var cam_pos := Vector3(0.0, 1.5, 0.0)
+		var cam_rot_x := 0.0
+		if _walk_view == 1:
+			cam_pos = Vector3(0.0, 2.1, 3.4)
+			cam_rot_x = deg_to_rad(-14.0)
+		_camera.position = _camera.position.lerp(cam_pos, minf(1.0, delta * 8.0))
+		_camera.rotation.x = lerpf(_camera.rotation.x, cam_rot_x, minf(1.0, delta * 8.0))
+		_camera.rotation.y = lerpf(_camera.rotation.y, 0.0, minf(1.0, delta * 8.0))
+		_camera.rotation.z = lerpf(_camera.rotation.z, 0.0, minf(1.0, delta * 8.0))
+		_update_walk_avatar()
+		_update_pet(delta)
+	else:
+		# 1.3: el suavizado de rotación corre SIEMPRE (antes solo con el
+		# mundo activo), para que el giro por pasos con el mando se vea
+		# también con la paleta TV abierta (si no, el niño gira a ciegas
+		# hasta cerrarla).
+		_pivot.rotation.y = lerp_angle(_pivot.rotation.y, _yaw_target, minf(1.0, delta * 10.0))
+
+		# 1.5 (F3): la cámara de construcción sigue el preset activo
+		# (Arriba = la de siempre; el resto se elige con «Cámara»).
+		# Corre también con la paleta abierta, para que el niño vea
+		# cada vista mientras cicla. El modo caminar tiene su propia
+		# rama arriba y no se ve afectado.
+		var cp: Dictionary = _cam_presets[_cam_preset]
+		_camera.position = _camera.position.lerp(Vector3(cp["offset"]), minf(1.0, delta * 8.0))
+		_camera.rotation.x = lerpf(_camera.rotation.x, deg_to_rad(float(cp["rot_x"])), minf(1.0, delta * 8.0))
+		_camera.rotation.y = lerpf(_camera.rotation.y, 0.0, minf(1.0, delta * 8.0))
+		_camera.rotation.z = lerpf(_camera.rotation.z, 0.0, minf(1.0, delta * 8.0))
+
+		# La cámara sigue al cursor con suavidad.
+		var target := Vector3(
+			float(cursor.x) + 0.5,
+			0.6 + float(cursor.y) * 0.35,
+			float(cursor.z) + 0.5
+		)
+		_pivot.position = _pivot.position.lerp(target, minf(1.0, delta * 5.0))
 
 	_update_ghost()
+
+	# 1.6: las pistas parpadean juntas (0.6 s) para llamar la vista
+	# sin tapar el tablero; al completar el nivel ya se limpiaron.
+	if _level_mode and not _level_completed and _hint_root != null and _hint_root.get_child_count() > 0:
+		_hint_timer += delta
+		if _hint_timer >= 0.6:
+			_hint_timer = 0.0
+			_hint_root.visible = not _hint_root.visible
 
 	# Autoguardado con pequeña espera para agrupar cambios seguidos.
 	if _dirty:
@@ -227,8 +341,10 @@ func _open_palette_mode() -> void:
 ## OK corto confirma y cierra, Atrás cierra sin cambiar nada.
 func _handle_palette_mode(delta: float, ok_event: String) -> void:
 	if ok_event == "short":
-		_palette.confirm_tv_palette()
-		_palette_mode = false
+		# confirm_tv_palette() devuelve false solo cuando armó la doble
+		# confirmación de «Empezar de nuevo»: la paleta sigue abierta.
+		if _palette.confirm_tv_palette():
+			_palette_mode = false
 		return
 	if Input.is_action_just_pressed("remove_block"):
 		_palette.cancel_tv_palette()
@@ -258,6 +374,14 @@ func _handle_palette_mode(delta: float, ok_event: String) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	# Nivel superado: el mundo no recibe más input, solo OK → menú.
 	if _level_completed:
+		return
+	# 1.4: en modo caminar, Atrás sale del modo (no va al menú) y el
+	# resto del input del mundo queda en pausa.
+	if _walk_mode:
+		if event is InputEventKey:
+			var kw := event as InputEventKey
+			if kw.keycode == KEY_ESCAPE and kw.pressed and not kw.echo:
+				_exit_walk_mode()
 		return
 	# Botón Atrás del control de TV (tecla Escape en Android): vuelve al
 	# menú. Se distingue a propósito del botón B del mando (que borra),
@@ -309,6 +433,9 @@ func _notification(what: int) -> void:
 # ---------------------------------------------------------------------------
 
 func place_at_cursor() -> void:
+	# 1.4: en modo caminar no se coloca (OK sale del modo).
+	if _walk_mode:
+		return
 	if String(selection.get("modo", "color")) == "borrador":
 		remove_at_cursor()
 		return
@@ -323,16 +450,36 @@ func place_at_cursor() -> void:
 		data = {"tipo": "numero", "dato": int(selection.get("dato", 1))}
 	elif String(selection.get("modo", "color")) == "letra":
 		data = {"tipo": "letra", "dato": int(selection.get("dato", 0))}
+	elif LIBRE_NAMES.has(String(selection.get("modo", "color"))):
+		# 1.3: agua, árbol, flor y piezas de casa (solo mundo libre:
+		# la paleta los oculta en los mundos de niveles).
+		data = {"tipo": String(selection.get("modo", "color")), "dato": 0}
 	blocks[cursor] = data
 	_spawn_block_node(cursor, data)
 	_play_sound(_pop_stream)
+	# F2.1: el nombre se dice Y se muestra en grande. El anuncio visual es
+	# la garantía si el TTS del TV no tiene voz en español (o ninguna voz).
+	# F2.2: si existe el clip de voz familiar, suena él en vez del TTS.
+	# Este código corre igual en modo libre y en modo nivel.
+	var nombre := ""
+	var clip := ""
 	if String(data["tipo"]) == "numero":
-		speak("¡" + NUMBER_NAMES[clampi(int(data["dato"]) - 1, 0, NUMBER_NAMES.size() - 1)] + "!")
+		nombre = NUMBER_NAMES[clampi(int(data["dato"]) - 1, 0, NUMBER_NAMES.size() - 1)]
+		clip = "numero_%d" % int(data["dato"])
 	elif String(data["tipo"]) == "letra":
 		var letras: Array = LevelsData.LETRAS
-		speak("¡" + String(letras[clampi(int(data["dato"]), 0, letras.size() - 1)]) + "!")
+		nombre = String(letras[clampi(int(data["dato"]), 0, letras.size() - 1)])
+		clip = "letra_" + nombre.to_lower()
+	elif LIBRE_NAMES.has(String(data["tipo"])):
+		# 1.3: sin clip familiar (el banco solo tiene colores, números
+		# y letras): suena el TTS con el nombre.
+		nombre = String(LIBRE_NAMES[String(data["tipo"])])
+		clip = ""
 	else:
-		speak("¡" + String(BLOCK_COLORS[int(data["dato"])]["nombre"]) + "!")
+		nombre = String(BLOCK_COLORS[int(data["dato"])]["nombre"])
+		clip = "color_" + nombre.to_lower()
+	speak("¡" + nombre + "!", clip)
+	_palette.show_announcement("¡" + nombre.to_upper() + "!")
 	# Fase 2: registrar lo colocado en el nivel y comprobar la meta.
 	if _level_mode and not _level_completed:
 		var placed := {"tipo": String(data["tipo"]), "dato": int(data["dato"]), "celda": cursor}
@@ -347,6 +494,9 @@ func place_at_cursor() -> void:
 
 
 func remove_at_cursor() -> void:
+	# 1.4: en modo caminar no se borra.
+	if _walk_mode:
+		return
 	var target := _remove_target()
 	if target.x < 0:
 		return
@@ -380,6 +530,9 @@ func _remove_target() -> Vector3i:
 
 
 func set_cursor_height(delta_y: int) -> void:
+	# 1.4: en modo caminar el avatar va a ras de suelo.
+	if _walk_mode:
+		return
 	var ny := clampi(cursor.y + delta_y, 0, MAX_HEIGHT - 1)
 	if ny == cursor.y:
 		if delta_y > 0:
@@ -411,6 +564,276 @@ func _on_selection_changed(sel: Dictionary) -> void:
 	_update_ghost(true)
 
 
+## 1.3: giro de cámara por pasos con el mando (paleta TV). Cada OK
+## sobre «Girar ←»/«Girar →» suma ±45°; 8 pasos = vuelta completa.
+func _on_rotate_step(degrees: float) -> void:
+	_yaw_target += deg_to_rad(degrees)
+
+
+## 1.5 (F3): el extra «Cámara» de la paleta TV cicla los presets de la
+## vista de construcción (Arriba → Cerca → Lado → Lejos). La paleta
+## QUEDA ABIERTA (como el giro 1.3) para repetir OK y ver cada vista.
+## La cámara por defecto sigue siendo Arriba; el modo caminar no se toca.
+func _on_camera_cycle() -> void:
+	_cam_preset = (_cam_preset + 1) % _cam_presets.size()
+	var p: Dictionary = _cam_presets[_cam_preset]
+	_palette.show_message("Cámara: " + String(p["nombre"]))
+	speak(String(p["voz"]))
+
+
+# ---------------------------------------------------------------------------
+# 1.4: modo caminar (avatar) y mascota
+# ---------------------------------------------------------------------------
+
+## Input dentro del modo caminar. ▲ avanza, ▼ retrocede (con
+## repetición al mantener), ◀ ▶ giran por pasos de 45° (como el giro
+## 1.3), OK corto sale al modo construir, OK largo cambia la vista
+## (1ª/2ª persona). Atrás también sale (ver _unhandled_input).
+func _handle_walk_mode(delta: float, ok_event: String) -> void:
+	if ok_event == "short":
+		_exit_walk_mode()
+		return
+	if ok_event == "long":
+		_walk_view = 1 - _walk_view
+		if _walk_avatar != null:
+			_walk_avatar.visible = (_walk_view == 1)
+		_palette.show_message("Vista: " + ("segunda persona (Blocky)" if _walk_view == 1 else "primera persona"))
+		return
+	if Input.is_action_just_pressed("move_left"):
+		_walk_yaw += deg_to_rad(45.0)
+	if Input.is_action_just_pressed("move_right"):
+		_walk_yaw -= deg_to_rad(45.0)
+	var fb := 0
+	if Input.is_action_pressed("move_forward"):
+		fb += 1
+	if Input.is_action_pressed("move_back"):
+		fb -= 1
+	if fb != 0:
+		_walk_move_timer -= delta
+		if _walk_move_timer <= 0.0:
+			_step_walk(fb)
+			_walk_move_timer = 0.2
+	else:
+		_walk_move_timer = 0.0
+
+
+## Paso del avatar en la dirección de la cámara (redondeada a 90°,
+## igual que el cursor en construcción). Respeta la colisión simple
+## (ver _walk_blocked): no entra a celdas con bloque sólido.
+func _step_walk(dir: int) -> void:
+	var f := Vector3(-sin(_walk_yaw), 0.0, -cos(_walk_yaw))
+	var f_step := Vector2i.ZERO
+	if absf(f.x) > absf(f.z):
+		f_step = Vector2i(1 if f.x > 0.0 else -1, 0)
+	else:
+		f_step = Vector2i(0, 1 if f.z > 0.0 else -1)
+	var next := _walk_cell + f_step * dir
+	if _walk_blocked(next.x, next.y):
+		return
+	_walk_cell = next
+
+
+## Colisión simple a nivel del suelo: fuera de la rejilla bloquea;
+## una celda con bloque sólido a y=0 bloquea; puerta, agua y celdas
+## vacías son transitables (la puerta es la entrada a la casa). Los
+## bloques apilados por encima no bloquean el paso a ras de suelo.
+func _walk_blocked(cx: int, cz: int) -> bool:
+	if cx < 0 or cx >= GRID_SIZE or cz < 0 or cz >= GRID_SIZE:
+		return true
+	var cell := Vector3i(cx, 0, cz)
+	if blocks.has(cell):
+		var tipo := String(blocks[cell].get("tipo", "color"))
+		return tipo != "puerta" and tipo != "agua"
+	return false
+
+
+## Celda libre más cercana a `from` (búsqueda en anchura). Si no hay
+## ninguna (prácticamente imposible), devuelve `from`.
+func _nearest_free_cell(from: Vector2i) -> Vector2i:
+	var seen: Dictionary = {}
+	var queue: Array[Vector2i] = [from]
+	seen[from] = true
+	var head := 0
+	while head < queue.size():
+		var c := queue[head]
+		head += 1
+		if not _walk_blocked(c.x, c.y):
+			return c
+		for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+			var n: Vector2i = c + d
+			if n.x >= 0 and n.x < GRID_SIZE and n.y >= 0 and n.y < GRID_SIZE and not seen.has(n):
+				seen[n] = true
+				queue.append(n)
+	return from
+
+
+## Entrar al modo caminar (desde la paleta TV). La cámara pasa a
+## primera persona en la posición del cursor; si esa celda está
+## ocupada por un bloque sólido, se empieza en la celda libre más
+## cercana. El yaw de construcción se conserva para volver igual.
+func _enter_walk_mode() -> void:
+	if _level_completed or _walk_mode:
+		return
+	_walk_mode = true
+	_walk_cell = Vector2i(cursor.x, cursor.z)
+	if _walk_blocked(_walk_cell.x, _walk_cell.y):
+		_walk_cell = _nearest_free_cell(_walk_cell)
+	_walk_yaw = _yaw_target
+	_walk_move_timer = 0.0
+	_ghost_root.visible = false
+	if _walk_avatar != null:
+		_walk_avatar.visible = (_walk_view == 1)
+	_palette.show_message("Caminando: ▲ avanza · ▼ retrocede · ◀ ▶ gira · OK sale · mantén OK cambia la vista")
+	speak("¡A caminar!", "")
+
+
+## Salir al modo construir: la cámara vuelve a la vista desde
+## arriba y el fantasma del cursor reaparece. El yaw de construcción
+## no se tocó durante el paseo, así que la vista vuelve igual.
+func _exit_walk_mode() -> void:
+	if not _walk_mode:
+		return
+	_walk_mode = false
+	# 1.5 (F3): al salir del paseo vuelve el preset de construcción
+	# activo (antes forzaba Arriba aunque se hubiera elegido otro).
+	var cp: Dictionary = _cam_presets[_cam_preset]
+	_camera.position = Vector3(cp["offset"])
+	_camera.rotation_degrees = Vector3(float(cp["rot_x"]), 0.0, 0.0)
+	_ghost_root.visible = true
+	if _walk_avatar != null:
+		_walk_avatar.visible = false
+	_update_ghost(true)
+	_update_info()
+
+
+## Blocky en segunda persona: cubo azul con cabeza y ojos, en la
+## celda del avatar y mirando hacia donde mira la cámara. Solo se ve
+## en segunda persona dentro del modo caminar.
+func _update_walk_avatar() -> void:
+	if _walk_avatar == null:
+		return
+	_walk_avatar.visible = (_walk_view == 1)
+	_walk_avatar.position = Vector3(float(_walk_cell.x) + 0.5, 0.0, float(_walk_cell.y) + 0.5)
+	_walk_avatar.rotation.y = _walk_yaw
+
+
+## La mascota sigue al avatar en modo caminar. Si está lejos
+## (distancia Manhattan > 1), avanza una celda cada 0.4 s hacia el
+## avatar con la misma colisión (no atraviesa paredes; si el paso
+## directo está bloqueado, intenta el otro eje); si está cerca,
+## queda quieta con un balanceo idle y mueve la cola. En modo
+## construcción no se mueve (se queda donde quedó).
+func _update_pet(delta: float) -> void:
+	if _pet_node == null:
+		return
+	var dx := _walk_cell.x - _pet_cell.x
+	var dz := _walk_cell.y - _pet_cell.y
+	var dist := absi(dx) + absi(dz)
+	if dist > 1:
+		_pet_timer -= delta
+		if _pet_timer <= 0.0:
+			_pet_timer = 0.4
+			var step := Vector2i.ZERO
+			if absi(dx) >= absi(dz):
+				step = Vector2i(1 if dx > 0 else -1, 0)
+			else:
+				step = Vector2i(0, 1 if dz > 0 else -1)
+			var nx := _pet_cell.x + step.x
+			var nz := _pet_cell.y + step.y
+			if _walk_blocked(nx, nz):
+				var alt := Vector2i.ZERO
+				if step.x != 0 and dz != 0:
+					alt = Vector2i(0, 1 if dz > 0 else -1)
+				elif step.y != 0 and dx != 0:
+					alt = Vector2i(1 if dx > 0 else -1, 0)
+				if alt != Vector2i.ZERO and not _walk_blocked(_pet_cell.x + alt.x, _pet_cell.y + alt.y):
+					step = alt
+					nx = _pet_cell.x + step.x
+					nz = _pet_cell.y + step.y
+				else:
+					step = Vector2i.ZERO
+			if step != Vector2i.ZERO:
+				_pet_cell = Vector2i(nx, nz)
+				_pet_node.rotation.y = atan2(-float(step.x), -float(step.y))
+	var target := Vector3(float(_pet_cell.x) + 0.5, 0.0, float(_pet_cell.y) + 0.5)
+	_pet_node.position = _pet_node.position.lerp(target, minf(1.0, delta * 8.0))
+	var bob := 0.0
+	if dist <= 1:
+		bob = 0.04 * sin(float(Time.get_ticks_msec()) / 150.0)
+	_pet_body.position.y = bob
+	if _pet_tail != null:
+		_pet_tail.rotation.z = 0.35 * sin(float(Time.get_ticks_msec()) / 120.0)
+
+
+## Construye el avatar Blocky (segunda persona) y la mascota
+## (perrito de cubos procedural: cuerpo + cabeza + orejas + cola).
+## La mascota nace en la celda libre más cercana al centro; el
+## avatar nace oculto (solo se ve en segunda persona al caminar).
+func _build_walk_actors() -> void:
+	_walk_avatar = Node3D.new()
+	var abody := MeshInstance3D.new()
+	var abody_mesh := BoxMesh.new()
+	abody_mesh.size = Vector3(0.55, 0.7, 0.35)
+	abody.mesh = abody_mesh
+	abody.material_override = _make_material(Color(0.20, 0.55, 0.95))
+	abody.position = Vector3(0.0, 0.55, 0.0)
+	_walk_avatar.add_child(abody)
+	var ahead := MeshInstance3D.new()
+	var ahead_mesh := BoxMesh.new()
+	ahead_mesh.size = Vector3(0.45, 0.45, 0.45)
+	ahead.mesh = ahead_mesh
+	ahead.material_override = _make_material(Color(1.0, 0.85, 0.65))
+	ahead.position = Vector3(0.0, 1.12, 0.0)
+	_walk_avatar.add_child(ahead)
+	for sx in [-0.11, 0.11]:
+		var eye := MeshInstance3D.new()
+		var eye_mesh := BoxMesh.new()
+		eye_mesh.size = Vector3(0.07, 0.09, 0.02)
+		eye.mesh = eye_mesh
+		eye.material_override = _make_material(Color(0.05, 0.05, 0.10))
+		eye.position = Vector3(sx, 1.15, -0.24)
+		_walk_avatar.add_child(eye)
+	_walk_avatar.visible = false
+	add_child(_walk_avatar)
+
+	_pet_node = Node3D.new()
+	_pet_body = Node3D.new()
+	_pet_node.add_child(_pet_body)
+	var pbody := MeshInstance3D.new()
+	var pbody_mesh := BoxMesh.new()
+	pbody_mesh.size = Vector3(0.55, 0.32, 0.75)
+	pbody.mesh = pbody_mesh
+	pbody.material_override = _make_material(Color(0.85, 0.68, 0.45))
+	pbody.position = Vector3(0.0, 0.32, 0.0)
+	_pet_body.add_child(pbody)
+	var phead := MeshInstance3D.new()
+	var phead_mesh := BoxMesh.new()
+	phead_mesh.size = Vector3(0.38, 0.35, 0.38)
+	phead.mesh = phead_mesh
+	phead.material_override = _make_material(Color(0.90, 0.75, 0.55))
+	phead.position = Vector3(0.0, 0.42, -0.52)
+	_pet_body.add_child(phead)
+	for sx in [-0.13, 0.13]:
+		var ear := MeshInstance3D.new()
+		var ear_mesh := BoxMesh.new()
+		ear_mesh.size = Vector3(0.12, 0.18, 0.08)
+		ear.mesh = ear_mesh
+		ear.material_override = _make_material(Color(0.55, 0.38, 0.22))
+		ear.position = Vector3(sx, 0.66, -0.52)
+		_pet_body.add_child(ear)
+	_pet_tail = MeshInstance3D.new()
+	var tail_mesh := BoxMesh.new()
+	tail_mesh.size = Vector3(0.10, 0.10, 0.30)
+	_pet_tail.mesh = tail_mesh
+	_pet_tail.material_override = _make_material(Color(0.85, 0.68, 0.45))
+	_pet_tail.position = Vector3(0.0, 0.42, 0.48)
+	_pet_tail.rotation.x = -0.5
+	_pet_body.add_child(_pet_tail)
+	_pet_cell = _nearest_free_cell(Vector2i(8, 8))
+	_pet_node.position = Vector3(float(_pet_cell.x) + 0.5, 0.0, float(_pet_cell.y) + 0.5)
+	add_child(_pet_node)
+
+
 func _on_world_reset() -> void:
 	for cell in block_nodes.keys():
 		(block_nodes[cell] as Node).queue_free()
@@ -427,9 +850,10 @@ func _on_world_reset() -> void:
 		_palette.hide_celebration()
 		_palette.set_goal(_level_instruction_text())
 		speak(_level_instruction_voice())
+		_show_level_hints()
 	else:
 		_palette.show_message("¡Mundo nuevo! A construir.")
-		speak("¡A construir!")
+		speak("¡A construir!", "frase_a_construir")
 
 
 func _update_info() -> void:
@@ -522,25 +946,92 @@ func _ray_aabb(origin: Vector3, dir: Vector3, box_min: Vector3) -> Dictionary:
 # Bloques y fantasma
 # ---------------------------------------------------------------------------
 
-func _spawn_block_node(cell: Vector3i, data: Dictionary) -> void:
+func _spawn_block_node(cell: Vector3i, data: Dictionary, pop := true) -> void:
 	var root := Node3D.new()
 	root.position = Vector3(cell) + Vector3(0.5, 0.5, 0.5)
-	var mi := MeshInstance3D.new()
-	mi.mesh = _box_mesh
-	if String(data.get("tipo", "color")) == "numero":
-		mi.material_override = _number_material
-	elif String(data.get("tipo", "color")) == "letra":
-		mi.material_override = _letter_material
+	var tipo := String(data.get("tipo", "color"))
+	if tipo == "arbol":
+		# 1.3: arbolito procedural (tronco + copa) dentro de la celda.
+		_spawn_tree(root)
+	elif tipo == "flor":
+		# 1.3: flor decorativa procedural (tallo + pétalos) en la celda.
+		_spawn_flower(root)
 	else:
-		mi.material_override = _materials[int(data.get("dato", 0))]
-	root.add_child(mi)
-	if String(data.get("tipo", "color")) == "numero":
-		_add_text_labels(root, str(int(data.get("dato", 1))))
-	elif String(data.get("tipo", "color")) == "letra":
-		var letras: Array = LevelsData.LETRAS
-		_add_text_labels(root, String(letras[clampi(int(data.get("dato", 0)), 0, letras.size() - 1)]))
+		var mi := MeshInstance3D.new()
+		mi.mesh = _box_mesh
+		if tipo == "numero":
+			mi.material_override = _number_material
+		elif tipo == "letra":
+			mi.material_override = _letter_material
+		elif tipo == "agua":
+			mi.material_override = _water_material
+		elif tipo == "pared":
+			mi.material_override = _wall_material
+		elif tipo == "techo":
+			mi.material_override = _roof_material
+		elif tipo == "puerta":
+			mi.material_override = _door_material
+		else:
+			mi.material_override = _materials[int(data.get("dato", 0))]
+		root.add_child(mi)
+		if tipo == "numero":
+			_add_text_labels(root, str(int(data.get("dato", 1))))
+		elif tipo == "letra":
+			var letras: Array = LevelsData.LETRAS
+			_add_text_labels(root, String(letras[clampi(int(data.get("dato", 0)), 0, letras.size() - 1)]))
 	_blocks_root.add_child(root)
 	block_nodes[cell] = root
+	if pop:
+		# 1.5 (F3): pop elástico al colocar (~0.25 s, sutil). Al cargar
+		# el mundo guardado NO hay pop (pop=false) para no animar los
+		# cientos de bloques de golpe al abrir el juego.
+		root.scale = Vector3(0.25, 0.25, 0.25)
+		var tw := root.create_tween()
+		tw.tween_property(root, "scale", Vector3.ONE, 0.25).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+
+
+## Arbolito 1.3: tronco cilíndrico + copa esférica, todo procedural
+## (mismo patrón que los árboles decorativos del borde del mundo).
+## Cabe en la celda (la copa asoma un poco por arriba, como un árbol).
+func _spawn_tree(parent: Node3D) -> void:
+	var trunk := MeshInstance3D.new()
+	var trunk_mesh := CylinderMesh.new()
+	trunk_mesh.top_radius = 0.13
+	trunk_mesh.bottom_radius = 0.18
+	trunk_mesh.height = 0.6
+	trunk.mesh = trunk_mesh
+	trunk.material_override = _trunk_material
+	trunk.position = Vector3(0.0, -0.2, 0.0)
+	parent.add_child(trunk)
+	var leaves := MeshInstance3D.new()
+	var sphere := SphereMesh.new()
+	sphere.radius = 0.42
+	sphere.height = 0.84
+	leaves.mesh = sphere
+	leaves.material_override = _leaf_material
+	leaves.position = Vector3(0.0, 0.28, 0.0)
+	parent.add_child(leaves)
+
+
+## Flor 1.3: tallo fino + cabeza de pétalos (esfera rosa) en la celda.
+func _spawn_flower(parent: Node3D) -> void:
+	var stem := MeshInstance3D.new()
+	var stem_mesh := CylinderMesh.new()
+	stem_mesh.top_radius = 0.05
+	stem_mesh.bottom_radius = 0.05
+	stem_mesh.height = 0.5
+	stem.mesh = stem_mesh
+	stem.material_override = _trunk_material
+	stem.position = Vector3(0.0, -0.25, 0.0)
+	parent.add_child(stem)
+	var head := MeshInstance3D.new()
+	var sphere := SphereMesh.new()
+	sphere.radius = 0.18
+	sphere.height = 0.36
+	head.mesh = sphere
+	head.material_override = _flower_material
+	head.position = Vector3(0.0, 0.22, 0.0)
+	parent.add_child(head)
 
 
 ## El texto (número o letra) se dibuja con Label3D en la cara superior
@@ -567,22 +1058,52 @@ func _add_text_labels(parent: Node3D, texto: String) -> void:
 
 
 func _build_ghost() -> void:
+	# 1.5 (F3): el cursor ya no es un cubo: es Blocky, el mismo
+	# personajito de la 2ª persona del modo caminar (cuerpo + cabeza +
+	# ojos, procedural, sin assets). SOLO cambia la apariencia: el
+	# movimiento, la colocación y la vista desde arriba son los mismos.
+	# Cuerpo y cabeza comparten _ghost_material (translúcido), así que
+	# el tinte de _update_ghost (color elegido / rojo si ocupado o
+	# borrador) sigue funcionando igual que con el cubo. Los ojos usan
+	# un material oscuro propio para que siempre se distingan.
 	_ghost_root = Node3D.new()
 	_ghost_material = StandardMaterial3D.new()
 	_ghost_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_ghost_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_ghost_material.albedo_color = Color(1.0, 1.0, 1.0, 0.45)
-	var mi := MeshInstance3D.new()
-	mi.mesh = _box_mesh
-	mi.material_override = _ghost_material
-	_ghost_root.add_child(mi)
+	_ghost_eye_material = StandardMaterial3D.new()
+	_ghost_eye_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_ghost_eye_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_ghost_eye_material.albedo_color = Color(0.05, 0.05, 0.10, 0.85)
+	var body := MeshInstance3D.new()
+	var body_mesh := BoxMesh.new()
+	body_mesh.size = Vector3(0.55, 0.7, 0.35)
+	body.mesh = body_mesh
+	body.material_override = _ghost_material
+	body.position = Vector3(0.0, -0.15, 0.0)
+	_ghost_root.add_child(body)
+	var head := MeshInstance3D.new()
+	var head_mesh := BoxMesh.new()
+	head_mesh.size = Vector3(0.45, 0.45, 0.45)
+	head.mesh = head_mesh
+	head.material_override = _ghost_material
+	head.position = Vector3(0.0, 0.425, 0.0)
+	_ghost_root.add_child(head)
+	for sx in [-0.11, 0.11]:
+		var eye := MeshInstance3D.new()
+		var eye_mesh := BoxMesh.new()
+		eye_mesh.size = Vector3(0.07, 0.09, 0.02)
+		eye.mesh = eye_mesh
+		eye.material_override = _ghost_eye_material
+		eye.position = Vector3(sx, 0.45, 0.24)
+		_ghost_root.add_child(eye)
 	_ghost_label = Label3D.new()
 	_ghost_label.font_size = 160
 	_ghost_label.pixel_size = 0.0035
 	_ghost_label.modulate = NUMBER_TEXT_COLOR
 	_ghost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_ghost_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_ghost_label.position = Vector3(0.0, 0.56, 0.0)
+	_ghost_label.position = Vector3(0.0, 0.72, 0.0)
 	_ghost_label.rotation_degrees = Vector3(-90.0, 0.0, 0.0)
 	_ghost_label.visible = false
 	_ghost_root.add_child(_ghost_label)
@@ -609,6 +1130,18 @@ func _update_ghost(force := false) -> void:
 		base_color = LETTER_CUBE_COLOR
 		var letras: Array = LevelsData.LETRAS
 		number_text = String(letras[clampi(dato, 0, letras.size() - 1)])
+	elif modo == "agua":
+		base_color = WATER_COLOR
+	elif modo == "arbol":
+		base_color = LEAF_COLOR
+	elif modo == "flor":
+		base_color = FLOWER_HEAD_COLOR
+	elif modo == "pared":
+		base_color = WALL_COLOR
+	elif modo == "techo":
+		base_color = ROOF_COLOR
+	elif modo == "puerta":
+		base_color = DOOR_COLOR
 	else:
 		var c: Color = BLOCK_COLORS[dato]["color"]
 		base_color = c
@@ -623,6 +1156,10 @@ func _update_ghost(force := false) -> void:
 		_ghost_label.visible = number_text != ""
 		if number_text != "":
 			_ghost_label.text = number_text
+	# 1.5 (F3): Blocky mira hacia la cámara: la cámara está del lado +z
+	# del pivot antes del yaw, así que el fantasma gira con el pivot.
+	if _pivot != null:
+		_ghost_root.rotation.y = _pivot.rotation.y
 	_ghost_root.position = Vector3(target) + Vector3(0.5, 0.5, 0.5)
 	var pulse := 1.0 + 0.03 * sin(float(Time.get_ticks_msec()) / 200.0)
 	_ghost_root.scale = Vector3.ONE * pulse
@@ -640,6 +1177,17 @@ func _build_shared() -> void:
 		_materials[i] = _make_material(c)
 	_number_material = _make_material(NUMBER_CUBE_COLOR)
 	_letter_material = _make_material(LETTER_CUBE_COLOR)
+	# 1.3: materiales de las entradas nuevas. El agua es translúcida
+	# (se distingue a simple vista) pero sólida como los demás cubos.
+	_water_material = _make_material(WATER_COLOR)
+	_water_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_water_material.albedo_color = Color(WATER_COLOR.r, WATER_COLOR.g, WATER_COLOR.b, 0.55)
+	_wall_material = _make_material(WALL_COLOR)
+	_roof_material = _make_material(ROOF_COLOR)
+	_door_material = _make_material(DOOR_COLOR)
+	_trunk_material = _make_material(TRUNK_COLOR)
+	_leaf_material = _make_material(LEAF_COLOR)
+	_flower_material = _make_material(FLOWER_HEAD_COLOR)
 
 
 func _make_material(c: Color) -> StandardMaterial3D:
@@ -785,9 +1333,13 @@ func _init_tts() -> void:
 		_tts_voice = fallback
 
 
-## Habla una frase corta. Si el dispositivo no tiene voces, no hace nada
-## (el juego sigue funcionando sin error).
-func speak(text: String) -> void:
+## Habla una frase corta. F2.2: si se pasa un clip y existe en el banco
+## de audio interno, suena la voz familiar y NO se usa el TTS. Si no hay
+## clip, se usa el TTS; si el dispositivo no tiene voces, no hace nada
+## (el juego sigue funcionando sin error, con el anuncio visual).
+func speak(text: String, clip := "") -> void:
+	if clip != "" and _audio_bank != null and _audio_bank.play_clip(clip):
+		return
 	if _tts_voice == "":
 		return
 	DisplayServer.tts_speak(text, _tts_voice, 50, 1.0, 1.0, 0, true)
@@ -856,6 +1408,7 @@ func _start_level() -> void:
 	_palette.hide_celebration()
 	_update_level_info()
 	speak(_level_instruction_voice())
+	_show_level_hints()
 
 
 func _level_instruction_text() -> String:
@@ -872,6 +1425,63 @@ func _level_instruction_voice() -> String:
 	return String(_level_def.get("voz", ""))
 
 
+## 1.6: pistas visuales del nivel. Una casilla plana translúcida por
+## pista, con letra/número encima cuando la pista lo lleva. Las
+## pistas NO entran en blocks/block_nodes, así que no cuentan, no se
+## guardan y no bloquean al avatar: son solo una sugerencia visible
+## (poner el bloque encima funciona, pero ponerlo en otra celda
+## también, porque la meta la decide level_logic.gd).
+func _show_level_hints() -> void:
+	_clear_hints()
+	if not _level_mode:
+		return
+	if _hint_root == null:
+		_hint_root = Node3D.new()
+		_hint_root.name = "Hints"
+		add_child(_hint_root)
+	var tipo := String(_level_def.get("tipo", ""))
+	var params: Dictionary = _level_def.get("params", {})
+	for item in LevelHints.items_for_level(tipo, params, _level_target):
+		var cell := Vector3i(int(item["x"]), 0, int(item["z"]))
+		var tile := Node3D.new()
+		tile.position = Vector3(cell) + Vector3(0.5, 0.03, 0.5)
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(0.92, 0.04, 0.92)
+		mi.mesh = box
+		var mat := StandardMaterial3D.new()
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var c: Color = item["color"]
+		mat.albedo_color = Color(c.r, c.g, c.b, 0.55)
+		mi.material_override = mat
+		tile.add_child(mi)
+		var texto := String(item.get("texto", ""))
+		if texto != "":
+			var label := Label3D.new()
+			label.text = texto
+			label.font_size = 160
+			label.pixel_size = 0.0035
+			label.modulate = NUMBER_TEXT_COLOR
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			label.position = Vector3(0.0, 0.35, 0.0)
+			label.rotation_degrees = Vector3(-90.0, 0.0, 0.0)
+			tile.add_child(label)
+		_hint_root.add_child(tile)
+	_hint_root.visible = true
+	_hint_timer = 0.0
+
+
+func _clear_hints() -> void:
+	_hint_timer = 0.0
+	if _hint_root == null:
+		return
+	for child in _hint_root.get_children():
+		(child as Node).queue_free()
+	_hint_root.visible = true
+
+
 func _update_level_info() -> void:
 	if _palette == null:
 		return
@@ -885,6 +1495,7 @@ func _update_level_info() -> void:
 ## voz y cartel. OK (o el botón Menú) vuelve al menú de niveles.
 func _complete_level() -> void:
 	_level_completed = true
+	_clear_hints()
 	var nuevo := ProgressSave.mark_completed(_level_progress, GameState.mundo, GameState.nivel)
 	if nuevo:
 		ProgressSave.save_progress(_level_progress)
@@ -892,15 +1503,16 @@ func _complete_level() -> void:
 	_play_sound(_win_stream)
 	var mundo_nombre := String(LevelsData.get_mundo(GameState.mundo).get("nombre", ""))
 	if ProgressSave.stars_for(_level_progress, GameState.mundo) >= 5:
-		speak("¡Muy bien! ¡Ganaste una estrella! ¡Completaste el mundo " + mundo_nombre + "! ¡Eres increíble!")
+		speak("¡Muy bien! ¡Ganaste una estrella! ¡Completaste el mundo " + mundo_nombre + "! ¡Eres increíble!", "frase_mundo_completo")
 	else:
-		speak("¡Muy bien! ¡Ganaste una estrella!")
+		speak("¡Muy bien! ¡Ganaste una estrella!", "frase_muy_bien")
 	_update_level_info()
 
 
 ## Vuelve al menú inicial. En juego libre guarda antes si hay cambios;
 ## en un nivel no hay nada que guardar (mundo.json queda intacto).
 func _go_to_menu() -> void:
+	_clear_hints()
 	if not _level_mode and _dirty:
 		_save_now()
 	get_tree().change_scene_to_file("res://menu.tscn")
@@ -943,8 +1555,12 @@ func _load_world() -> void:
 		elif tipo == "color":
 			if dato < 0 or dato >= BLOCK_COLORS.size():
 				continue
+		elif LIBRE_NAMES.has(tipo):
+			# 1.3: agua, árbol, flor y piezas de casa (dato siempre 0).
+			if dato != 0:
+				continue
 		else:
 			continue
 		var clean := {"tipo": tipo, "dato": dato}
 		blocks[cell] = clean
-		_spawn_block_node(cell, clean)
+		_spawn_block_node(cell, clean, false)

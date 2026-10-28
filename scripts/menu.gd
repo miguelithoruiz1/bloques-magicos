@@ -7,18 +7,25 @@ extends Control
 
 const LevelsData := preload("res://scripts/levels_data.gd")
 const ProgressSave := preload("res://scripts/progress_save.gd")
+const AudioBank := preload("res://scripts/audio_bank.gd")
 
 var _pantalla := "principal" # principal | mundos | niveles
 var _mundo_sel := ""
 var _progreso: Dictionary = {}
 var _tts_voice := ""
+var _tts_lang := ""
+var _tts_name := ""
+var _audio_bank = null
 
 var _title_label: Label
 var _buttons_box: VBoxContainer
+var _voice_label: Label
 var _hint_label: Label
 
 
 func _ready() -> void:
+	_audio_bank = AudioBank.new()
+	add_child(_audio_bank)
 	_init_tts()
 	_progreso = ProgressSave.load_progress()
 	_build_ui()
@@ -63,9 +70,17 @@ func _build_ui() -> void:
 	_buttons_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(_buttons_box)
 
+	# Diagnóstico de voz (F2.1): aquí se muestra qué voz eligió el sistema
+	# al pulsar «Probar voz», o que el TV no tiene voces.
+	_voice_label = Label.new()
+	_voice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_voice_label.text = ""
+	_style_label(_voice_label, 20)
+	vbox.add_child(_voice_label)
+
 	_hint_label = Label.new()
 	_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hint_label.text = "Usa la cruceta para moverte y OK para elegir · Atrás para volver"
+	_hint_label.text = "Mando: cruceta + OK · Teclado: flechas + Enter · Táctil: toca el botón · Atrás para volver"
 	_style_label(_hint_label, 20)
 	vbox.add_child(_hint_label)
 
@@ -102,6 +117,14 @@ func _add_button(texto: String, habilitado: bool, accion: Callable) -> Button:
 func _finish_buttons() -> void:
 	var nav: Array = []
 	for child in _buttons_box.get_children():
+		# 1.2.2: al cambiar de pantalla, _clear_buttons() marca los botones
+		# viejos con queue_free pero siguen siendo hijos hasta el final del
+		# cuadro. Sin este filtro, nav[0] era un botón viejo, grab_focus()
+		# caía en él, se borraba y el foco se perdía: la cruceta no
+		# respondía en «Mundos» ni en «Niveles». No se usa free() directo
+		# porque el botón que emite pressed aún está en su señal.
+		if (child as Node).is_queued_for_deletion():
+			continue
 		if child is Button and (child as Button).focus_mode == Control.FOCUS_ALL:
 			nav.append(child)
 	for i in range(nav.size()):
@@ -110,6 +133,10 @@ func _finish_buttons() -> void:
 		var nxt: Button = nav[(i + 1) % nav.size()]
 		b.focus_neighbor_top = b.get_path_to(prev)
 		b.focus_neighbor_bottom = b.get_path_to(nxt)
+		# F2.2: la lista es vertical; ◀ ▶ no deben saltar a otro botón
+		# por la búsqueda espacial automática de Godot: se quedan quietos.
+		b.focus_neighbor_left = b.get_path_to(b)
+		b.focus_neighbor_right = b.get_path_to(b)
 		b.focus_previous = b.get_path_to(prev)
 		b.focus_next = b.get_path_to(nxt)
 	if not nav.is_empty():
@@ -132,8 +159,9 @@ func _show_principal() -> void:
 	_add_button("Jugar libre", true, _jugar_libre)
 	var total := ProgressSave.stars_total(_progreso)
 	_add_button("Mundos  ⭐ %d/20" % total, true, _show_mundos)
+	_add_button("🔊 Probar voz", true, _probar_voz)
 	_finish_buttons()
-	speak("Bloques Mágicos. Elige: jugar libre o mundos.")
+	speak("Bloques Mágicos. Elige: jugar libre o mundos.", "frase_elige_modo")
 
 
 func _show_mundos() -> void:
@@ -146,7 +174,7 @@ func _show_mundos() -> void:
 		_add_button(texto, true, _show_niveles.bind(id))
 	_add_button("Atrás", true, _show_principal)
 	_finish_buttons()
-	speak("Elige un mundo.")
+	speak("Elige un mundo.", "frase_elige_mundo")
 
 
 func _show_niveles(mundo_id: String) -> void:
@@ -166,7 +194,7 @@ func _show_niveles(mundo_id: String) -> void:
 		_add_button(texto, abierto, _empezar_nivel.bind(mundo_id, i))
 	_add_button("Atrás", true, _show_mundos)
 	_finish_buttons()
-	speak("Elige un nivel.")
+	speak("Elige un nivel.", "frase_elige_nivel")
 
 
 func _on_button_focused(texto: String) -> void:
@@ -193,21 +221,44 @@ func _empezar_nivel(mundo_id: String, indice: int) -> void:
 
 func _init_tts() -> void:
 	var voices := DisplayServer.tts_get_voices()
-	var fallback := ""
+	var fallback_id := ""
+	var fallback_lang := ""
+	var fallback_name := ""
 	for v in voices:
 		var vid := String(v.get("id", ""))
 		if vid == "":
 			continue
-		if fallback == "":
-			fallback = vid
+		if fallback_id == "":
+			fallback_id = vid
+			fallback_lang = String(v.get("language", ""))
+			fallback_name = String(v.get("name", ""))
 		if String(v.get("language", "")).begins_with("es"):
 			_tts_voice = vid
+			_tts_lang = String(v.get("language", ""))
+			_tts_name = String(v.get("name", ""))
 			break
 	if _tts_voice == "":
-		_tts_voice = fallback
+		_tts_voice = fallback_id
+		_tts_lang = fallback_lang
+		_tts_name = fallback_name
 
 
-func speak(text: String) -> void:
+## F2.1: frase de prueba + diagnóstico visible de la voz elegida.
+func _probar_voz() -> void:
+	if _tts_voice == "":
+		_voice_label.text = "Sin voces en este TV: el juego muestra las palabras pero no puede hablar."
+		return
+	var nombre := _tts_name if _tts_name != "" else _tts_voice
+	_voice_label.text = "Voz: %s (%s)" % [nombre, _tts_lang]
+	speak("¡Hola! Soy Bloques Mágicos. ¿Me escuchas?", "frase_hola")
+
+
+## F2.2: igual que en main.gd — clip familiar primero, TTS si no hay
+## clip, silencio si no hay voces. Los textos de los botones al enfocar
+## siguen por TTS porque son dinámicos (nombres de mundos, niveles).
+func speak(text: String, clip := "") -> void:
+	if clip != "" and _audio_bank != null and _audio_bank.play_clip(clip):
+		return
 	if _tts_voice == "":
 		return
 	DisplayServer.tts_speak(text, _tts_voice, 50, 1.0, 1.0, 0, true)

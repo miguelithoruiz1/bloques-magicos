@@ -15,6 +15,13 @@ signal up_requested
 signal down_requested
 signal world_reset
 signal menu_requested
+## Giro de cámara por pasos con el mando (1.3): grados por cada OK
+## sobre «Girar ←»/«Girar →» en la paleta del TV (la paleta queda abierta).
+signal rotate_step_requested(degrees: float)
+signal walk_requested
+## Cámara de construcción por presets (1.5/F3): cada OK sobre «Cámara»
+## cicla Arriba → Cerca → Lado → Lejos (la paleta queda abierta).
+signal camera_cycle_requested
 
 const HOLD_SECONDS := 1.5
 
@@ -34,6 +41,18 @@ const ERASER_FG := Color(0.55, 0.15, 0.15)
 const LETTER_DATA: Array = ["A", "E", "I", "O", "U", "M", "P", "S", "T", "L", "N"]
 const LETTER_BG := Color(0.62, 0.85, 1.0)
 const LETTER_FG := Color(0.05, 0.15, 0.45)
+## Entradas nuevas 1.3, solo mundo libre: agua, árbol, flor y piezas de
+## casa (pared, techo, puerta) para construir estilo Minecraft. Los
+## emojis ya se ven en este TV (el menú los usa); el nombre en texto y
+## la voz al colocar desambiguan si un glifo fallara.
+const LIBRE_DATA: Array = [
+	{"modo": "agua", "nombre": "Agua", "emoji": "💧", "bg": Color(0.25, 0.62, 1.00)},
+	{"modo": "arbol", "nombre": "Árbol", "emoji": "🌳", "bg": Color(0.25, 0.60, 0.30)},
+	{"modo": "flor", "nombre": "Flor", "emoji": "🌸", "bg": Color(1.00, 0.55, 0.75)},
+	{"modo": "pared", "nombre": "Pared", "emoji": "🧱", "bg": Color(0.95, 0.92, 0.82)},
+	{"modo": "techo", "nombre": "Techo", "emoji": "🔺", "bg": Color(0.85, 0.25, 0.22)},
+	{"modo": "puerta", "nombre": "Puerta", "emoji": "🚪", "bg": Color(0.55, 0.38, 0.22)},
+]
 
 ## Rotación de cámara pedida desde los botones táctiles: -1.0, 0.0 o 1.0.
 ## main.gd la lee en cada frame y la suma a la rotación del mando.
@@ -41,8 +60,17 @@ var touch_rotate := 0.0
 
 ## Modo paleta para control de TV (sin puntero): la franja de botones se
 ## recorre con la cruceta y una opción queda resaltada (borde dorado).
+## F2.2: al final de la lista hay 2 opciones extra solo para mando:
+## «Empezar de nuevo» (con doble confirmación) e «Ir al menú». Así los
+## botones superiores también se alcanzan sin tocar la pantalla.
+## 1.3: se añaden «Girar ←» y «Girar →» (cada OK gira 45° y la paleta
+## QUEDA ABIERTA para repetir y dar la vuelta completa de 360°).
+## 1.5 (F3): se añade «Cámara» al final (cicla los presets de la vista
+## de construcción; la paleta también QUEDA ABIERTA para repetir OK).
 var tv_palette_open := false
 var _tv_highlight := 0
+var _tv_extras: Array[String] = ["reset", "menu", "rotl", "rotr", "walk", "cam"]
+var _tv_reset_confirm := false
 var _tv_hint_label: Label
 var _help_label: Label
 
@@ -51,10 +79,13 @@ var _palette_buttons: Array = []
 var _base_buttons: Array = []
 var _letter_buttons: Array = []
 var _letters_row: HBoxContainer
+var _libre_row: HBoxContainer
 var _selection_label: Label
 var _info_label: Label
 var _message_label: Label
 var _message_tween: Tween
+var _announce_label: Label
+var _announce_tween: Tween
 var _goal_label: Label
 var _celebration_label: Label
 var _reset_button: Button
@@ -90,9 +121,16 @@ func get_selection() -> Dictionary:
 	return _selection.duplicate()
 
 
+## Atajo de teclado 1–6 (PC). F2.2: si el color está filtrado fuera en
+## el mundo actual, el atajo no hace nada (coherente con la paleta).
 func select_color(index: int) -> void:
-	if index >= 0 and index < COLOR_DATA.size():
-		_select("color", index)
+	if index < 0 or index >= COLOR_DATA.size():
+		return
+	for entry in _base_buttons:
+		if String(entry["modo"]) == "color" and int(entry["dato"]) == index:
+			if (entry["button"] as Button).visible:
+				_select("color", index)
+			return
 
 
 func set_info(text: String) -> void:
@@ -112,6 +150,20 @@ func show_message(text: String) -> void:
 	_message_tween.tween_property(_message_label, "modulate:a", 0.0, 0.7)
 
 
+## Anuncio grande al colocar un bloque (F2.1): se ve aunque el TTS del
+## TV falle. Dura ~2 segundos y luego se desvanece.
+func show_announcement(text: String) -> void:
+	if _announce_label == null:
+		return
+	_announce_label.text = text
+	_announce_label.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	if _announce_tween != null and _announce_tween.is_valid():
+		_announce_tween.kill()
+	_announce_tween = create_tween()
+	_announce_tween.tween_interval(2.0)
+	_announce_tween.tween_property(_announce_label, "modulate:a", 0.0, 0.5)
+
+
 # ---------------------------------------------------------------------------
 # Construcción de la interfaz
 # ---------------------------------------------------------------------------
@@ -123,6 +175,7 @@ func _build_ui() -> void:
 	add_child(root)
 	_build_top_bar(root)
 	_build_message_label(root)
+	_build_announce_label(root)
 	_build_help_label(root)
 	_build_goal_label(root)
 	_build_celebration_label(root)
@@ -135,9 +188,12 @@ func _build_top_bar(root: Control) -> void:
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	margin.add_theme_constant_override("margin_left", 14)
-	margin.add_theme_constant_override("margin_right", 14)
-	margin.add_theme_constant_override("margin_top", 10)
+	# 1.2.2: margen seguro anti-overscan subido de 64 a 96 px: el TV
+	# Challenger del hijo recorta más que 64 px (en 1.2.1 «Menú» y
+	# «Empezar de nuevo» quedaban cortados al borde derecho).
+	margin.add_theme_constant_override("margin_left", 96)
+	margin.add_theme_constant_override("margin_right", 96)
+	margin.add_theme_constant_override("margin_top", 96)
 	root.add_child(margin)
 
 	var top := HBoxContainer.new()
@@ -206,16 +262,33 @@ func _build_message_label(root: Control) -> void:
 	root.add_child(_message_label)
 
 
+func _build_announce_label(root: Control) -> void:
+	_announce_label = Label.new()
+	# Banda ancha centrada verticalmente: el texto queda centrado sea cual
+	# sea su largo (con PRESET_CENTER puro quedaría desplazado a la derecha).
+	_announce_label.set_anchors_preset(Control.PRESET_HCENTER_WIDE)
+	_announce_label.offset_top = -60.0
+	_announce_label.offset_bottom = 60.0
+	_announce_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_announce_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_announce_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_announce_label.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	_style_label(_announce_label, 72)
+	_announce_label.add_theme_constant_override("shadow_offset_x", 4)
+	_announce_label.add_theme_constant_override("shadow_offset_y", 4)
+	root.add_child(_announce_label)
+
+
 ## Ayuda breve y permanente, pensada para el TV: sin ella no se descubre
 ## que manteniendo OK se abre la paleta de colores y números.
 func _build_help_label(root: Control) -> void:
 	_help_label = Label.new()
-	_help_label.text = "Control TV: mantén OK para elegir color o número"
+	_help_label.text = "Mando: cruceta mueve · OK pone · mantén OK para elegir · Atrás = menú"
 	_help_label.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	_help_label.offset_left = 14.0
-	_help_label.offset_top = 78.0
-	_help_label.offset_right = 800.0
-	_help_label.offset_bottom = 108.0
+	_help_label.offset_left = 96.0
+	_help_label.offset_top = 160.0
+	_help_label.offset_right = 896.0
+	_help_label.offset_bottom = 190.0
 	_help_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_style_label(_help_label, 16)
 	root.add_child(_help_label)
@@ -225,8 +298,8 @@ func _build_help_label(root: Control) -> void:
 func _build_goal_label(root: Control) -> void:
 	_goal_label = Label.new()
 	_goal_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	_goal_label.offset_top = 112.0
-	_goal_label.offset_bottom = 164.0
+	_goal_label.offset_top = 200.0
+	_goal_label.offset_bottom = 252.0
 	_goal_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_goal_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_style_label(_goal_label, 34)
@@ -269,8 +342,11 @@ func hide_celebration() -> void:
 func _build_palette(root: Control) -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	center.offset_top = -160.0
-	center.offset_bottom = -10.0
+	# 1.2.2: alto para 2 filas (254 px de panel, se conserva) + margen
+	# seguro de 96 px abajo (antes 64 px; el top baja a -350 para no
+	# encoger el panel). Con una sola fila el panel queda centrado.
+	center.offset_top = -350.0
+	center.offset_bottom = -96.0
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(center)
 
@@ -305,6 +381,7 @@ func _build_palette(root: Control) -> void:
 		var entry_c := {
 			"button": b, "modo": "color", "dato": i,
 			"bg": COLOR_DATA[i]["color"],
+			"mundos": ["colores", "libre"],
 		}
 		_palette_buttons.append(entry_c)
 		_base_buttons.append(entry_c)
@@ -318,6 +395,7 @@ func _build_palette(root: Control) -> void:
 		row.add_child(b)
 		var entry_n := {
 			"button": b, "modo": "numero", "dato": n, "bg": NUMBER_BG,
+			"mundos": ["numeros", "sumas", "libre"],
 		}
 		_palette_buttons.append(entry_n)
 		_base_buttons.append(entry_n)
@@ -330,6 +408,7 @@ func _build_palette(root: Control) -> void:
 	row.add_child(eraser)
 	var entry_e := {
 		"button": eraser, "modo": "borrador", "dato": 0, "bg": ERASER_BG,
+		"mundos": ["colores", "numeros", "letras", "sumas", "libre"],
 	}
 	_palette_buttons.append(entry_e)
 	_base_buttons.append(entry_e)
@@ -351,11 +430,34 @@ func _build_palette(root: Control) -> void:
 		_letters_row.add_child(lb)
 		_letter_buttons.append({
 			"button": lb, "modo": "letra", "dato": li, "bg": LETTER_BG,
+			"mundos": ["letras"],
 		})
 		lb.pressed.connect(_on_palette_pressed.bind("letra", li))
 
+	# Segunda fila 1.3: contenido nuevo solo para mundo libre (agua,
+	# árbol, flor y piezas de casa). Visible por defecto (en libre nunca
+	# se llama a set_level_world); set_level_world la oculta en los
+	# mundos de niveles. Al mostrarse entra en la navegación con mando
+	# porque sus entradas van en _base_buttons (filtro "libre").
+	_libre_row = HBoxContainer.new()
+	_libre_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_libre_row.add_theme_constant_override("separation", 10)
+	_libre_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(_libre_row)
+	for entry_def in LIBRE_DATA:
+		var modo_l := String(entry_def["modo"])
+		var nb := _make_button(String(entry_def["emoji"]), Vector2(74, 74), 36)
+		_libre_row.add_child(nb)
+		var entry_l := {
+			"button": nb, "modo": modo_l, "dato": 0,
+			"bg": entry_def["bg"], "mundos": ["libre"],
+		}
+		_palette_buttons.append(entry_l)
+		_base_buttons.append(entry_l)
+		nb.pressed.connect(_on_palette_pressed.bind(modo_l, 0))
+
 	_tv_hint_label = Label.new()
-	_tv_hint_label.text = "Elige con ◀ ▶ · Altura con ▲ ▼ · OK confirma · Atrás cancela"
+	_tv_hint_label.text = "Elige con ◀ ▶ · al final: Nuevo, Menú, Girar, Caminar y Cámara · Altura con ▲ ▼ · OK confirma · Atrás cancela"
 	_tv_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_tv_hint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_tv_hint_label.visible = false
@@ -366,8 +468,8 @@ func _build_palette(root: Control) -> void:
 func _build_action_buttons(root: Control) -> void:
 	var actions := VBoxContainer.new()
 	actions.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	actions.offset_left = -160.0
-	actions.offset_right = -14.0
+	actions.offset_left = -242.0
+	actions.offset_right = -96.0
 	actions.offset_top = -200.0
 	actions.offset_bottom = 200.0
 	actions.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -398,10 +500,10 @@ func _build_action_buttons(root: Control) -> void:
 func _build_rotate_buttons(root: Control) -> void:
 	var rot_box := HBoxContainer.new()
 	rot_box.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	rot_box.offset_left = 14.0
-	rot_box.offset_top = -84.0
-	rot_box.offset_right = 300.0
-	rot_box.offset_bottom = -14.0
+	rot_box.offset_left = 96.0
+	rot_box.offset_top = -166.0
+	rot_box.offset_right = 382.0
+	rot_box.offset_bottom = -96.0
 	rot_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rot_box.add_theme_constant_override("separation", 10)
 	root.add_child(rot_box)
@@ -479,17 +581,37 @@ func _option_name(modo: String, dato: int) -> String:
 			return "Número " + str(dato)
 		"letra":
 			return "Letra " + String(LETTER_DATA[clampi(dato, 0, LETTER_DATA.size() - 1)])
+		"borrador":
+			return "Borrar bloques"
 		_:
+			for entry_def in LIBRE_DATA:
+				if String(entry_def["modo"]) == modo:
+					return String(entry_def["nombre"])
 			return "Borrar bloques"
 
 
-## Muestra la fila de letras solo en el Mundo Letras (Fase 2) y ajusta
-## la lista de navegación con mando. En juego libre no cambia nada.
+## Filtro de paleta por mundo (F2.2): cada mundo muestra solo lo que
+## necesita su meta (las metas de contar y sumar cuentan cualquier
+## bloque, así que los números bastan en Números y Sumas). El borrador
+## siempre está. En juego libre no cambia nada (colores + números).
 func set_level_world(mundo: String) -> void:
+	var filtro := mundo if mundo != "" else "libre"
 	var show_letters := mundo == "letras"
 	if _letters_row != null:
 		_letters_row.visible = show_letters
-	_palette_buttons = _base_buttons.duplicate()
+	# 1.3: la fila libre (agua, árbol, flor, piezas de casa) solo se
+	# muestra en mundo libre; en niveles el filtro ya excluye sus
+	# entradas de _palette_buttons (mundos ["libre"]).
+	if _libre_row != null:
+		_libre_row.visible = (filtro == "libre")
+	_palette_buttons = []
+	for entry in _base_buttons:
+		var b: Button = entry["button"]
+		var mundos: Array = entry.get("mundos", [])
+		var visible := mundos.has(filtro)
+		b.visible = visible
+		if visible:
+			_palette_buttons.append(entry)
 	if show_letters:
 		_palette_buttons.append_array(_letter_buttons)
 	_refresh_palette_styles()
@@ -500,18 +622,33 @@ func _refresh_selection_label() -> void:
 	if _selection_label == null:
 		return
 	if tv_palette_open and not _palette_buttons.is_empty():
-		var entry: Dictionary = _palette_buttons[_tv_highlight]
-		_selection_label.text = "Eligiendo: " + _option_name(String(entry["modo"]), int(entry["dato"]))
+		if _tv_highlight < _palette_buttons.size():
+			var entry: Dictionary = _palette_buttons[_tv_highlight]
+			_selection_label.text = "Eligiendo: " + _option_name(String(entry["modo"]), int(entry["dato"]))
+		else:
+			# Opción extra del mando (sin botón en la paleta).
+			var extra := _tv_extras[_tv_highlight - _palette_buttons.size()]
+			if extra == "reset":
+				if _tv_reset_confirm:
+					_selection_label.text = "¿Seguro? OK = borrar todo · Atrás = no"
+				else:
+					_selection_label.text = "Eligiendo: Empezar de nuevo"
+			elif extra == "menu":
+				_selection_label.text = "Eligiendo: Ir al menú"
+			elif extra == "rotl":
+				_selection_label.text = "Eligiendo: Girar cámara ←"
+			elif extra == "walk":
+				_selection_label.text = "Eligiendo: Caminar (explora por dentro)"
+			elif extra == "cam":
+				_selection_label.text = "Eligiendo: Cámara"
+			else:
+				_selection_label.text = "Eligiendo: Girar cámara →"
 		return
-	match String(_selection["modo"]):
-		"color":
-			_selection_label.text = "Bloque elegido: " + _option_name("color", int(_selection["dato"]))
-		"numero":
-			_selection_label.text = "Bloque elegido: " + _option_name("numero", int(_selection["dato"]))
-		"letra":
-			_selection_label.text = "Bloque elegido: " + _option_name("letra", int(_selection["dato"]))
-		_:
-			_selection_label.text = "Herramienta: Borrar bloques"
+	var sm := String(_selection["modo"])
+	if sm == "borrador":
+		_selection_label.text = "Herramienta: Borrar bloques"
+	else:
+		_selection_label.text = "Bloque elegido: " + _option_name(sm, int(_selection["dato"]))
 
 
 # ---------------------------------------------------------------------------
@@ -537,33 +674,86 @@ func open_tv_palette() -> void:
 
 
 func move_tv_highlight(dir: int) -> void:
-	if _palette_buttons.is_empty():
+	# La lista incluye las opciones extra del mando al final.
+	var total := _palette_buttons.size() + _tv_extras.size()
+	if total <= 0:
 		return
-	_tv_highlight = (_tv_highlight + dir) % _palette_buttons.size()
+	_tv_highlight = (_tv_highlight + dir) % total
 	if _tv_highlight < 0:
-		_tv_highlight += _palette_buttons.size()
+		_tv_highlight += total
+	# 1.3: al salir de «Empezar de nuevo» se cancela su confirmación
+	# armada (antes quedaba armada aunque el resaltado se hubiera ido).
+	if _tv_highlight < _palette_buttons.size() \
+			or _tv_extras[_tv_highlight - _palette_buttons.size()] != "reset":
+		_tv_reset_confirm = false
 	_refresh_selection_label()
 	_refresh_palette_styles()
 
 
-func confirm_tv_palette() -> void:
+## Confirma la opción resaltada. Devuelve true si la paleta debe
+## cerrarse, false solo cuando armó la doble confirmación de
+## «Empezar de nuevo» (la paleta sigue abierta esperando el 2º OK).
+func confirm_tv_palette() -> bool:
 	if _palette_buttons.is_empty():
 		close_tv_palette()
-		return
+		return true
+	if _tv_highlight >= _palette_buttons.size():
+		var extra := _tv_extras[_tv_highlight - _palette_buttons.size()]
+		if extra == "menu":
+			close_tv_palette()
+			menu_requested.emit()
+			return true
+		if extra == "rotl" or extra == "rotr":
+			# 1.3: giro por pasos con el mando. La paleta QUEDA ABIERTA
+			# (devuelve false) para repetir OK y dar la vuelta completa:
+			# 8 pasos de 45° = 360°. Igual que los botones táctiles Girar
+			# (Girar ← = +45°, Girar → = −45°).
+			_tv_reset_confirm = false
+			rotate_step_requested.emit(45.0 if extra == "rotl" else -45.0)
+			_refresh_selection_label()
+			return false
+		if extra == "walk":
+			# 1.4: entrar al modo caminar (primera persona). La paleta
+			# se cierra y main.gd toma el control del mando.
+			_tv_reset_confirm = false
+			close_tv_palette()
+			walk_requested.emit()
+			return true
+		if extra == "cam":
+			# 1.5 (F3): ciclar la cámara de construcción. La paleta
+			# QUEDA ABIERTA (devuelve false) para repetir OK y ver
+			# cada vista, igual que el giro 1.3.
+			_tv_reset_confirm = false
+			camera_cycle_requested.emit()
+			_refresh_selection_label()
+			return false
+		# «Empezar de nuevo» con mando: 1er OK arma la confirmación,
+		# 2º OK borra. Equivale al toque sostenido 1.5 s anti-accidentes.
+		if not _tv_reset_confirm:
+			_tv_reset_confirm = true
+			_refresh_selection_label()
+			return false
+		_tv_reset_confirm = false
+		close_tv_palette()
+		world_reset.emit()
+		return true
 	var entry: Dictionary = _palette_buttons[_tv_highlight]
 	var modo := String(entry["modo"])
 	var dato := int(entry["dato"])
 	close_tv_palette()
 	_select(modo, dato)
+	return true
 
 
 func cancel_tv_palette() -> void:
+	_tv_reset_confirm = false
 	close_tv_palette()
 	_refresh_selection_label()
 
 
 func close_tv_palette() -> void:
 	tv_palette_open = false
+	_tv_reset_confirm = false
 	if _tv_hint_label != null:
 		_tv_hint_label.visible = false
 	_refresh_palette_styles()

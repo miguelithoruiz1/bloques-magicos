@@ -19,6 +19,12 @@ signal menu_requested
 ## sobre «Girar ←»/«Girar →» en la paleta del TV (la paleta queda abierta).
 signal rotate_step_requested(degrees: float)
 signal walk_requested
+## Fase 2 (1.8.0): paseo táctil. El overlay de paseo pide salir del
+## modo caminar (equivale al OK corto del mando) y cambiar de vista
+## (equivale al OK largo del mando). La mascota no se toca: solo se
+## le da acceso táctil a un paseo que ya existe.
+signal walk_exit_requested
+signal walk_view_requested
 ## Cámara de construcción por presets (1.5/F3): cada OK sobre «Cámara»
 ## cicla Arriba → Cerca → Lado → Lejos (la paleta queda abierta).
 signal camera_cycle_requested
@@ -92,6 +98,13 @@ var _reset_button: Button
 var _reset_bar: ProgressBar
 var _reset_hold := 0.0
 var _reset_fired := false
+## Fase 2 (1.8.0): columna de acciones y overlay de paseo. La columna
+## se oculta durante el paseo (el cluster del paseo ocupa su zona
+## abajo-derecha) y vuelve al salir; la paleta y los botones de giro
+## quedan visibles pero inertes en paseo (colocar/borrar ya se
+## bloquean en main.gd).
+var _actions_box: VBoxContainer
+var _walk_box: Control
 
 
 func _ready() -> void:
@@ -182,6 +195,7 @@ func _build_ui() -> void:
 	_build_palette(root)
 	_build_action_buttons(root)
 	_build_rotate_buttons(root)
+	_build_walk_controls(root)
 
 
 func _build_top_bar(root: Control) -> void:
@@ -470,6 +484,7 @@ func _build_palette(root: Control) -> void:
 
 func _build_action_buttons(root: Control) -> void:
 	var actions := VBoxContainer.new()
+	_actions_box = actions
 	actions.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
 	actions.offset_left = -208.0
 	actions.offset_right = -96.0
@@ -499,6 +514,14 @@ func _build_action_buttons(root: Control) -> void:
 	down_b.pressed.connect(func() -> void: down_requested.emit())
 	actions.add_child(down_b)
 
+	# Fase 2 (1.8.0): entrada táctil al paseo, en la misma columna de
+	# acciones. Emite la misma señal que la opción «Caminar» del mando
+	# (paleta TV), así que main.gd no distingue el origen.
+	var walk_b := _make_button("Caminar", Vector2(112, 52), 18)
+	_apply_button_colors(walk_b, Color(0.20, 0.65, 0.55))
+	walk_b.pressed.connect(func() -> void: walk_requested.emit())
+	actions.add_child(walk_b)
+
 
 func _build_rotate_buttons(root: Control) -> void:
 	var rot_box := HBoxContainer.new()
@@ -522,6 +545,108 @@ func _build_rotate_buttons(root: Control) -> void:
 	rot_r.button_down.connect(_on_rotate_down.bind(-1.0))
 	rot_r.button_up.connect(_on_rotate_up)
 	rot_box.add_child(rot_r)
+
+
+## Fase 2 (1.8.0): controles del paseo para pantalla táctil. Solo
+## visibles dentro del modo caminar. Cruceta abajo-derecha (margen
+## anti-overscan 96 px, sin tocar la paleta abajo-izquierda): ▲
+## avanza, ▼ retrocede (con repetición al mantener, igual que el
+## mando), ◀ ▶ giran por pasos de 45° (un paso por toque, igual que
+## el mando). «Vista» cambia 1ª/2ª persona y «Salir» sale del paseo.
+## La cruceta NO inventa movimiento propio: marca las mismas acciones
+## move_* que lee _handle_walk_mode en main.gd (action_press/release,
+## la API para controles virtuales), así que el mando y el táctil
+## comparten exactamente la misma lógica (y la mascota, que ya sigue
+## con esa lógica, no se toca).
+func _build_walk_controls(root: Control) -> void:
+	_walk_box = Control.new()
+	_walk_box.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_walk_box.offset_left = -328.0
+	_walk_box.offset_right = -96.0
+	_walk_box.offset_top = -384.0
+	_walk_box.offset_bottom = -96.0
+	_walk_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_walk_box.visible = false
+	root.add_child(_walk_box)
+
+	var vbox := VBoxContainer.new()
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_theme_constant_override("separation", 10)
+	_walk_box.add_child(vbox)
+
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", 8)
+	vbox.add_child(row)
+
+	var view_b := _make_button("Vista", Vector2(112, 56), 18)
+	_apply_button_colors(view_b, Color(0.45, 0.45, 0.55))
+	view_b.pressed.connect(func() -> void: walk_view_requested.emit())
+	row.add_child(view_b)
+
+	var exit_b := _make_button("Salir", Vector2(112, 56), 18)
+	_apply_button_colors(exit_b, Color(0.90, 0.45, 0.40))
+	exit_b.pressed.connect(func() -> void: walk_exit_requested.emit())
+	row.add_child(exit_b)
+
+	var dpad := GridContainer.new()
+	dpad.columns = 3
+	dpad.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dpad.add_theme_constant_override("h_separation", 8)
+	dpad.add_theme_constant_override("v_separation", 8)
+	vbox.add_child(dpad)
+
+	var spacer := func() -> Control:
+		var s := Control.new()
+		s.custom_minimum_size = Vector2(72, 72)
+		s.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		return s
+	dpad.add_child(spacer.call())
+	dpad.add_child(_walk_dir_button("▲", "move_forward"))
+	dpad.add_child(spacer.call())
+	dpad.add_child(_walk_dir_button("◀", "move_left"))
+	dpad.add_child(spacer.call())
+	dpad.add_child(_walk_dir_button("▶", "move_right"))
+	dpad.add_child(spacer.call())
+	dpad.add_child(_walk_dir_button("▼", "move_back"))
+	dpad.add_child(spacer.call())
+
+
+func _walk_dir_button(text: String, action: String) -> Button:
+	var b := _make_button(text, Vector2(72, 72), 30)
+	_apply_button_colors(b, Color(0.30, 0.45, 0.75))
+	b.button_down.connect(_send_walk_action.bind(action, true))
+	b.button_up.connect(_send_walk_action.bind(action, false))
+	return b
+
+
+## Inyecta una acción de movimiento como si la hubiera producido el
+## mando. Mantener ▲/▼ repite el paso cada 0.2 s (la lógica de
+## _handle_walk_mode); ◀/▶ dan un paso de 45° por toque.
+func _send_walk_action(action: String, pressed: bool) -> void:
+	if pressed:
+		Input.action_press(action)
+	else:
+		Input.action_release(action)
+
+
+## Muestra el overlay del paseo y oculta la columna de acciones (su
+## zona se solapa con la cruceta). Al ocultar se sueltan las 4
+## direcciones: si el niño salía con un dedo aún apoyado, el cursor
+## no heredaría un movimiento fantasma al volver a construir.
+func set_walk_controls_visible(visible: bool) -> void:
+	if _walk_box != null:
+		_walk_box.visible = visible
+	if _actions_box != null:
+		_actions_box.visible = not visible
+	if not visible:
+		_release_walk_actions()
+
+
+func _release_walk_actions() -> void:
+	for action in ["move_forward", "move_back", "move_left", "move_right"]:
+		_send_walk_action(action, false)
 
 
 # ---------------------------------------------------------------------------

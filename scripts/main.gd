@@ -175,6 +175,11 @@ func _ready() -> void:
 	_palette.rotate_step_requested.connect(_on_rotate_step)
 	# 1.4: entrar al modo caminar (desde la paleta TV).
 	_palette.walk_requested.connect(_enter_walk_mode)
+	# Fase 2 (1.8.0): paseo táctil. «Salir» equivale al OK corto del
+	# mando y «Vista» al OK largo; ambas señales desembocan en las
+	# mismas funciones del mando, sin duplicar lógica.
+	_palette.walk_exit_requested.connect(_exit_walk_mode)
+	_palette.walk_view_requested.connect(_toggle_walk_view)
 	# 1.5 (F3): ciclar la cámara de construcción (desde la paleta TV).
 	_palette.camera_cycle_requested.connect(_on_camera_cycle)
 	# Fase 2: en modo nivel se empieza con un tablero vacío (la meta se
@@ -599,10 +604,7 @@ func _handle_walk_mode(delta: float, ok_event: String) -> void:
 		_exit_walk_mode()
 		return
 	if ok_event == "long":
-		_walk_view = 1 - _walk_view
-		if _walk_avatar != null:
-			_walk_avatar.visible = (_walk_view == 1)
-		_palette.show_message("Vista: " + ("segunda persona (Blocky)" if _walk_view == 1 else "primera persona"))
+		_toggle_walk_view()
 		return
 	if Input.is_action_just_pressed("move_left"):
 		_walk_yaw += deg_to_rad(45.0)
@@ -620,6 +622,16 @@ func _handle_walk_mode(delta: float, ok_event: String) -> void:
 			_walk_move_timer = 0.2
 	else:
 		_walk_move_timer = 0.0
+
+
+## Cambiar la vista del paseo (1ª/2ª persona). Antes vivía dentro de
+## _handle_walk_mode (OK largo del mando); en Fase 2 se extrae para
+## que el botón táctil «Vista» use exactamente la misma función.
+func _toggle_walk_view() -> void:
+	_walk_view = 1 - _walk_view
+	if _walk_avatar != null:
+		_walk_avatar.visible = (_walk_view == 1)
+	_palette.show_message("Vista: " + ("segunda persona (Blocky)" if _walk_view == 1 else "primera persona"))
 
 
 ## Paso del avatar en la dirección de la cámara (redondeada a 90°,
@@ -688,6 +700,7 @@ func _enter_walk_mode() -> void:
 	_ghost_root.visible = false
 	if _walk_avatar != null:
 		_walk_avatar.visible = (_walk_view == 1)
+	_palette.set_walk_controls_visible(true)
 	_palette.show_message("Caminando: ▲ avanza · ▼ retrocede · ◀ ▶ gira · OK sale · mantén OK cambia la vista")
 	speak("¡A caminar!", "")
 
@@ -699,6 +712,7 @@ func _exit_walk_mode() -> void:
 	if not _walk_mode:
 		return
 	_walk_mode = false
+	_palette.set_walk_controls_visible(false)
 	# 1.5 (F3): al salir del paseo vuelve el preset de construcción
 	# activo (antes forzaba Arriba aunque se hubiera elegido otro).
 	var cp: Dictionary = _cam_presets[_cam_preset]

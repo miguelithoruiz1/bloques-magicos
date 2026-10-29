@@ -1,9 +1,16 @@
 extends Node3D
-## Bloques Mágicos — Fase 1.
+## Bloques Mágicos — Fase 4 (1.10.0).
 ## Constructor de bloques 3D tipo Minecraft, simplificado y seguro para un
-## niño de 5 años: cuadrícula 16×16, cursor con bloque fantasma, cubos de
-## colores y de números, voz en español (TTS del sistema), sonidos generados
-## en código y guardado automático. Sin red, sin anuncios, sin cuentas.
+## niño de 5 años: mundo INFINITO por chunks, cursor con bloque fantasma,
+## cubos de colores y de números, voz en español (TTS del sistema),
+## sonidos generados en código y guardado automático. Sin red, sin
+## anuncios, sin cuentas.
+##
+## 1.10.0: (A) menú radial en el paseo que recoge los botones;
+## (B) los 5 mundos (libre + 4 de niveles) tienen identidad visual
+## propia y el terreno se genera por chunks al caminar más allá del
+## borde, sin muro; (C) colocar (y quitar) bloques desde 1ª/2ª persona
+## apuntando con la cámara. La mascota no se toca.
 ##
 ## La escena main.tscn es mínima: casi todo se construye aquí por código
 ## para mantener el proyecto robusto como archivos de texto.
@@ -21,9 +28,15 @@ const LevelLogic := preload("res://scripts/level_logic.gd")
 const LevelHints := preload("res://scripts/level_hints.gd")
 const ProgressSave := preload("res://scripts/progress_save.gd")
 
-const GRID_SIZE := 16
+## 1.10.0: el mundo ya no tiene borde fijo. El terreno se genera por
+## chunks de 16×16 alrededor del cursor y del avatar (radio 2 chunks =
+## 80×80 a la vista, como el antiguo delantal). Los bloques colocados
+## siguen con tope MAX_BLOCKS (protege la memoria del stick).
+const CHUNK := 16
+const CHUNK_RADIUS := 2
+const MAX_CHUNKS := 256
 const MAX_HEIGHT := 8
-const MAX_BLOCKS := 600
+const MAX_BLOCKS := 800
 const SAVE_DELAY := 0.6
 const OK_HOLD_SECONDS := 0.35
 
@@ -54,10 +67,20 @@ const TRUNK_COLOR := Color(0.45, 0.32, 0.20)
 const LEAF_COLOR := Color(0.25, 0.60, 0.30)
 const FLOWER_HEAD_COLOR := Color(1.00, 0.55, 0.75)
 const LIBRE_NAMES := {"agua": "Agua", "arbol": "Árbol", "flor": "Flor", "pared": "Pared", "techo": "Techo", "puerta": "Puerta"}
+## 1.10.0: identidad visual por mundo. Cada mundo tiene su suelo
+## (damero claro/oscuro/línea), su cielo y su decoración (flores o
+## piedras deterministas por chunk). "libre" es la pradera de siempre.
+const WORLD_THEMES := {
+	"libre": {"suelo_claro": Color(0.56, 0.80, 0.47), "suelo_oscuro": Color(0.49, 0.74, 0.42), "suelo_linea": Color(0.40, 0.64, 0.36), "cielo_arriba": Color(0.30, 0.58, 0.95), "cielo_horizonte": Color(0.72, 0.87, 1.00), "decor": [Color(1.00, 0.55, 0.75), Color(1.00, 0.85, 0.30), Color(1.00, 1.00, 1.00)]},
+	"colores": {"suelo_claro": Color(0.62, 0.85, 0.55), "suelo_oscuro": Color(0.55, 0.78, 0.48), "suelo_linea": Color(0.45, 0.68, 0.40), "cielo_arriba": Color(0.35, 0.55, 0.95), "cielo_horizonte": Color(0.95, 0.80, 0.95), "decor": [Color(1.00, 0.25, 0.22), Color(0.98, 0.55, 0.15), Color(0.98, 0.80, 0.15), Color(0.30, 0.75, 0.35), Color(0.20, 0.45, 0.95), Color(0.60, 0.35, 0.90)]},
+	"numeros": {"suelo_claro": Color(0.93, 0.85, 0.62), "suelo_oscuro": Color(0.87, 0.78, 0.52), "suelo_linea": Color(0.78, 0.68, 0.42), "cielo_arriba": Color(0.30, 0.58, 0.95), "cielo_horizonte": Color(0.85, 0.90, 1.00), "decor": [Color(0.65, 0.65, 0.65), Color(0.55, 0.55, 0.55), Color(0.75, 0.72, 0.60)]},
+	"letras": {"suelo_claro": Color(0.75, 0.87, 0.98), "suelo_oscuro": Color(0.68, 0.80, 0.95), "suelo_linea": Color(0.58, 0.70, 0.88), "cielo_arriba": Color(0.45, 0.70, 1.00), "cielo_horizonte": Color(0.90, 0.95, 1.00), "decor": [Color(1.00, 1.00, 1.00), Color(0.95, 0.97, 1.00), Color(0.85, 0.92, 1.00)]},
+	"sumas": {"suelo_claro": Color(0.35, 0.60, 0.35), "suelo_oscuro": Color(0.30, 0.54, 0.30), "suelo_linea": Color(0.24, 0.46, 0.24), "cielo_arriba": Color(0.30, 0.55, 0.85), "cielo_horizonte": Color(0.80, 0.88, 0.75), "decor": [Color(1.00, 0.85, 0.30), Color(1.00, 0.95, 0.60), Color(1.00, 0.55, 0.75)]},
+}
 
 var blocks: Dictionary = {} ## Vector3i -> {"tipo": String, "dato": int}
 var block_nodes: Dictionary = {} ## Vector3i -> Node3D
-var cursor := Vector3i(8, 0, 8)
+var cursor := Vector3i(10, 0, 10)
 var selection: Dictionary = {"modo": "color", "dato": 0}
 
 var _blocks_root: Node3D
@@ -85,6 +108,15 @@ var _level_progress: Dictionary = {}
 ## no cuentan para la meta y no bloquean el paseo.
 var _hint_root = null
 var _hint_timer := 0.0
+## 1.10.0: chunks del mundo infinito + tema activo + menú radial.
+var _chunks: Dictionary = {} ## Vector2i(chunk) -> Node3D
+var _theme: Dictionary = {}
+var _sky_mat = null
+var _chunk_material: StandardMaterial3D
+var _chunk_mesh: PlaneMesh
+var _decor_mesh: SphereMesh
+var _decor_materials: Dictionary = {}
+var _radial_open := false
 
 var _pivot: Node3D
 var _camera: Camera3D
@@ -105,7 +137,7 @@ var _cam_presets: Array = [
 ## 1.4: modo caminar (avatar). Primera persona obligatoria; segunda
 ## persona (Blocky detrás) se cambia con OK largo dentro del modo.
 var _walk_mode := false
-var _walk_cell := Vector2i(8, 8)
+var _walk_cell := Vector2i(10, 10)
 var _walk_yaw := 0.0
 var _walk_view := 0 # 0 = primera persona, 1 = segunda (Blocky)
 var _walk_move_timer := 0.0
@@ -113,7 +145,7 @@ var _walk_avatar = null
 var _pet_node = null
 var _pet_body = null
 var _pet_tail = null
-var _pet_cell := Vector2i(8, 8)
+var _pet_cell := Vector2i(10, 10)
 var _pet_timer := 0.0
 
 var _ghost_root: Node3D
@@ -154,6 +186,7 @@ var _mouse_dragged := false
 func _ready() -> void:
 	_build_shared()
 	_build_environment()
+	_apply_theme("libre" if GameState.modo != "nivel" else GameState.mundo)
 	_build_ground()
 	_build_trees()
 	_build_camera()
@@ -175,11 +208,14 @@ func _ready() -> void:
 	_palette.rotate_step_requested.connect(_on_rotate_step)
 	# 1.4: entrar al modo caminar (desde la paleta TV).
 	_palette.walk_requested.connect(_enter_walk_mode)
-	# Fase 2 (1.8.0): paseo táctil. «Salir» equivale al OK corto del
-	# mando y «Vista» al OK largo; ambas señales desembocan en las
-	# mismas funciones del mando, sin duplicar lógica.
-	_palette.walk_exit_requested.connect(_exit_walk_mode)
-	_palette.walk_view_requested.connect(_toggle_walk_view)
+	# 1.10.0: el menú radial del paseo (Poner / Quitar / Vista / Salir).
+	# Las antiguas señales walk_exit/walk_view de 1.8.0 ya no existen:
+	# Vista y Salir viven dentro del radial.
+	_palette.radial_open_requested.connect(_open_radial)
+	_palette.radial_place_requested.connect(_walk_place)
+	_palette.radial_remove_requested.connect(_walk_remove)
+	_palette.radial_view_requested.connect(_on_radial_view)
+	_palette.radial_exit_requested.connect(_exit_walk_mode)
 	# 1.5 (F3): ciclar la cámara de construcción (desde la paleta TV).
 	_palette.camera_cycle_requested.connect(_on_camera_cycle)
 	# Fase 2: en modo nivel se empieza con un tablero vacío (la meta se
@@ -300,7 +336,10 @@ func _process(delta: float) -> void:
 		)
 		_pivot.position = _pivot.position.lerp(target, minf(1.0, delta * 5.0))
 
-	_update_ghost()
+	if _walk_mode:
+		_update_walk_ghost()
+	else:
+		_update_ghost()
 
 	# 1.6: las pistas parpadean juntas (0.6 s) para llamar la vista
 	# sin tapar el tablero; al completar el nivel ya se limpiaron.
@@ -391,7 +430,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event is InputEventKey:
 			var kw := event as InputEventKey
 			if kw.keycode == KEY_ESCAPE and kw.pressed and not kw.echo:
-				_exit_walk_mode()
+				if _radial_open:
+					_close_radial()
+				else:
+					_exit_walk_mode()
 		return
 	# Botón Atrás del control de TV (tecla Escape en Android): vuelve al
 	# menú. Se distingue a propósito del botón B del mando (que borra),
@@ -443,16 +485,24 @@ func _notification(what: int) -> void:
 # ---------------------------------------------------------------------------
 
 func place_at_cursor() -> void:
-	# 1.4: en modo caminar no se coloca (OK sale del modo).
+	# 1.4: en modo caminar no se coloca con el cursor (OK sale del
+	# modo); colocar en paseo va por _walk_place, con punto de mira.
 	if _walk_mode:
 		return
+	_place_at(cursor)
+
+
+## Coloca el bloque elegido en `cell`. Lo usan el cursor de
+## construcción y el punto de mira del paseo (1.10.0): mismas reglas
+## (tope, ocupado, meta del nivel) en ambos modos.
+func _place_at(cell: Vector3i) -> void:
 	if String(selection.get("modo", "color")) == "borrador":
-		remove_at_cursor()
+		_remove_at(cell)
 		return
 	if blocks.size() >= MAX_BLOCKS:
 		_palette.show_message("¡Ya hay muchísimos bloques! Quita algunos para seguir construyendo.")
 		return
-	if blocks.has(cursor):
+	if blocks.has(cell):
 		_palette.show_message("Ahí ya hay un bloque.")
 		return
 	var data := {"tipo": "color", "dato": int(selection.get("dato", 0))}
@@ -464,8 +514,8 @@ func place_at_cursor() -> void:
 		# 1.3: agua, árbol, flor y piezas de casa (solo mundo libre:
 		# la paleta los oculta en los mundos de niveles).
 		data = {"tipo": String(selection.get("modo", "color")), "dato": 0}
-	blocks[cursor] = data
-	_spawn_block_node(cursor, data)
+	blocks[cell] = data
+	_spawn_block_node(cell, data)
 	_play_sound(_pop_stream)
 	# F2.1: el nombre se dice Y se muestra en grande. El anuncio visual es
 	# la garantía si el TTS del TV no tiene voz en español (o ninguna voz).
@@ -492,7 +542,7 @@ func place_at_cursor() -> void:
 	_palette.show_announcement("¡" + nombre.to_upper() + "!")
 	# Fase 2: registrar lo colocado en el nivel y comprobar la meta.
 	if _level_mode and not _level_completed:
-		var placed := {"tipo": String(data["tipo"]), "dato": int(data["dato"]), "celda": cursor}
+		var placed := {"tipo": String(data["tipo"]), "dato": int(data["dato"]), "celda": cell}
 		_level_placed.append(placed)
 		var tipo_meta := String(_level_def.get("tipo", ""))
 		var params: Dictionary = _level_def.get("params", {})
@@ -504,10 +554,17 @@ func place_at_cursor() -> void:
 
 
 func remove_at_cursor() -> void:
-	# 1.4: en modo caminar no se borra.
+	# 1.4: en modo caminar no se borra con el cursor; quitar en paseo
+	# va por _walk_remove, con punto de mira.
 	if _walk_mode:
 		return
 	var target := _remove_target()
+	_remove_at(target)
+
+
+## Quita el bloque de `cell` (o nada si no hay). Lo usan el cursor y
+## el paseo (1.10.0). `target.x < 0` es el "no hay nada" del cursor.
+func _remove_at(target: Vector3i) -> void:
 	if target.x < 0:
 		return
 	# Fase 2: quitar el bloque también de la lista del nivel, para que
@@ -563,8 +620,9 @@ func _step_cursor(input_vec: Vector2i) -> void:
 		f_step = Vector3i(0, 0, 1 if f.z > 0.0 else -1)
 	var r_step := Vector3i(-f_step.z, 0, f_step.x)
 	var step := r_step * input_vec.x + f_step * (-input_vec.y)
-	cursor.x = clampi(cursor.x + step.x, 0, GRID_SIZE - 1)
-	cursor.z = clampi(cursor.z + step.z, 0, GRID_SIZE - 1)
+	cursor.x += step.x
+	cursor.z += step.z
+	_ensure_chunks_around(Vector2i(cursor.x, cursor.z))
 	_update_info()
 	_update_ghost(true)
 
@@ -597,14 +655,28 @@ func _on_camera_cycle() -> void:
 
 ## Input dentro del modo caminar. ▲ avanza, ▼ retrocede (con
 ## repetición al mantener), ◀ ▶ giran por pasos de 45° (como el giro
-## 1.3), OK corto sale al modo construir, OK largo cambia la vista
-## (1ª/2ª persona). Atrás también sale (ver _unhandled_input).
+## 1.3), OK corto sale al modo construir. 1.10.0: OK largo y el botón
+## B abren el menú radial (Poner / Quitar / Vista / Salir); con el
+## radial abierto, ◀ ▶ cambian el resaltado y OK confirma, y el
+## movimiento queda en pausa. Atrás cierra el radial o sale del paseo
+## (ver _unhandled_input).
 func _handle_walk_mode(delta: float, ok_event: String) -> void:
+	if _radial_open:
+		if ok_event == "short":
+			_palette.radial_confirm()
+		elif Input.is_action_just_pressed("move_left"):
+			_palette.radial_move(-1)
+		elif Input.is_action_just_pressed("move_right"):
+			_palette.radial_move(1)
+		return
 	if ok_event == "short":
 		_exit_walk_mode()
 		return
 	if ok_event == "long":
-		_toggle_walk_view()
+		_open_radial()
+		return
+	if Input.is_action_just_pressed("remove_block"):
+		_open_radial()
 		return
 	if Input.is_action_just_pressed("move_left"):
 		_walk_yaw += deg_to_rad(45.0)
@@ -634,6 +706,30 @@ func _toggle_walk_view() -> void:
 	_palette.show_message("Vista: " + ("segunda persona (Blocky)" if _walk_view == 1 else "primera persona"))
 
 
+## 1.10.0: menú radial del paseo. Abrir/cerrar actualiza el estado
+## local; la vista del radial vive en palette_ui.gd (mismo patrón de
+## resaltado manual que la paleta TV, sin foco que perder).
+func _open_radial() -> void:
+	if not _walk_mode or _radial_open:
+		return
+	_radial_open = true
+	_palette.open_radial()
+
+
+func _close_radial() -> void:
+	if not _radial_open:
+		return
+	_radial_open = false
+	_palette.close_radial()
+
+
+## «Vista» desde el radial: cambia la vista y cierra el menú, para
+## volver al paseo con un solo toque/OK.
+func _on_radial_view() -> void:
+	_close_radial()
+	_toggle_walk_view()
+
+
 ## Paso del avatar en la dirección de la cámara (redondeada a 90°,
 ## igual que el cursor en construcción). Respeta la colisión simple
 ## (ver _walk_blocked): no entra a celdas con bloque sólido.
@@ -648,6 +744,7 @@ func _step_walk(dir: int) -> void:
 	if _walk_blocked(next.x, next.y):
 		return
 	_walk_cell = next
+	_ensure_chunks_around(_walk_cell)
 
 
 ## Colisión simple a nivel del suelo: fuera de la rejilla bloquea;
@@ -655,8 +752,9 @@ func _step_walk(dir: int) -> void:
 ## vacías son transitables (la puerta es la entrada a la casa). Los
 ## bloques apilados por encima no bloquean el paso a ras de suelo.
 func _walk_blocked(cx: int, cz: int) -> bool:
-	if cx < 0 or cx >= GRID_SIZE or cz < 0 or cz >= GRID_SIZE:
-		return true
+	# 1.10.0: sin muro en el borde (el mundo es infinito): solo
+	# bloquea un bloque sólido a ras de suelo. La mascota usa esta
+	# misma función, así que también puede seguir más allá del borde.
 	var cell := Vector3i(cx, 0, cz)
 	if blocks.has(cell):
 		var tipo := String(blocks[cell].get("tipo", "color"))
@@ -671,14 +769,14 @@ func _nearest_free_cell(from: Vector2i) -> Vector2i:
 	var queue: Array[Vector2i] = [from]
 	seen[from] = true
 	var head := 0
-	while head < queue.size():
+	while head < queue.size() and head < 4096:
 		var c := queue[head]
 		head += 1
 		if not _walk_blocked(c.x, c.y):
 			return c
 		for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
 			var n: Vector2i = c + d
-			if n.x >= 0 and n.x < GRID_SIZE and n.y >= 0 and n.y < GRID_SIZE and not seen.has(n):
+			if not seen.has(n):
 				seen[n] = true
 				queue.append(n)
 	return from
@@ -697,10 +795,10 @@ func _enter_walk_mode() -> void:
 		_walk_cell = _nearest_free_cell(_walk_cell)
 	_walk_yaw = _yaw_target
 	_walk_move_timer = 0.0
-	_ghost_root.visible = false
 	if _walk_avatar != null:
 		_walk_avatar.visible = (_walk_view == 1)
 	_palette.set_walk_controls_visible(true)
+	_update_walk_ghost()
 	_palette.show_message("Caminando: ▲ avanza · ▼ retrocede · ◀ ▶ gira · OK sale · mantén OK cambia la vista")
 	speak("¡A caminar!", "")
 
@@ -712,6 +810,7 @@ func _exit_walk_mode() -> void:
 	if not _walk_mode:
 		return
 	_walk_mode = false
+	_close_radial()
 	_palette.set_walk_controls_visible(false)
 	# 1.5 (F3): al salir del paseo vuelve el preset de construcción
 	# activo (antes forzaba Arriba aunque se hubiera elegido otro).
@@ -848,7 +947,7 @@ func _build_walk_actors() -> void:
 	_pet_tail.position = Vector3(0.0, 0.42, 0.48)
 	_pet_tail.rotation.x = -0.5
 	_pet_body.add_child(_pet_tail)
-	_pet_cell = _nearest_free_cell(Vector2i(8, 8))
+	_pet_cell = _nearest_free_cell(Vector2i(10, 10))
 	_pet_node.position = Vector3(float(_pet_cell.x) + 0.5, 0.0, float(_pet_cell.y) + 0.5)
 	add_child(_pet_node)
 
@@ -858,7 +957,7 @@ func _on_world_reset() -> void:
 		(block_nodes[cell] as Node).queue_free()
 	block_nodes.clear()
 	blocks.clear()
-	cursor = Vector3i(8, 0, 8)
+	cursor = Vector3i(10, 0, 10)
 	_mark_dirty()
 	_update_info()
 	_update_ghost(true)
@@ -910,11 +1009,11 @@ func _handle_tap(screen_pos: Vector2) -> void:
 		var gp: Vector3 = ground_point
 		if origin.distance_to(gp) < best_t:
 			var gc := Vector3i(floori(gp.x), 0, floori(gp.z))
-			if gc.x >= 0 and gc.x < GRID_SIZE and gc.z >= 0 and gc.z < GRID_SIZE:
-				cursor = gc
-				_update_info()
-				_update_ghost(true)
-				return
+			cursor = gc
+			_ensure_chunks_around(Vector2i(cursor.x, cursor.z))
+			_update_info()
+			_update_ghost(true)
+			return
 	if found:
 		if best_normal.y > 0.5:
 			cursor = Vector3i(best_cell.x, mini(best_cell.y + 1, MAX_HEIGHT - 1), best_cell.z)
@@ -1260,6 +1359,7 @@ func _build_environment() -> void:
 	env.background_mode = Environment.BG_SKY
 	var sky := Sky.new()
 	var sky_mat := ProceduralSkyMaterial.new()
+	_sky_mat = sky_mat
 	sky_mat.sky_top_color = Color(0.30, 0.58, 0.95)
 	sky_mat.sky_horizon_color = Color(0.72, 0.87, 1.00)
 	sky_mat.ground_bottom_color = Color(0.42, 0.62, 0.38)
@@ -1315,41 +1415,35 @@ func _build_environment() -> void:
 	sky_bodies.add_child(_moon_body)
 
 
-func _build_ground() -> void:
-	var apron := MeshInstance3D.new()
-	var apron_mesh := PlaneMesh.new()
-	apron_mesh.size = Vector2(80.0, 80.0)
-	apron.mesh = apron_mesh
-	apron.material_override = _make_material(Color(0.45, 0.68, 0.42))
-	apron.position = Vector3(8.0, -0.05, 8.0)
-	add_child(apron)
-
-	var grid_mi := MeshInstance3D.new()
-	var plane := PlaneMesh.new()
-	plane.size = Vector2(float(GRID_SIZE), float(GRID_SIZE))
-	grid_mi.mesh = plane
-	var mat := StandardMaterial3D.new()
-	mat.albedo_texture = _make_ground_texture()
-	mat.roughness = 1.0
-	grid_mi.material_override = mat
-	grid_mi.position = Vector3(GRID_SIZE * 0.5, 0.0, GRID_SIZE * 0.5)
-	add_child(grid_mi)
-
-	_blocks_root = Node3D.new()
-	_blocks_root.name = "Blocks"
-	add_child(_blocks_root)
+func _apply_theme(mundo_id: String) -> void:
+	## 1.10.0: el tema del mundo activo (suelo, cielo, decoración).
+	## Un mundo desconocido cae a la pradera libre, nunca a un error.
+	_theme = WORLD_THEMES.get(mundo_id, WORLD_THEMES["libre"])
+	if _sky_mat != null:
+		_sky_mat.sky_top_color = _theme["cielo_arriba"]
+		_sky_mat.sky_horizon_color = _theme["cielo_horizonte"]
+	_chunk_material = StandardMaterial3D.new()
+	_chunk_material.roughness = 1.0
+	_chunk_material.albedo_texture = _make_chunk_texture()
+	_chunk_mesh = PlaneMesh.new()
+	_chunk_mesh.size = Vector2(float(CHUNK), float(CHUNK))
+	_decor_mesh = SphereMesh.new()
+	_decor_mesh.radius = 0.18
+	_decor_mesh.height = 0.36
 
 
-## Textura de pradera a cuadros suaves, generada en código (sin archivos).
-func _make_ground_texture() -> ImageTexture:
+## Textura de un chunk (16 celdas) con los colores del tema. Todos los
+## chunks comparten ESTA textura: el damero encaja entre chunks porque
+## 16 es par, así que el suelo infinito se ve continuo.
+func _make_chunk_texture() -> ImageTexture:
 	var cell_px := 32
-	var size := GRID_SIZE * cell_px
+	var size := CHUNK * cell_px
 	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
-	var light := Color(0.56, 0.80, 0.47)
-	var dark := Color(0.49, 0.74, 0.42)
-	var line := Color(0.40, 0.64, 0.36)
-	for cz in range(GRID_SIZE):
-		for cx in range(GRID_SIZE):
+	var light: Color = _theme["suelo_claro"]
+	var dark: Color = _theme["suelo_oscuro"]
+	var line: Color = _theme["suelo_linea"]
+	for cz in range(CHUNK):
+		for cx in range(CHUNK):
 			var base := light if (cx + cz) % 2 == 0 else dark
 			img.fill_rect(Rect2i(cx * cell_px, cz * cell_px, cell_px, cell_px), base)
 			img.fill_rect(Rect2i(cx * cell_px, cz * cell_px, cell_px, 2), line)
@@ -1358,13 +1452,233 @@ func _make_ground_texture() -> ImageTexture:
 	return ImageTexture.create_from_image(img)
 
 
+## Hash determinista y barato para la decoración de un chunk: el mismo
+## chunk siempre genera la misma decoración (el mundo "existe" aunque
+## se cierre y se vuelva a abrir), sin guardar nada.
+func _chunk_hash(cx: int, cz: int, salt: int) -> int:
+	var h := (cx * 73856093) ^ (cz * 19349663) ^ (salt * 83492791)
+	return absi(h)
+
+
+func _build_ground() -> void:
+	## 1.10.0: ya no hay plano fijo 20×20 ni delantal 80×80: el suelo
+	## son chunks que se crean al acercarse (ver _ensure_chunks_around).
+	_blocks_root = Node3D.new()
+	_blocks_root.name = "Blocks"
+	add_child(_blocks_root)
+	_ensure_chunks_around(Vector2i(cursor.x, cursor.z))
+
+
+func _chunk_of(cell: Vector2i) -> Vector2i:
+	## División con suelo (floori), no truncada: los chunks negativos
+	## también encajan (caminar hacia -x/-z genera terreno igual).
+	return Vector2i(floori(float(cell.x) / float(CHUNK)), floori(float(cell.y) / float(CHUNK)))
+
+
+func _ensure_chunks_around(cell: Vector2i) -> void:
+	var center := _chunk_of(cell)
+	for dz in range(-CHUNK_RADIUS, CHUNK_RADIUS + 1):
+		for dx in range(-CHUNK_RADIUS, CHUNK_RADIUS + 1):
+			var key := center + Vector2i(dx, dz)
+			if not _chunks.has(key):
+				_create_chunk(key)
+
+
+func _create_chunk(key: Vector2i) -> void:
+	if _chunks.size() >= MAX_CHUNKS:
+		## Tope de seguridad, no muro de juego: con 256 chunks el
+		## mundo mide 4096 celdas de lado; un niño no lo alcanza en
+		## una sesión, y al reabrir el juego el contador se reinicia.
+		if _palette != null:
+			_palette.show_message("¡El mundo es enorme! Vuelve un poco para seguir.")
+		return
+	var root := Node3D.new()
+	var tile := MeshInstance3D.new()
+	tile.mesh = _chunk_mesh
+	tile.material_override = _chunk_material
+	tile.position = Vector3(float(key.x * CHUNK + CHUNK / 2), 0.0, float(key.y * CHUNK + CHUNK / 2))
+	root.add_child(tile)
+	## Decoración determinista: 0–2 flores/piedras por chunk, siempre
+	## en el mismo sitio para ese chunk. Son visuales y NO bloquean:
+	## caminar sobre una flor es natural; por eso no hay árboles
+	## dentro de los chunks (un tronco sí se notaría al atravesarlo).
+	var count := _chunk_hash(key.x, key.y, 7) % 3
+	var decor_colors: Array = _theme["decor"]
+	for i in range(count):
+		var lx := 1 + _chunk_hash(key.x, key.y, 11 + i * 2) % (CHUNK - 2)
+		var lz := 1 + _chunk_hash(key.x, key.y, 13 + i * 2) % (CHUNK - 2)
+		var item := MeshInstance3D.new()
+		item.mesh = _decor_mesh
+		var c: Color = decor_colors[_chunk_hash(key.x, key.y, 17 + i) % decor_colors.size()]
+		if not _decor_materials.has(c):
+			_decor_materials[c] = _make_material(c)
+		item.material_override = _decor_materials[c]
+		item.position = Vector3(float(key.x * CHUNK + lx) + 0.5, 0.12, float(key.y * CHUNK + lz) + 0.5)
+		root.add_child(item)
+	add_child(root)
+	_chunks[key] = root
+
+
+# ---------------------------------------------------------------------------
+# 1.10.0: colocar y quitar desde el paseo (1ª/2ª persona)
+# ---------------------------------------------------------------------------
+
+## Celda a la que apunta la cámara del paseo. Rayo desde el centro de
+## la vista contra los bloques (misma matemática que el toque); si no
+## hay bloque cerca, el punto donde el rayo toca el suelo. Devuelve
+## Vector3i(-1, -1, -1) cuando no hay objetivo válido a menos de 6
+## celdas (el niño no coloca a lo lejos sin querer).
+func _walk_aim_cell() -> Vector3i:
+	if _camera == null:
+		return Vector3i(-1, -1, -1)
+	var origin: Vector3 = _camera.global_position
+	var dir: Vector3 = -_camera.global_transform.basis.z
+	var best_t := 6.0
+	var best_cell := Vector3i(-1, -1, -1)
+	var best_normal := Vector3.ZERO
+	var found := false
+	for cell in blocks.keys():
+		var res := _ray_aabb(origin, dir, Vector3(cell))
+		if bool(res.get("hit", false)) and float(res["t"]) < best_t:
+			best_t = float(res["t"])
+			best_cell = cell
+			best_normal = res["normal"]
+			found = true
+	if found:
+		if best_normal.y > 0.5:
+			return Vector3i(best_cell.x, mini(best_cell.y + 1, MAX_HEIGHT - 1), best_cell.z)
+		if best_normal.y < -0.5:
+			return Vector3i(best_cell.x, maxi(best_cell.y - 1, 0), best_cell.z)
+		return Vector3i(best_cell.x + int(best_normal.x), best_cell.y, best_cell.z + int(best_normal.z))
+	var ground_point: Variant = Plane(Vector3.UP, 0.0).intersects_ray(origin, dir)
+	if ground_point != null:
+		var gp: Vector3 = ground_point
+		if origin.distance_to(gp) <= 6.0:
+			return Vector3i(floori(gp.x), 0, floori(gp.z))
+	## Sin impacto cerca: en 1ª persona el rayo sale horizontal a 1,5
+	## de altura y pasa POR ENCIMA de los bloques sin tocar nunca el
+	## suelo. En ese caso el objetivo es la celda 2 pasos al frente:
+	## predecible, cerca y visible con el fantasma de mira.
+	var f := Vector3(-sin(_walk_yaw), 0.0, -cos(_walk_yaw))
+	var f_step := Vector2i.ZERO
+	if absf(f.x) > absf(f.z):
+		f_step = Vector2i(1 if f.x > 0.0 else -1, 0)
+	else:
+		f_step = Vector2i(0, 1 if f.z > 0.0 else -1)
+	return Vector3i(_walk_cell.x + f_step.x * 2, 0, _walk_cell.y + f_step.y * 2)
+
+
+## Celda del bloque al que apunta la cámara (para quitar): el bloque
+## golpeado por el rayo, o nada si solo se apunta al suelo vacío.
+func _walk_hit_cell() -> Vector3i:
+	if _camera == null:
+		return Vector3i(-1, -1, -1)
+	var origin: Vector3 = _camera.global_position
+	var dir: Vector3 = -_camera.global_transform.basis.z
+	var best_t := 6.0
+	var best_cell := Vector3i(-1, -1, -1)
+	for cell in blocks.keys():
+		var res := _ray_aabb(origin, dir, Vector3(cell))
+		if bool(res.get("hit", false)) and float(res["t"]) < best_t:
+			best_t = float(res["t"])
+			best_cell = cell
+	if best_cell.x >= 0:
+		return best_cell
+	## Sin impacto: el bloque de la celda 2 pasos al frente (el mismo
+	## objetivo que _walk_aim_cell cuando no hay rayo), si lo hay.
+	var aim := _walk_aim_cell()
+	if aim.x >= 0 and blocks.has(aim):
+		return aim
+	return Vector3i(-1, -1, -1)
+
+
+## Fantasma del paseo: Blocky translúcido en la celda de mira, con el
+## color del bloque elegido (rojo si no se puede poner ahí). Es la
+## única guía que necesita el niño para apuntar en 1ª/2ª persona.
+func _update_walk_ghost() -> void:
+	if _ghost_root == null:
+		return
+	var target := _walk_aim_cell()
+	if target.x < 0:
+		_ghost_root.visible = false
+		return
+	_ghost_root.visible = true
+	var modo := String(selection.get("modo", "color"))
+	var dato := int(selection.get("dato", 0))
+	var base_color := _ghost_base_color(modo, dato)
+	var occupied := blocks.has(target)
+	var avatar_cell := Vector3i(_walk_cell.x, 0, _walk_cell.y)
+	var pet_cell := Vector3i(_pet_cell.x, 0, _pet_cell.y)
+	var blocked := occupied or target == avatar_cell or target == pet_cell
+	if blocked:
+		_ghost_material.albedo_color = Color(1.0, 0.35, 0.35, 0.30)
+	else:
+		_ghost_material.albedo_color = Color(base_color.r, base_color.g, base_color.b, 0.45)
+	_ghost_label.visible = false
+	_ghost_root.position = Vector3(target) + Vector3(0.5, 0.5, 0.5)
+	_ghost_root.rotation.y = _walk_yaw
+
+
+## Color base del fantasma según el bloque elegido (compartido por el
+## fantasma del cursor y el del paseo).
+func _ghost_base_color(modo: String, dato: int) -> Color:
+	match modo:
+		"numero":
+			return NUMBER_CUBE_COLOR
+		"letra":
+			return LETTER_CUBE_COLOR
+		"agua":
+			return WATER_COLOR
+		"arbol":
+			return LEAF_COLOR
+		"flor":
+			return FLOWER_HEAD_COLOR
+		"pared":
+			return WALL_COLOR
+		"techo":
+			return ROOF_COLOR
+		"puerta":
+			return DOOR_COLOR
+		"borrador":
+			return Color(0.95, 0.30, 0.30)
+		_:
+			return BLOCK_COLORS[clampi(dato, 0, BLOCK_COLORS.size() - 1)]["color"]
+
+
+## Poner desde el paseo: usa la selección actual (se elige en
+## construcción antes de caminar) y las mismas reglas de _place_at.
+## No se pone sobre el avatar ni sobre la mascota a ras de suelo.
+func _walk_place() -> void:
+	_close_radial()
+	var target := _walk_aim_cell()
+	if target.x < 0:
+		_palette.show_message("Apunta a un sitio cerca para poner el bloque.")
+		return
+	var avatar_cell := Vector3i(_walk_cell.x, 0, _walk_cell.y)
+	var pet_cell := Vector3i(_pet_cell.x, 0, _pet_cell.y)
+	if target == avatar_cell or target == pet_cell:
+		_palette.show_message("¡Ahí estás tú (o tu mascota)!")
+		return
+	_place_at(target)
+
+
+## Quitar desde el paseo: el bloque al que apunta la cámara.
+func _walk_remove() -> void:
+	_close_radial()
+	var target := _walk_hit_cell()
+	if target.x < 0:
+		_palette.show_message("Apunta a un bloque para quitarlo.")
+		return
+	_remove_at(target)
+
+
 func _build_trees() -> void:
 	var trunk_mat := _make_material(Color(0.45, 0.32, 0.20))
 	var leaf_mat := _make_material(Color(0.25, 0.60, 0.30))
 	var spots: Array = [
-		Vector2(-2.5, -2.0), Vector2(18.5, -1.5), Vector2(-2.0, 18.0),
-		Vector2(18.0, 18.5), Vector2(4.0, -3.0), Vector2(12.0, 19.0),
-		Vector2(-3.0, 7.0), Vector2(19.0, 10.0), Vector2(8.0, -3.5),
+		Vector2(-2.5, -2.0), Vector2(22.5, -1.5), Vector2(-2.0, 22.0),
+		Vector2(22.0, 22.5), Vector2(4.0, -3.0), Vector2(12.0, 23.0),
+		Vector2(-3.0, 7.0), Vector2(23.0, 10.0), Vector2(8.0, -3.5),
 		Vector2(-3.5, 13.0),
 	]
 	var idx := 0
@@ -1668,8 +1982,9 @@ func _load_world() -> void:
 	for cell in loaded.keys():
 		if blocks.size() >= MAX_BLOCKS:
 			break
-		if cell.x < 0 or cell.x >= GRID_SIZE or cell.z < 0 or cell.z >= GRID_SIZE:
-			continue
+		# 1.10.0: sin filtro de borde (el mundo es infinito): las
+		# partidas viejas 16×16 cargan igual y las celdas más allá del
+		# antiguo borde también valen. Solo se filtra la altura.
 		if cell.y < 0 or cell.y >= MAX_HEIGHT:
 			continue
 		var data: Dictionary = loaded[cell]

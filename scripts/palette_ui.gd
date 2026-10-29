@@ -23,8 +23,15 @@ signal walk_requested
 ## modo caminar (equivale al OK corto del mando) y cambiar de vista
 ## (equivale al OK largo del mando). La mascota no se toca: solo se
 ## le da acceso táctil a un paseo que ya existe.
-signal walk_exit_requested
-signal walk_view_requested
+## 1.10.0: menú radial del paseo. Sustituye a los antiguos botones
+## «Vista»/«Salir» del overlay (ahora viven dentro del radial): el
+## paseo queda con cruceta + un solo botón «Menú», y la vista libre
+## de botones que tapaban la pantalla.
+signal radial_open_requested
+signal radial_place_requested
+signal radial_remove_requested
+signal radial_view_requested
+signal radial_exit_requested
 ## Cámara de construcción por presets (1.5/F3): cada OK sobre «Cámara»
 ## cicla Arriba → Cerca → Lado → Lejos (la paleta queda abierta).
 signal camera_cycle_requested
@@ -105,6 +112,14 @@ var _reset_fired := false
 ## bloquean en main.gd).
 var _actions_box: VBoxContainer
 var _walk_box: Control
+var _top_margin: MarginContainer
+var _palette_dock: Control
+var _rotate_box: HBoxContainer
+var _walk_info_label: Label
+var _radial_box: Control
+var _radial_buttons: Array = []
+var _radial_highlight := 0
+var _radial_items: Array = []
 
 
 func _ready() -> void:
@@ -149,6 +164,7 @@ func select_color(index: int) -> void:
 func set_info(text: String) -> void:
 	if _info_label != null:
 		_info_label.text = text
+	_refresh_walk_info()
 
 
 func show_message(text: String) -> void:
@@ -196,10 +212,13 @@ func _build_ui() -> void:
 	_build_action_buttons(root)
 	_build_rotate_buttons(root)
 	_build_walk_controls(root)
+	_build_walk_info(root)
+	_build_radial(root)
 
 
 func _build_top_bar(root: Control) -> void:
 	var margin := MarginContainer.new()
+	_top_margin = margin
 	margin.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# 1.2.2: margen seguro anti-overscan subido de 64 a 96 px: el TV
@@ -358,6 +377,7 @@ func _build_palette(root: Control) -> void:
 	# ancho): el centro de la vista de construcción queda libre. El
 	# margen anti-overscan de 96 px se conserva.
 	var dock := Control.new()
+	_palette_dock = dock
 	dock.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	dock.offset_left = 96.0
 	dock.offset_top = -286.0
@@ -525,6 +545,7 @@ func _build_action_buttons(root: Control) -> void:
 
 func _build_rotate_buttons(root: Control) -> void:
 	var rot_box := HBoxContainer.new()
+	_rotate_box = rot_box
 	rot_box.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	rot_box.offset_left = 80.0
 	rot_box.offset_top = -148.0
@@ -558,6 +579,13 @@ func _build_rotate_buttons(root: Control) -> void:
 ## la API para controles virtuales), así que el mando y el táctil
 ## comparten exactamente la misma lógica (y la mascota, que ya sigue
 ## con esa lógica, no se toca).
+## 1.10.0: controles del paseo. La cruceta abajo-derecha (margen
+## anti-overscan 96 px) sigue igual que en 1.8.0, pero la fila
+## «Vista»/«Salir» desaparece: en su lugar hay UN solo botón «Menú»
+## que abre el radial (Poner / Quitar / Vista / Salir). Con el mando,
+## OK largo y el botón B también abren el radial (ver main.gd).
+## Así el paseo ya no tiene paleta + overlay + botones superiores a
+## la vez: solo cruceta, Menú y una línea de información.
 func _build_walk_controls(root: Control) -> void:
 	_walk_box = Control.new()
 	_walk_box.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
@@ -575,20 +603,15 @@ func _build_walk_controls(root: Control) -> void:
 	vbox.add_theme_constant_override("separation", 10)
 	_walk_box.add_child(vbox)
 
-	var row := HBoxContainer.new()
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_theme_constant_override("separation", 8)
-	vbox.add_child(row)
+	var menu_row := HBoxContainer.new()
+	menu_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	menu_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(menu_row)
 
-	var view_b := _make_button("Vista", Vector2(112, 56), 18)
-	_apply_button_colors(view_b, Color(0.45, 0.45, 0.55))
-	view_b.pressed.connect(func() -> void: walk_view_requested.emit())
-	row.add_child(view_b)
-
-	var exit_b := _make_button("Salir", Vector2(112, 56), 18)
-	_apply_button_colors(exit_b, Color(0.90, 0.45, 0.40))
-	exit_b.pressed.connect(func() -> void: walk_exit_requested.emit())
-	row.add_child(exit_b)
+	var menu_b := _make_button("Menú ☰", Vector2(112, 56), 18)
+	_apply_button_colors(menu_b, Color(0.20, 0.65, 0.55))
+	menu_b.pressed.connect(func() -> void: radial_open_requested.emit())
+	menu_row.add_child(menu_b)
 
 	var dpad := GridContainer.new()
 	dpad.columns = 3
@@ -598,10 +621,10 @@ func _build_walk_controls(root: Control) -> void:
 	vbox.add_child(dpad)
 
 	var spacer := func() -> Control:
-		var s := Control.new()
-		s.custom_minimum_size = Vector2(72, 72)
-		s.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		return s
+		var sp := Control.new()
+		sp.custom_minimum_size = Vector2(72, 72)
+		sp.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		return sp
 	dpad.add_child(spacer.call())
 	dpad.add_child(_walk_dir_button("▲", "move_forward"))
 	dpad.add_child(spacer.call())
@@ -611,6 +634,128 @@ func _build_walk_controls(root: Control) -> void:
 	dpad.add_child(spacer.call())
 	dpad.add_child(_walk_dir_button("▼", "move_back"))
 	dpad.add_child(spacer.call())
+
+
+## Etiqueta fina de información durante el paseo (mundo + bloques +
+## bloque elegido). Solo texto, sin botones: la barra superior con
+## «Empezar de nuevo» y «Menú» queda oculta en paseo para no tapar
+## la vista ni borrar el mundo sin querer mientras se camina.
+func _build_walk_info(root: Control) -> void:
+	_walk_info_label = Label.new()
+	_walk_info_label.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_walk_info_label.offset_left = 96.0
+	_walk_info_label.offset_top = 160.0
+	_walk_info_label.offset_right = 1100.0
+	_walk_info_label.offset_bottom = 190.0
+	_walk_info_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_walk_info_label.visible = false
+	_style_label(_walk_info_label, 16)
+	root.add_child(_walk_info_label)
+
+
+func _refresh_walk_info() -> void:
+	if _walk_info_label == null:
+		return
+	var info := ""
+	if _info_label != null:
+		info = _info_label.text
+	var sel := "Bloque elegido: " + _option_name(String(_selection["modo"]), int(_selection["dato"]))
+	_walk_info_label.text = info + " · " + sel
+
+
+## Menú radial del paseo (1.10.0): 4 acciones en cruz alrededor del
+## centro de la pantalla. Con mando: ◀ ▶ cambian el resaltado y OK
+## confirma (resaltado manual dorado, igual que la paleta TV: ningún
+## botón toma foco, así que no hay muerte de foco). Con toque: tocar
+## la acción la ejecuta directamente. Atrás lo cierra sin hacer nada.
+func _build_radial(root: Control) -> void:
+	_radial_box = Control.new()
+	_radial_box.set_anchors_preset(Control.PRESET_CENTER)
+	_radial_box.offset_left = -230.0
+	_radial_box.offset_top = -230.0
+	_radial_box.offset_right = 230.0
+	_radial_box.offset_bottom = 230.0
+	_radial_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_radial_box.visible = false
+	root.add_child(_radial_box)
+
+	var panel := PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.08, 0.10, 0.14, 0.72)
+	panel_style.set_corner_radius_all(28)
+	panel_style.set_content_margin_all(10.0)
+	panel.add_theme_stylebox_override("panel", panel_style)
+	_radial_box.add_child(panel)
+
+	_radial_items = [
+		{"nombre": "Poner 🧱", "pos": Vector2(160.0, 20.0), "color": Color(0.25, 0.75, 0.35)},
+		{"nombre": "Vista 👁", "pos": Vector2(310.0, 198.0), "color": Color(0.45, 0.45, 0.55)},
+		{"nombre": "Salir 🚪", "pos": Vector2(160.0, 376.0), "color": Color(0.90, 0.45, 0.40)},
+		{"nombre": "Quitar 🗑", "pos": Vector2(10.0, 198.0), "color": Color(0.90, 0.45, 0.40)},
+	]
+	for i in range(_radial_items.size()):
+		var item: Dictionary = _radial_items[i]
+		var b := _make_button(String(item["nombre"]), Vector2(140, 64), 18)
+		_apply_button_colors(b, item["color"])
+		b.position = item["pos"]
+		_radial_box.add_child(b)
+		_radial_buttons.append(b)
+		b.pressed.connect(_on_radial_pressed.bind(i))
+
+
+func open_radial() -> void:
+	if _radial_box == null:
+		return
+	_radial_highlight = 0
+	_radial_box.visible = true
+	_refresh_radial_styles()
+
+
+func close_radial() -> void:
+	if _radial_box != null:
+		_radial_box.visible = false
+
+
+func is_radial_open() -> bool:
+	return _radial_box != null and _radial_box.visible
+
+
+func radial_move(dir: int) -> void:
+	if _radial_buttons.is_empty():
+		return
+	_radial_highlight = (_radial_highlight + dir) % _radial_buttons.size()
+	if _radial_highlight < 0:
+		_radial_highlight += _radial_buttons.size()
+	_refresh_radial_styles()
+
+
+func radial_confirm() -> void:
+	_on_radial_pressed(_radial_highlight)
+
+
+func _on_radial_pressed(index: int) -> void:
+	match index:
+		0:
+			radial_place_requested.emit()
+		1:
+			radial_view_requested.emit()
+		2:
+			radial_exit_requested.emit()
+		3:
+			radial_remove_requested.emit()
+
+
+func _refresh_radial_styles() -> void:
+	for idx in range(_radial_buttons.size()):
+		var b: Button = _radial_buttons[idx]
+		var item: Dictionary = _radial_items[idx]
+		var base: Color = item["color"]
+		if idx == _radial_highlight:
+			b.add_theme_stylebox_override("normal", _style_box(base.lightened(0.10), Color(1.0, 0.85, 0.20), 6))
+		else:
+			b.add_theme_stylebox_override("normal", _style_box(base, Color(0, 0, 0, 0.28), 2))
 
 
 func _walk_dir_button(text: String, action: String) -> Button:
@@ -631,16 +776,32 @@ func _send_walk_action(action: String, pressed: bool) -> void:
 		Input.action_release(action)
 
 
-## Muestra el overlay del paseo y oculta la columna de acciones (su
-## zona se solapa con la cruceta). Al ocultar se sueltan las 4
-## direcciones: si el niño salía con un dedo aún apoyado, el cursor
-## no heredaría un movimiento fantasma al volver a construir.
+## Muestra el paseo y recoge TODA la interfaz de construcción: la
+## columna de acciones (se solapa con la cruceta), la paleta, los
+## botones de giro y la barra superior (título, «Empezar de nuevo»,
+## «Menú»). En paseo solo quedan la cruceta, el botón «Menú» y la
+## línea de información: esa era la queja de la 1.8.0 (botones por
+## toda la pantalla tapando la vista). Al ocultar se cierra el radial
+## y se sueltan las 4 direcciones: si el niño salía con un dedo aún
+## apoyado, el cursor no heredaría un movimiento fantasma.
 func set_walk_controls_visible(visible: bool) -> void:
 	if _walk_box != null:
 		_walk_box.visible = visible
 	if _actions_box != null:
 		_actions_box.visible = not visible
+	if _palette_dock != null:
+		_palette_dock.visible = not visible
+	if _rotate_box != null:
+		_rotate_box.visible = not visible
+	if _top_margin != null:
+		_top_margin.visible = not visible
+	if _help_label != null:
+		_help_label.visible = not visible
+	if _walk_info_label != null:
+		_walk_info_label.visible = visible
+		_refresh_walk_info()
 	if not visible:
+		close_radial()
 		_release_walk_actions()
 
 

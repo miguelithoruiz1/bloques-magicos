@@ -26,12 +26,12 @@ const SUMANDO_COLOR := Color(0.20, 0.45, 0.95)
 const PUENTE_COLOR := Color(0.98, 0.80, 0.15)
 
 
-## Fila horizontal centrada en x=8, en la fila z dada.
+## Fila horizontal centrada en x=10, en la fila z dada.
 static func _fila(z: int, count: int) -> Array:
 	var out: Array = []
 	if count <= 0:
 		return out
-	var start_x := 8 - count / 2
+	var start_x := 10 - count / 2
 	for i in range(count):
 		out.append(Vector2i(start_x + i, z))
 	return out
@@ -47,34 +47,34 @@ static func items_for_level(tipo: String, params: Dictionary, objetivo: int) -> 
 		"poner_color":
 			var color := int(params.get("color", 0))
 			var cantidad := int(params.get("cantidad", 1))
-			for cell in _fila(8, cantidad):
+			for cell in _fila(10, cantidad):
 				out.append(_item(cell, COLORS[clampi(color, 0, COLORS.size() - 1)]))
 		"color_voz":
 			if objetivo >= 0 and objetivo < COLORS.size():
-				out.append(_item(Vector2i(8, 8), COLORS[objetivo]))
+				out.append(_item(Vector2i(10, 10), COLORS[objetivo]))
 		"arcoiris":
 			var orden: Array = [0, 4, 2, 3, 1, 5]
-			var cells := _fila(8, orden.size())
+			var cells := _fila(10, orden.size())
 			for i in range(orden.size()):
 				out.append(_item(cells[i], COLORS[int(orden[i])]))
 		"contar":
 			var cantidad := int(params.get("cantidad", 1))
-			var cells := _fila(8, cantidad)
+			var cells := _fila(10, cantidad)
 			for i in range(cells.size()):
 				out.append(_item(cells[i], NUMBER_TILE_COLOR, str(i + 1)))
 		"numero_pedido":
 			var numero := int(params.get("numero", 1))
-			out.append(_item(Vector2i(8, 8), NUMBER_TILE_COLOR, str(numero)))
+			out.append(_item(Vector2i(10, 10), NUMBER_TILE_COLOR, str(numero)))
 		"ordenar":
-			var cells := _fila(8, 5)
+			var cells := _fila(10, 5)
 			for i in range(cells.size()):
 				out.append(_item(cells[i], NUMBER_TILE_COLOR, str(i + 1)))
 		"letra_voz":
 			if objetivo >= 0 and objetivo < LevelsData.LETRAS.size():
-				out.append(_item(Vector2i(8, 8), Color(0.62, 0.85, 1.0), String(LevelsData.LETRAS[objetivo])))
+				out.append(_item(Vector2i(10, 10), Color(0.62, 0.85, 1.0), String(LevelsData.LETRAS[objetivo])))
 		"palabra":
 			var letras: Array = params.get("letras", [])
-			var cells := _fila(8, letras.size())
+			var cells := _fila(10, letras.size())
 			for i in range(letras.size()):
 				var li := int(letras[i])
 				if li >= 0 and li < LevelsData.LETRAS.size():
@@ -87,6 +87,6 @@ static func items_for_level(tipo: String, params: Dictionary, objetivo: int) -> 
 				out.append(_item(Vector2i(3 + i, 5), SUMANDO_COLOR, "", "sumando"))
 			for i in range(b):
 				out.append(_item(Vector2i(3 + i, 10), SUMANDO_COLOR, "", "sumando"))
-			for cell in _fila(8, resultado):
+			for cell in _fila(10, resultado):
 				out.append(_item(cell, PUENTE_COLOR, "", "puente"))
 	return out

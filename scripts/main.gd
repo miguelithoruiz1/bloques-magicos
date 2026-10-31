@@ -41,12 +41,18 @@ const SAVE_DELAY := 0.6
 const OK_HOLD_SECONDS := 0.35
 
 const BLOCK_COLORS: Array = [
-	{"nombre": "Rojo", "color": Color(0.90, 0.25, 0.22)},
-	{"nombre": "Azul", "color": Color(0.20, 0.45, 0.95)},
-	{"nombre": "Amarillo", "color": Color(0.98, 0.80, 0.15)},
-	{"nombre": "Verde", "color": Color(0.30, 0.75, 0.35)},
-	{"nombre": "Naranja", "color": Color(0.98, 0.55, 0.15)},
-	{"nombre": "Morado", "color": Color(0.60, 0.35, 0.90)},
+	{"nombre": "Rojo", "color": Color(0.90, 0.25, 0.22), "clip": "color_rojo"},
+	{"nombre": "Azul", "color": Color(0.20, 0.45, 0.95), "clip": "color_azul"},
+	{"nombre": "Amarillo", "color": Color(0.98, 0.80, 0.15), "clip": "color_amarillo"},
+	{"nombre": "Verde", "color": Color(0.30, 0.75, 0.35), "clip": "color_verde"},
+	{"nombre": "Naranja", "color": Color(0.98, 0.55, 0.15), "clip": "color_naranja"},
+	{"nombre": "Morado", "color": Color(0.60, 0.35, 0.90), "clip": "color_morado"},
+	{"nombre": "Rosado", "color": Color(1.00, 0.55, 0.75), "clip": "color_rosado"},
+	{"nombre": "Café", "color": Color(0.55, 0.38, 0.22), "clip": "color_cafe"},
+	{"nombre": "Negro", "color": Color(0.15, 0.15, 0.18), "clip": "color_negro"},
+	{"nombre": "Blanco", "color": Color(1.00, 1.00, 1.00), "clip": "color_blanco"},
+	{"nombre": "Gris", "color": Color(0.60, 0.60, 0.62), "clip": "color_gris"},
+	{"nombre": "Celeste", "color": Color(0.55, 0.85, 1.00), "clip": "color_celeste"},
 ]
 const NUMBER_NAMES: Array = ["Uno", "Dos", "Tres", "Cuatro", "Cinco"]
 const NUMBER_CUBE_COLOR := Color(1.0, 0.95, 0.78)
@@ -66,12 +72,25 @@ const DOOR_COLOR := Color(0.55, 0.38, 0.22)
 const TRUNK_COLOR := Color(0.45, 0.32, 0.20)
 const LEAF_COLOR := Color(0.25, 0.60, 0.30)
 const FLOWER_HEAD_COLOR := Color(1.00, 0.55, 0.75)
-const LIBRE_NAMES := {"agua": "Agua", "arbol": "Árbol", "flor": "Flor", "pared": "Pared", "techo": "Techo", "puerta": "Puerta"}
+## 1.11.0: colores de los objetos nuevos y de las palabras mágicas.
+const PINE_COLOR := Color(0.15, 0.45, 0.25)
+const SUN_HEAD_COLOR := Color(1.00, 0.85, 0.20)
+const WHEEL_COLOR := Color(0.12, 0.12, 0.14)
+const CAT_COLOR := Color(0.95, 0.62, 0.25)
+const DOG_COLOR := Color(0.60, 0.42, 0.25)
+const BEAR_COLOR := Color(0.50, 0.35, 0.20)
+const FISH_COLOR := Color(1.00, 0.50, 0.15)
+const HEART_COLOR := Color(1.00, 0.25, 0.45)
+const LIBRE_NAMES := {"agua": "Agua", "arbol": "Árbol", "flor": "Flor", "pared": "Pared", "techo": "Techo", "puerta": "Puerta", "pino": "Pino", "girasol": "Girasol", "mesa": "Mesa", "silla": "Silla", "carro": "Carro", "avion": "Avión"}
 ## 1.10.0: identidad visual por mundo. Cada mundo tiene su suelo
 ## (damero claro/oscuro/línea), su cielo y su decoración (flores o
 ## piedras deterministas por chunk). "libre" es la pradera de siempre.
+## 1.11.0: "ciudad" y "espacio" son mundos libres nuevos (chunks
+## infinitos y decoración temática determinista, igual que la pradera).
 const WORLD_THEMES := {
 	"libre": {"suelo_claro": Color(0.56, 0.80, 0.47), "suelo_oscuro": Color(0.49, 0.74, 0.42), "suelo_linea": Color(0.40, 0.64, 0.36), "cielo_arriba": Color(0.30, 0.58, 0.95), "cielo_horizonte": Color(0.72, 0.87, 1.00), "decor": [Color(1.00, 0.55, 0.75), Color(1.00, 0.85, 0.30), Color(1.00, 1.00, 1.00)]},
+	"ciudad": {"suelo_claro": Color(0.55, 0.55, 0.58), "suelo_oscuro": Color(0.48, 0.48, 0.51), "suelo_linea": Color(0.38, 0.38, 0.41), "cielo_arriba": Color(0.30, 0.58, 0.95), "cielo_horizonte": Color(0.85, 0.90, 1.00), "decor": [Color(0.65, 0.65, 0.65), Color(0.98, 0.85, 0.15), Color(1.00, 1.00, 1.00)]},
+	"espacio": {"suelo_claro": Color(0.18, 0.16, 0.28), "suelo_oscuro": Color(0.14, 0.13, 0.23), "suelo_linea": Color(0.10, 0.09, 0.18), "cielo_arriba": Color(0.04, 0.03, 0.12), "cielo_horizonte": Color(0.25, 0.15, 0.45), "decor": [Color(1.00, 1.00, 1.00), Color(1.00, 0.95, 0.70), Color(0.55, 0.85, 1.00)]},
 	"colores": {"suelo_claro": Color(0.62, 0.85, 0.55), "suelo_oscuro": Color(0.55, 0.78, 0.48), "suelo_linea": Color(0.45, 0.68, 0.40), "cielo_arriba": Color(0.35, 0.55, 0.95), "cielo_horizonte": Color(0.95, 0.80, 0.95), "decor": [Color(1.00, 0.25, 0.22), Color(0.98, 0.55, 0.15), Color(0.98, 0.80, 0.15), Color(0.30, 0.75, 0.35), Color(0.20, 0.45, 0.95), Color(0.60, 0.35, 0.90)]},
 	"numeros": {"suelo_claro": Color(0.93, 0.85, 0.62), "suelo_oscuro": Color(0.87, 0.78, 0.52), "suelo_linea": Color(0.78, 0.68, 0.42), "cielo_arriba": Color(0.30, 0.58, 0.95), "cielo_horizonte": Color(0.85, 0.90, 1.00), "decor": [Color(0.65, 0.65, 0.65), Color(0.55, 0.55, 0.55), Color(0.75, 0.72, 0.60)]},
 	"letras": {"suelo_claro": Color(0.75, 0.87, 0.98), "suelo_oscuro": Color(0.68, 0.80, 0.95), "suelo_linea": Color(0.58, 0.70, 0.88), "cielo_arriba": Color(0.45, 0.70, 1.00), "cielo_horizonte": Color(0.90, 0.95, 1.00), "decor": [Color(1.00, 1.00, 1.00), Color(0.95, 0.97, 1.00), Color(0.85, 0.92, 1.00)]},
@@ -95,6 +114,14 @@ var _door_material: StandardMaterial3D
 var _trunk_material: StandardMaterial3D
 var _leaf_material: StandardMaterial3D
 var _flower_material: StandardMaterial3D
+var _pine_material: StandardMaterial3D
+var _sun_material: StandardMaterial3D
+var _wheel_material: StandardMaterial3D
+var _cat_material: StandardMaterial3D
+var _dog_material: StandardMaterial3D
+var _bear_material: StandardMaterial3D
+var _fish_material: StandardMaterial3D
+var _heart_material: StandardMaterial3D
 
 ## Estado de la Fase 2 (modo nivel). En juego libre no se usa.
 var _level_mode := false
@@ -111,6 +138,7 @@ var _hint_timer := 0.0
 ## 1.10.0: chunks del mundo infinito + tema activo + menú radial.
 var _chunks: Dictionary = {} ## Vector2i(chunk) -> Node3D
 var _theme: Dictionary = {}
+var _theme_id: String = ""
 var _sky_mat = null
 var _chunk_material: StandardMaterial3D
 var _chunk_mesh: PlaneMesh
@@ -186,9 +214,17 @@ var _mouse_dragged := false
 func _ready() -> void:
 	_build_shared()
 	_build_environment()
-	_apply_theme("libre" if GameState.modo != "nivel" else GameState.mundo)
+	# 1.11.0: en libre, el tema es el mundo elegido (pradera "libre",
+	# "ciudad" o "espacio"); _apply_theme cae a "libre" si no existe.
+	var tema := GameState.mundo
+	if GameState.modo != "nivel" and tema == "":
+		tema = "libre"
+	_apply_theme(tema)
 	_build_ground()
-	_build_trees()
+	# En el espacio no hay árboles en el borde: es el vacío con
+	# estrellas (la decoración del tema ya da las estrellas).
+	if _theme_id != "espacio":
+		_build_trees()
 	_build_camera()
 	_build_ghost()
 	_build_audio()
@@ -226,6 +262,9 @@ func _ready() -> void:
 		_start_level()
 	else:
 		_load_world()
+		# 1.11.0: en libre la paleta usa el filtro "libre" (colores,
+		# números, objetos libres Y letras, para las palabras mágicas).
+		_palette.set_level_world("")
 	# 1.4: avatar Blocky y mascota (después de cargar el mundo, para
 	# que la mascota nazca en una celda libre).
 	_build_walk_actors()
@@ -529,7 +568,9 @@ func _place_at(cell: Vector3i) -> void:
 	elif String(data["tipo"]) == "letra":
 		var letras: Array = LevelsData.LETRAS
 		nombre = String(letras[clampi(int(data["dato"]), 0, letras.size() - 1)])
-		clip = "letra_" + nombre.to_lower()
+		# 1.11.0: el clip viene de la tabla (la ñ es "letra_nn", no
+		# "letra_ñ"); si el clip no existe aún, speak usa TTS + visual.
+		clip = String(LevelsData.LETRAS_CLIPS[clampi(int(data["dato"]), 0, LevelsData.LETRAS_CLIPS.size() - 1)])
 	elif LIBRE_NAMES.has(String(data["tipo"])):
 		# 1.3: sin clip familiar (el banco solo tiene colores, números
 		# y letras): suena el TTS con el nombre.
@@ -537,9 +578,17 @@ func _place_at(cell: Vector3i) -> void:
 		clip = ""
 	else:
 		nombre = String(BLOCK_COLORS[int(data["dato"])]["nombre"])
-		clip = "color_" + nombre.to_lower()
+		# 1.11.0: el clip viene de la tabla (el café es "color_cafe",
+		# no "color_café"); si no existe aún, speak usa TTS + visual.
+		clip = String(BLOCK_COLORS[clampi(int(data["dato"]), 0, BLOCK_COLORS.size() - 1)].get("clip", ""))
 	speak("¡" + nombre + "!", clip)
 	_palette.show_announcement("¡" + nombre.to_upper() + "!")
+	# 1.11.0: palabras mágicas: si el cubo recién puesto es una letra,
+	# buscar la palabra que termina en él en su fila (eje X) y en su
+	# columna (eje Z). Funciona en libre y en nivel; en nivel el
+	# objeto es un extra temporal (el tablero del nivel no se guarda).
+	if String(data["tipo"]) == "letra":
+		_check_magic_word(cell)
 	# Fase 2: registrar lo colocado en el nivel y comprobar la meta.
 	if _level_mode and not _level_completed:
 		var placed := {"tipo": String(data["tipo"]), "dato": int(data["dato"]), "celda": cell}
@@ -548,6 +597,75 @@ func _place_at(cell: Vector3i) -> void:
 		var params: Dictionary = _level_def.get("params", {})
 		if LevelLogic.check_goal(tipo_meta, params, _level_target, _level_placed):
 			_complete_level()
+	_mark_dirty()
+	_update_info()
+	_update_ghost(true)
+
+
+## 1.11.0: palabras mágicas. Al poner un cubo con letra, busca en su
+## fila (eje X) y en su columna (eje Z), al mismo nivel, la fila de
+## cubos con letras que lo contiene; si una palabra mágica termina
+## justo en el cubo nuevo, el objeto aparece y suena su clip (o TTS
+## + visual si el clip aún no existe; jamás se sintetiza nada).
+## En modo nivel el objeto es un extra temporal: el tablero del nivel
+## no se guarda, así que desaparece al volver al menú.
+func _check_magic_word(cell: Vector3i) -> void:
+	for eje in ["x", "z"]:
+		var run: Array = []
+		var pos := -1
+		var d := Vector3i(1, 0, 0) if eje == "x" else Vector3i(0, 0, 1)
+		var inicio := cell
+		while blocks.has(inicio - d) and String(blocks[inicio - d].get("tipo", "")) == "letra":
+			inicio -= d
+		var cur := inicio
+		while blocks.has(cur) and String(blocks[cur].get("tipo", "")) == "letra":
+			run.append(int(blocks[cur].get("dato", 0)))
+			if cur == cell:
+				pos = run.size() - 1
+			cur += d
+		if pos < 0:
+			continue
+		var wi := LevelLogic.magic_word_in_run(run, pos, LevelsData.PALABRAS_MAGICAS)
+		if wi >= 0:
+			_spawn_magic_block(cell, wi)
+			return
+
+
+func _spawn_magic_block(cell: Vector3i, wi: int) -> void:
+	var magia: Dictionary = LevelsData.PALABRAS_MAGICAS[wi]
+	var palabra := String(magia.get("palabra", ""))
+	var tipo := String(magia.get("tipo", ""))
+	var clip := String(magia.get("clip", ""))
+	# Celda libre junto a la palabra, al mismo nivel; si no hay,
+	# encima de la palabra. Sin sitio, la celebración igual suena.
+	var destino := Vector3i(-1, -1, -1)
+	for d in [Vector3i(1, 0, 0), Vector3i(-1, 0, 0), Vector3i(0, 0, 1), Vector3i(0, 0, -1)]:
+		var cand: Vector3i = cell + d
+		if not blocks.has(cand) and cand.y >= 0 and cand.y < MAX_HEIGHT:
+			destino = cand
+			break
+	if destino.x < 0:
+		for y in range(cell.y + 1, MAX_HEIGHT):
+			var cand2 := Vector3i(cell.x, y, cell.z)
+			if not blocks.has(cand2):
+				destino = cand2
+				break
+	if destino.x < 0 or blocks.size() >= MAX_BLOCKS:
+		speak("¡" + palabra + "!", clip)
+		_palette.show_announcement("¡" + palabra + "! ✨")
+		return
+	var data := {"tipo": "magia", "dato": wi}
+	blocks[destino] = data
+	_spawn_block_node(destino, data)
+	_play_sound(_pop_stream)
+	speak("¡" + palabra + "!", clip)
+	if tipo == "corazon":
+		_palette.show_announcement("¡" + palabra + "! ❤️")
+	else:
+		_palette.show_announcement("¡" + palabra + "! ✨")
+	# SOL y LUNA mágicos también salen en el cielo, como en los niveles.
+	if palabra == "SOL" or palabra == "LUNA":
+		_set_sky_word(palabra)
 	_mark_dirty()
 	_update_info()
 	_update_ghost(true)
@@ -1078,6 +1196,27 @@ func _spawn_block_node(cell: Vector3i, data: Dictionary, pop := true) -> void:
 	elif tipo == "puerta":
 		# Fase 1: puerta real (marco + abertura), no un cubo café.
 		_spawn_door(root)
+	elif tipo == "pino":
+		# 1.11.0: pino (tronco + conos apilados).
+		_spawn_pine(root)
+	elif tipo == "girasol":
+		# 1.11.0: girasol (tallo alto + cabeza amarilla grande).
+		_spawn_sunflower(root)
+	elif tipo == "mesa":
+		# 1.11.0: mesa (tabla + 4 patas).
+		_spawn_table(root)
+	elif tipo == "silla":
+		# 1.11.0: silla (asiento + respaldo + patas).
+		_spawn_chair(root)
+	elif tipo == "carro":
+		# 1.11.0: carro (carrocería + cabina + 4 ruedas).
+		_spawn_car(root)
+	elif tipo == "avion":
+		# 1.11.0: avión (fuselaje + alas + cola).
+		_spawn_plane(root)
+	elif tipo == "magia":
+		# 1.11.0: objeto de palabra mágica (ver _spawn_magic).
+		_spawn_magic(root, int(data.get("dato", 0)))
 	else:
 		var mi := MeshInstance3D.new()
 		mi.mesh = _box_mesh
@@ -1188,6 +1327,364 @@ func _spawn_door(parent: Node3D) -> void:
 		beam_z.material_override = _door_material
 		beam_z.position = Vector3(sx, 0.41, 0.0)
 		parent.add_child(beam_z)
+
+
+## Objetos nuevos 1.11.0: modelos simples con primitivas, en el mismo
+## estilo gráfico que el árbol y la flor de 1.3. Todos caben en la
+## celda (la copa del pino y la cabeza del girasol asoman un poco por
+## arriba, como la copa del árbol). Se colocan desde la paleta libre.
+func _spawn_pine(parent: Node3D) -> void:
+	var trunk := MeshInstance3D.new()
+	var trunk_mesh := CylinderMesh.new()
+	trunk_mesh.top_radius = 0.10
+	trunk_mesh.bottom_radius = 0.14
+	trunk_mesh.height = 0.4
+	trunk.mesh = trunk_mesh
+	trunk.material_override = _trunk_material
+	trunk.position = Vector3(0.0, -0.3, 0.0)
+	parent.add_child(trunk)
+	var conos: Array = [
+		[0.05, 0.42, 0.35, 0.05],
+		[0.05, 0.34, 0.30, 0.28],
+		[0.02, 0.26, 0.28, 0.48],
+	]
+	for c in conos:
+		var cono := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = float(c[0])
+		cm.bottom_radius = float(c[1])
+		cm.height = float(c[2])
+		cono.mesh = cm
+		cono.material_override = _pine_material
+		cono.position = Vector3(0.0, float(c[3]), 0.0)
+		parent.add_child(cono)
+
+
+func _spawn_sunflower(parent: Node3D) -> void:
+	var stem := MeshInstance3D.new()
+	var stem_mesh := CylinderMesh.new()
+	stem_mesh.top_radius = 0.05
+	stem_mesh.bottom_radius = 0.05
+	stem_mesh.height = 0.7
+	stem.mesh = stem_mesh
+	stem.material_override = _trunk_material
+	stem.position = Vector3(0.0, -0.15, 0.0)
+	parent.add_child(stem)
+	var head := MeshInstance3D.new()
+	var sphere := SphereMesh.new()
+	sphere.radius = 0.30
+	sphere.height = 0.60
+	head.mesh = sphere
+	head.material_override = _sun_material
+	head.position = Vector3(0.0, 0.32, 0.0)
+	parent.add_child(head)
+	var centro := MeshInstance3D.new()
+	var cs := SphereMesh.new()
+	cs.radius = 0.12
+	cs.height = 0.24
+	centro.mesh = cs
+	centro.material_override = _door_material
+	centro.position = Vector3(0.0, 0.32, 0.28)
+	parent.add_child(centro)
+
+
+func _spawn_table(parent: Node3D) -> void:
+	var top := MeshInstance3D.new()
+	var tm := BoxMesh.new()
+	tm.size = Vector3(0.9, 0.12, 0.9)
+	top.mesh = tm
+	top.material_override = _door_material
+	top.position = Vector3(0.0, 0.25, 0.0)
+	parent.add_child(top)
+	for sx in [-0.35, 0.35]:
+		for sz in [-0.35, 0.35]:
+			var leg := MeshInstance3D.new()
+			var lm := BoxMesh.new()
+			lm.size = Vector3(0.12, 0.7, 0.12)
+			leg.mesh = lm
+			leg.material_override = _trunk_material
+			leg.position = Vector3(sx, -0.15, sz)
+			parent.add_child(leg)
+
+
+func _spawn_chair(parent: Node3D) -> void:
+	var seat := MeshInstance3D.new()
+	var sm := BoxMesh.new()
+	sm.size = Vector3(0.7, 0.12, 0.7)
+	seat.mesh = sm
+	seat.material_override = _door_material
+	seat.position = Vector3(0.0, -0.05, 0.0)
+	parent.add_child(seat)
+	var back := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(0.7, 0.8, 0.12)
+	back.mesh = bm
+	back.material_override = _door_material
+	back.position = Vector3(0.0, 0.35, -0.29)
+	parent.add_child(back)
+	for sx in [-0.28, 0.28]:
+		for sz in [-0.28, 0.28]:
+			var leg := MeshInstance3D.new()
+			var lm := BoxMesh.new()
+			lm.size = Vector3(0.10, 0.5, 0.10)
+			leg.mesh = lm
+			leg.material_override = _trunk_material
+			leg.position = Vector3(sx, -0.35, sz)
+			parent.add_child(leg)
+
+
+func _spawn_car(parent: Node3D) -> void:
+	var body := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(0.95, 0.35, 0.5)
+	body.mesh = bm
+	body.material_override = _roof_material
+	body.position = Vector3(0.0, -0.15, 0.0)
+	parent.add_child(body)
+	var cabin := MeshInstance3D.new()
+	var cm := BoxMesh.new()
+	cm.size = Vector3(0.55, 0.30, 0.45)
+	cabin.mesh = cm
+	cabin.material_override = _wall_material
+	cabin.position = Vector3(0.0, 0.18, 0.0)
+	parent.add_child(cabin)
+	for sx in [-0.32, 0.32]:
+		for sz in [-0.28, 0.28]:
+			var wheel := MeshInstance3D.new()
+			var wm := CylinderMesh.new()
+			wm.top_radius = 0.14
+			wm.bottom_radius = 0.14
+			wm.height = 0.10
+			wheel.mesh = wm
+			wheel.material_override = _wheel_material
+			wheel.rotation.x = PI / 2.0
+			wheel.position = Vector3(sx, -0.35, sz)
+			parent.add_child(wheel)
+
+
+func _spawn_plane(parent: Node3D) -> void:
+	var fuselage := MeshInstance3D.new()
+	var fm := CylinderMesh.new()
+	fm.top_radius = 0.16
+	fm.bottom_radius = 0.16
+	fm.height = 0.95
+	fuselage.mesh = fm
+	fuselage.material_override = _wall_material
+	fuselage.rotation.z = PI / 2.0
+	fuselage.position = Vector3(0.0, 0.0, 0.0)
+	parent.add_child(fuselage)
+	var wing := MeshInstance3D.new()
+	var wm := BoxMesh.new()
+	wm.size = Vector3(0.35, 0.08, 1.0)
+	wing.mesh = wm
+	wing.material_override = _roof_material
+	wing.position = Vector3(0.0, 0.0, 0.0)
+	parent.add_child(wing)
+	var tail := MeshInstance3D.new()
+	var tm := BoxMesh.new()
+	tm.size = Vector3(0.08, 0.35, 0.30)
+	tail.mesh = tm
+	tail.material_override = _roof_material
+	tail.position = Vector3(-0.42, 0.15, 0.0)
+	parent.add_child(tail)
+
+
+## Objeto de palabra mágica (1.11.0): el modelo depende del "tipo" de
+## la palabra (ver LevelsData.PALABRAS_MAGICAS). Sin etiquetas de
+## texto: la palabra ya se anuncia en grande y con voz al aparecer.
+func _spawn_magic(parent: Node3D, word_idx: int) -> void:
+	var magia: Dictionary = LevelsData.PALABRAS_MAGICAS[clampi(word_idx, 0, LevelsData.PALABRAS_MAGICAS.size() - 1)]
+	match String(magia.get("tipo", "")):
+		"corazon":
+			for sx in [-0.22, 0.22]:
+				var lobe := MeshInstance3D.new()
+				var sm := SphereMesh.new()
+				sm.radius = 0.32
+				sm.height = 0.64
+				lobe.mesh = sm
+				lobe.material_override = _heart_material
+				lobe.position = Vector3(sx, 0.15, 0.0)
+				parent.add_child(lobe)
+			var tip := MeshInstance3D.new()
+			var tm := BoxMesh.new()
+			tm.size = Vector3(0.62, 0.62, 0.25)
+			tip.mesh = tm
+			tip.material_override = _heart_material
+			tip.rotation.z = PI / 4.0
+			tip.position = Vector3(0.0, -0.18, 0.0)
+			parent.add_child(tip)
+		"gato", "perro":
+			var mat := _cat_material if String(magia.get("tipo", "")) == "gato" else _dog_material
+			var body := MeshInstance3D.new()
+			var bm := BoxMesh.new()
+			bm.size = Vector3(0.6, 0.30, 0.4)
+			body.mesh = bm
+			body.material_override = mat
+			body.position = Vector3(0.0, -0.2, 0.0)
+			parent.add_child(body)
+			var head := MeshInstance3D.new()
+			var hm := BoxMesh.new()
+			hm.size = Vector3(0.42, 0.38, 0.38)
+			head.mesh = hm
+			head.material_override = mat
+			head.position = Vector3(0.0, 0.18, 0.05)
+			parent.add_child(head)
+			for sx in [-0.14, 0.14]:
+				var ear := MeshInstance3D.new()
+				var em := BoxMesh.new()
+				if String(magia.get("tipo", "")) == "gato":
+					em.size = Vector3(0.14, 0.16, 0.10)
+					ear.position = Vector3(sx, 0.44, 0.05)
+				else:
+					em.size = Vector3(0.12, 0.28, 0.08)
+					ear.position = Vector3(sx * 1.7, 0.28, 0.05)
+				ear.mesh = em
+				ear.material_override = mat
+				parent.add_child(ear)
+			var tail := MeshInstance3D.new()
+			var tm2 := BoxMesh.new()
+			tm2.size = Vector3(0.10, 0.10, 0.45)
+			tail.mesh = tm2
+			tail.material_override = mat
+			tail.position = Vector3(0.0, -0.05, -0.38)
+			parent.add_child(tail)
+		"sol":
+			var sun := MeshInstance3D.new()
+			var sm2 := SphereMesh.new()
+			sm2.radius = 0.34
+			sm2.height = 0.68
+			sun.mesh = sm2
+			sun.material_override = _sun_material
+			sun.position = Vector3(0.0, 0.0, 0.0)
+			parent.add_child(sun)
+			for sx in [-0.45, 0.45]:
+				var ray := MeshInstance3D.new()
+				var rm := BoxMesh.new()
+				rm.size = Vector3(0.28, 0.08, 0.08)
+				ray.mesh = rm
+				ray.material_override = _sun_material
+				ray.position = Vector3(sx, 0.0, 0.0)
+				parent.add_child(ray)
+			for sz in [-0.45, 0.45]:
+				var ray2 := MeshInstance3D.new()
+				var rm2 := BoxMesh.new()
+				rm2.size = Vector3(0.08, 0.08, 0.28)
+				ray2.mesh = rm2
+				ray2.material_override = _sun_material
+				ray2.position = Vector3(0.0, 0.0, sz)
+				parent.add_child(ray2)
+		"luna":
+			var moon := MeshInstance3D.new()
+			var mm := SphereMesh.new()
+			mm.radius = 0.32
+			mm.height = 0.64
+			moon.mesh = mm
+			moon.material_override = _wall_material
+			moon.position = Vector3(0.0, 0.0, 0.0)
+			parent.add_child(moon)
+		"casa":
+			var wall := MeshInstance3D.new()
+			var wm2 := BoxMesh.new()
+			wm2.size = Vector3(0.8, 0.6, 0.8)
+			wall.mesh = wm2
+			wall.material_override = _wall_material
+			wall.position = Vector3(0.0, -0.2, 0.0)
+			parent.add_child(wall)
+			var roof := MeshInstance3D.new()
+			var rfm := CylinderMesh.new()
+			rfm.top_radius = 0.02
+			rfm.bottom_radius = 0.65
+			rfm.height = 0.5
+			rfm.radial_segments = 4
+			roof.mesh = rfm
+			roof.material_override = _roof_material
+			roof.rotation.y = PI / 4.0
+			roof.position = Vector3(0.0, 0.35, 0.0)
+			parent.add_child(roof)
+			var door := MeshInstance3D.new()
+			var dm := BoxMesh.new()
+			dm.size = Vector3(0.25, 0.45, 0.06)
+			door.mesh = dm
+			door.material_override = _door_material
+			door.position = Vector3(0.0, -0.27, 0.42)
+			parent.add_child(door)
+		"flor":
+			var stem := MeshInstance3D.new()
+			var stm := CylinderMesh.new()
+			stm.top_radius = 0.06
+			stm.bottom_radius = 0.06
+			stm.height = 0.6
+			stem.mesh = stm
+			stem.material_override = _trunk_material
+			stem.position = Vector3(0.0, -0.2, 0.0)
+			parent.add_child(stem)
+			var head := MeshInstance3D.new()
+			var hsm := SphereMesh.new()
+			hsm.radius = 0.30
+			hsm.height = 0.60
+			head.mesh = hsm
+			head.material_override = _flower_material
+			head.position = Vector3(0.0, 0.28, 0.0)
+			parent.add_child(head)
+			for off in [Vector3(0.32, 0.28, 0.0), Vector3(-0.32, 0.28, 0.0), Vector3(0.0, 0.28, 0.32), Vector3(0.0, 0.28, -0.32)]:
+				var petal := MeshInstance3D.new()
+				var pm := SphereMesh.new()
+				pm.radius = 0.12
+				pm.height = 0.24
+				petal.mesh = pm
+				petal.material_override = _flower_material
+				petal.position = off
+				parent.add_child(petal)
+		"pez":
+			var body := MeshInstance3D.new()
+			var bsm := SphereMesh.new()
+			bsm.radius = 0.30
+			bsm.height = 0.60
+			body.mesh = bsm
+			body.material_override = _fish_material
+			body.scale = Vector3(1.5, 1.0, 0.8)
+			body.position = Vector3(0.0, 0.0, 0.0)
+			parent.add_child(body)
+			var tail := MeshInstance3D.new()
+			var tlm := BoxMesh.new()
+			tlm.size = Vector3(0.10, 0.35, 0.30)
+			tail.mesh = tlm
+			tail.material_override = _fish_material
+			tail.position = Vector3(-0.42, 0.0, 0.0)
+			parent.add_child(tail)
+			var fin := MeshInstance3D.new()
+			var fnm := BoxMesh.new()
+			fnm.size = Vector3(0.25, 0.12, 0.08)
+			fin.mesh = fnm
+			fin.material_override = _fish_material
+			fin.position = Vector3(0.0, 0.28, 0.0)
+			parent.add_child(fin)
+		"oso":
+			var body := MeshInstance3D.new()
+			var osm := SphereMesh.new()
+			osm.radius = 0.32
+			osm.height = 0.64
+			body.mesh = osm
+			body.material_override = _bear_material
+			body.position = Vector3(0.0, -0.15, 0.0)
+			parent.add_child(body)
+			var head := MeshInstance3D.new()
+			var hdm := SphereMesh.new()
+			hdm.radius = 0.24
+			hdm.height = 0.48
+			head.mesh = hdm
+			head.material_override = _bear_material
+			head.position = Vector3(0.0, 0.28, 0.0)
+			parent.add_child(head)
+			for sx in [-0.18, 0.18]:
+				var ear := MeshInstance3D.new()
+				var erm := SphereMesh.new()
+				erm.radius = 0.10
+				erm.height = 0.20
+				ear.mesh = erm
+				ear.material_override = _bear_material
+				ear.position = Vector3(sx, 0.45, 0.0)
+				parent.add_child(ear)
 
 
 ## El texto (número o letra) se dibuja con Label3D en la cara superior
@@ -1344,6 +1841,14 @@ func _build_shared() -> void:
 	_trunk_material = _make_material(TRUNK_COLOR)
 	_leaf_material = _make_material(LEAF_COLOR)
 	_flower_material = _make_material(FLOWER_HEAD_COLOR)
+	_pine_material = _make_material(PINE_COLOR)
+	_sun_material = _make_material(SUN_HEAD_COLOR)
+	_wheel_material = _make_material(WHEEL_COLOR)
+	_cat_material = _make_material(CAT_COLOR)
+	_dog_material = _make_material(DOG_COLOR)
+	_bear_material = _make_material(BEAR_COLOR)
+	_fish_material = _make_material(FISH_COLOR)
+	_heart_material = _make_material(HEART_COLOR)
 
 
 func _make_material(c: Color) -> StandardMaterial3D:
@@ -1418,6 +1923,7 @@ func _build_environment() -> void:
 func _apply_theme(mundo_id: String) -> void:
 	## 1.10.0: el tema del mundo activo (suelo, cielo, decoración).
 	## Un mundo desconocido cae a la pradera libre, nunca a un error.
+	_theme_id = mundo_id if WORLD_THEMES.has(mundo_id) else "libre"
 	_theme = WORLD_THEMES.get(mundo_id, WORLD_THEMES["libre"])
 	if _sky_mat != null:
 		_sky_mat.sky_top_color = _theme["cielo_arriba"]
@@ -1639,6 +2145,20 @@ func _ghost_base_color(modo: String, dato: int) -> Color:
 			return ROOF_COLOR
 		"puerta":
 			return DOOR_COLOR
+		"pino":
+			return PINE_COLOR
+		"girasol":
+			return SUN_HEAD_COLOR
+		"mesa":
+			return DOOR_COLOR
+		"silla":
+			return TRUNK_COLOR
+		"carro":
+			return ROOF_COLOR
+		"avion":
+			return WALL_COLOR
+		"magia":
+			return HEART_COLOR
 		"borrador":
 			return Color(0.95, 0.30, 0.30)
 		_:
@@ -1897,7 +2417,8 @@ func _update_level_info() -> void:
 	var mundo := LevelsData.get_mundo(GameState.mundo)
 	var nombre := String(mundo.get("nombre", ""))
 	var estrellas := ProgressSave.stars_for(_level_progress, GameState.mundo)
-	_palette.set_info("%s · Nivel %d · ⭐ %d/5" % [nombre, GameState.nivel + 1, estrellas])
+	var total := LevelsData.get_niveles(GameState.mundo).size()
+	_palette.set_info("%s · Nivel %d · ⭐ %d/%d" % [nombre, GameState.nivel + 1, estrellas, total])
 
 
 ## Nivel superado: estrella, desbloqueo del siguiente, celebración con
@@ -1911,7 +2432,7 @@ func _complete_level() -> void:
 	_palette.show_celebration("¡Lo lograste! ⭐")
 	_play_sound(_win_stream)
 	var mundo_nombre := String(LevelsData.get_mundo(GameState.mundo).get("nombre", ""))
-	if ProgressSave.stars_for(_level_progress, GameState.mundo) >= 5:
+	if ProgressSave.stars_for(_level_progress, GameState.mundo) >= LevelsData.get_niveles(GameState.mundo).size():
 		speak("¡Muy bien! ¡Ganaste una estrella! ¡Completaste el mundo " + mundo_nombre + "! ¡Eres increíble!", "frase_mundo_completo")
 	else:
 		speak("¡Muy bien! ¡Ganaste una estrella!", "frase_muy_bien")
@@ -1969,16 +2490,18 @@ func _mark_dirty() -> void:
 
 func _save_now() -> void:
 	# En modo nivel el mundo libre NO se guarda: el tablero del nivel es
-	# temporal y mundo.json queda intacto.
+	# temporal y los archivos de mundo quedan intactos.
 	if _level_mode:
 		_dirty = false
 		return
-	WorldSave.save_world(blocks)
+	# 1.11.0: cada mundo libre tiene su archivo (pradera = mundo.json).
+	WorldSave.save_world_for(GameState.mundo, blocks)
 	_dirty = false
 
 
 func _load_world() -> void:
-	var loaded := WorldSave.load_world()
+	# 1.11.0: se carga el archivo del mundo libre activo.
+	var loaded := WorldSave.load_world_for(GameState.mundo)
 	for cell in loaded.keys():
 		if blocks.size() >= MAX_BLOCKS:
 			break
@@ -1995,6 +2518,15 @@ func _load_world() -> void:
 				continue
 		elif tipo == "color":
 			if dato < 0 or dato >= BLOCK_COLORS.size():
+				continue
+		elif tipo == "letra":
+			# 1.11.0: abecedario completo (27 letras); los guardados
+			# viejos ya vienen migrados por world_save.gd.
+			if dato < 0 or dato >= LevelsData.LETRAS.size():
+				continue
+		elif tipo == "magia":
+			# 1.11.0: objeto de palabra mágica (10 palabras).
+			if dato < 0 or dato >= LevelsData.PALABRAS_MAGICAS.size():
 				continue
 		elif LIBRE_NAMES.has(tipo):
 			# 1.3: agua, árbol, flor y piezas de casa (dato siempre 0).

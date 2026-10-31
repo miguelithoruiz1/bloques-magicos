@@ -3,7 +3,7 @@ extends CanvasLayer
 ## La crea main.gd por código (no necesita .tscn). Contiene:
 ## - Barra superior: título, información (altura y conteo) y botón
 ##   «Empezar de nuevo» con pulsación larga anti-accidentes.
-## - Paleta inferior con botones GRANDES: 6 colores, números 1-5 y borrador.
+## - Paleta inferior con botones GRANDES: 12 colores, números 1-5 y borrador.
 ## - Botones táctiles en pantalla: Poner, Quitar, Subir, Bajar y Girar cámara.
 ## - Etiqueta de mensajes amables (avisos sin castigo, pensados para un niño).
 ## Todos los botones usan FOCUS_NONE para que el mando nunca pierda el control.
@@ -45,13 +45,19 @@ const COLOR_DATA: Array = [
 	{"nombre": "Verde", "color": Color(0.30, 0.75, 0.35)},
 	{"nombre": "Naranja", "color": Color(0.98, 0.55, 0.15)},
 	{"nombre": "Morado", "color": Color(0.60, 0.35, 0.90)},
+	{"nombre": "Rosado", "color": Color(1.00, 0.55, 0.75)},
+	{"nombre": "Café", "color": Color(0.55, 0.38, 0.22)},
+	{"nombre": "Negro", "color": Color(0.15, 0.15, 0.18)},
+	{"nombre": "Blanco", "color": Color(1.00, 1.00, 1.00)},
+	{"nombre": "Gris", "color": Color(0.60, 0.60, 0.62)},
+	{"nombre": "Celeste", "color": Color(0.55, 0.85, 1.00)},
 ]
 const NUMBER_BG := Color(1.0, 0.95, 0.78)
 const NUMBER_FG := Color(0.10, 0.16, 0.45)
 const ERASER_BG := Color(0.99, 0.87, 0.87)
 const ERASER_FG := Color(0.55, 0.15, 0.15)
-## Cubos con letras (Fase 2): vocales + M, P, S, T, L, N.
-const LETTER_DATA: Array = ["A", "E", "I", "O", "U", "M", "P", "S", "T", "L", "N"]
+## Cubos con letras (Fase 2, 1.11.0: abecedario completo del español).
+const LETTER_DATA: Array = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 const LETTER_BG := Color(0.62, 0.85, 1.0)
 const LETTER_FG := Color(0.05, 0.15, 0.45)
 ## Entradas nuevas 1.3, solo mundo libre: agua, árbol, flor y piezas de
@@ -65,6 +71,12 @@ const LIBRE_DATA: Array = [
 	{"modo": "pared", "nombre": "Pared", "emoji": "🧱", "bg": Color(0.95, 0.92, 0.82)},
 	{"modo": "techo", "nombre": "Techo", "emoji": "🔺", "bg": Color(0.85, 0.25, 0.22)},
 	{"modo": "puerta", "nombre": "Puerta", "emoji": "🚪", "bg": Color(0.55, 0.38, 0.22)},
+	{"modo": "pino", "nombre": "Pino", "emoji": "🌲", "bg": Color(0.15, 0.45, 0.25)},
+	{"modo": "girasol", "nombre": "Girasol", "emoji": "🌻", "bg": Color(1.00, 0.85, 0.20)},
+	{"modo": "mesa", "nombre": "Mesa", "emoji": "🍽️", "bg": Color(0.55, 0.38, 0.22)},
+	{"modo": "silla", "nombre": "Silla", "emoji": "🪑", "bg": Color(0.45, 0.32, 0.20)},
+	{"modo": "carro", "nombre": "Carro", "emoji": "🚗", "bg": Color(0.85, 0.25, 0.22)},
+	{"modo": "avion", "nombre": "Avión", "emoji": "✈️", "bg": Color(0.95, 0.92, 0.82)},
 ]
 
 ## Rotación de cámara pedida desde los botones táctiles: -1.0, 0.0 o 1.0.
@@ -91,7 +103,8 @@ var _selection: Dictionary = {"modo": "color", "dato": 0}
 var _palette_buttons: Array = []
 var _base_buttons: Array = []
 var _letter_buttons: Array = []
-var _letters_row: HBoxContainer
+var _letters_row_a: HBoxContainer
+var _letters_row_b: HBoxContainer
 var _libre_row: HBoxContainer
 var _selection_label: Label
 var _info_label: Label
@@ -380,7 +393,7 @@ func _build_palette(root: Control) -> void:
 	_palette_dock = dock
 	dock.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	dock.offset_left = 96.0
-	dock.offset_top = -286.0
+	dock.offset_top = -350.0
 	dock.offset_right = 916.0
 	dock.offset_bottom = -96.0
 	dock.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -451,23 +464,32 @@ func _build_palette(root: Control) -> void:
 	_base_buttons.append(entry_e)
 	eraser.pressed.connect(_on_palette_pressed.bind("borrador", 0))
 
-	# Segunda fila (Fase 2): cubos con letras. Oculta salvo en el Mundo
-	# Letras; al mostrarse entra también en la navegación con mando.
-	_letters_row = HBoxContainer.new()
-	_letters_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_letters_row.add_theme_constant_override("separation", 8)
-	_letters_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	_letters_row.visible = false
-	vbox.add_child(_letters_row)
+	# Segunda fila (Fase 2): cubos con letras. Visible en el Mundo
+	# Letras y en juego libre (1.11.0: las letras también se colocan
+	# en libre para formar palabras mágicas); al mostrarse entra
+	# también en la navegación con mando.
+	# 1.11.0: 27 letras en DOS filas (14 + 13) para que quepan en el
+	# TV sin salirse de la pantalla.
+	_letters_row_a = HBoxContainer.new()
+	_letters_row_b = HBoxContainer.new()
+	for fila in [_letters_row_a, _letters_row_b]:
+		fila.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		fila.add_theme_constant_override("separation", 8)
+		fila.alignment = BoxContainer.ALIGNMENT_CENTER
+		fila.visible = false
+		vbox.add_child(fila)
 	for li in range(LETTER_DATA.size()):
 		var lb := _make_button(String(LETTER_DATA[li]), Vector2(56, 56), 28)
 		lb.add_theme_color_override("font_color", LETTER_FG)
 		lb.add_theme_color_override("font_hover_color", LETTER_FG)
 		lb.add_theme_color_override("font_pressed_color", LETTER_FG)
-		_letters_row.add_child(lb)
+		if li < 14:
+			_letters_row_a.add_child(lb)
+		else:
+			_letters_row_b.add_child(lb)
 		_letter_buttons.append({
 			"button": lb, "modo": "letra", "dato": li, "bg": LETTER_BG,
-			"mundos": ["letras"],
+			"mundos": ["letras", "libre"],
 		})
 		lb.pressed.connect(_on_palette_pressed.bind("letra", li))
 
@@ -885,9 +907,11 @@ func _option_name(modo: String, dato: int) -> String:
 ## siempre está. En juego libre no cambia nada (colores + números).
 func set_level_world(mundo: String) -> void:
 	var filtro := mundo if mundo != "" else "libre"
-	var show_letters := mundo == "letras"
-	if _letters_row != null:
-		_letters_row.visible = show_letters
+	var show_letters := mundo == "letras" or filtro == "libre"
+	if _letters_row_a != null:
+		_letters_row_a.visible = show_letters
+	if _letters_row_b != null:
+		_letters_row_b.visible = show_letters
 	# 1.3: la fila libre (agua, árbol, flor, piezas de casa) solo se
 	# muestra en mundo libre; en niveles el filtro ya excluye sus
 	# entradas de _palette_buttons (mundos ["libre"]).

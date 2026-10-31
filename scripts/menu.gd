@@ -1,5 +1,6 @@
 extends Control
-## Menú inicial de Bloques Mágicos (Fase 2): «Jugar libre» y «Mundos».
+## Menú inicial de Bloques Mágicos (Fase 2): «Jugar libre», «Ciudad
+## libre», «Espacio libre» (1.11.0) y «Mundos».
 ## Navegable con mando (cruceta + OK), táctil y teclado. La voz lee cada
 ## pantalla y cada botón al enfocarlo: el niño no necesita saber leer.
 ## Pantallas: principal → mundos → niveles. Atrás (ui_cancel) retrocede.
@@ -157,8 +158,13 @@ func _show_principal() -> void:
 	_clear_buttons()
 	_title_label.text = "Bloques Mágicos"
 	_add_button("Jugar libre", true, _jugar_libre)
+	_add_button("🏙️ Ciudad libre", true, _jugar_libre_mundo.bind("ciudad"))
+	_add_button("🚀 Espacio libre", true, _jugar_libre_mundo.bind("espacio"))
 	var total := ProgressSave.stars_total(_progreso)
-	_add_button("Mundos  ⭐ %d/20" % total, true, _show_mundos)
+	var total_max := 0
+	for m in LevelsData.MUNDOS:
+		total_max += LevelsData.get_niveles(String(m["id"])).size()
+	_add_button("Mundos  ⭐ %d/%d" % [total, total_max], true, _show_mundos)
 	_add_button("🔊 Probar voz", true, _probar_voz)
 	_finish_buttons()
 	speak("Bloques Mágicos. Elige: jugar libre o mundos.", "frase_elige_modo")
@@ -170,7 +176,8 @@ func _show_mundos() -> void:
 	_title_label.text = "Elige un mundo"
 	for m in LevelsData.MUNDOS:
 		var id := String(m["id"])
-		var texto := "%s %s  ⭐ %d/5" % [String(m["emoji"]), String(m["nombre"]), ProgressSave.stars_for(_progreso, id)]
+		var max_estrellas := LevelsData.get_niveles(id).size()
+		var texto := "%s %s  ⭐ %d/%d" % [String(m["emoji"]), String(m["nombre"]), ProgressSave.stars_for(_progreso, id), max_estrellas]
 		_add_button(texto, true, _show_niveles.bind(id))
 	_add_button("Atrás", true, _show_principal)
 	_finish_buttons()
@@ -183,7 +190,7 @@ func _show_niveles(mundo_id: String) -> void:
 	_clear_buttons()
 	var mundo := LevelsData.get_mundo(mundo_id)
 	_title_label.text = "%s %s" % [String(mundo.get("emoji", "")), String(mundo.get("nombre", ""))]
-	for i in range(5):
+	for i in range(LevelsData.get_niveles(mundo_id).size()):
 		var hecho := ProgressSave.is_completed(_progreso, mundo_id, i)
 		var abierto := ProgressSave.is_unlocked(_progreso, mundo_id, i)
 		var texto := "Nivel %d" % (i + 1)
@@ -204,6 +211,15 @@ func _on_button_focused(texto: String) -> void:
 func _jugar_libre() -> void:
 	GameState.modo = "libre"
 	GameState.mundo = ""
+	GameState.nivel = 0
+	get_tree().change_scene_to_file("res://main.tscn")
+
+
+## 1.11.0: mundos libres nuevos (Ciudad y Espacio). Como la pradera,
+## cada uno tiene su propio guardado (ver world_save.gd).
+func _jugar_libre_mundo(mundo_id: String) -> void:
+	GameState.modo = "libre"
+	GameState.mundo = mundo_id
 	GameState.nivel = 0
 	get_tree().change_scene_to_file("res://main.tscn")
 

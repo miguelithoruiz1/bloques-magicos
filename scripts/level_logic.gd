@@ -16,7 +16,8 @@ static func check_goal(tipo: String, params: Dictionary, objetivo: int, colocado
 				return false
 			return _contar(colocados, "color", objetivo) >= 1
 		"arcoiris":
-			return _contiene(_secuencia(colocados, "color"), [0, 4, 2, 3, 1, 5])
+			var secuencia: Array = params.get("secuencia", [0, 4, 2, 3, 1, 5])
+			return _contiene(_secuencia(colocados, "color"), secuencia)
 		"contar":
 			return colocados.size() >= int(params.get("cantidad", 1))
 		"numero_pedido":
@@ -33,6 +34,46 @@ static func check_goal(tipo: String, params: Dictionary, objetivo: int, colocado
 		"suma":
 			return colocados.size() == int(params.get("resultado", 0))
 	return false
+
+
+## Palabras mágicas (1.11.0, pura y testeable en headless).
+## "run" es la fila de cubos con letras en orden (un eje, mismo nivel),
+## "pos" es el índice del cubo recién colocado dentro de esa fila y
+## "palabras" es LevelsData.PALABRAS_MAGICAS (cada una con "letras").
+## Devuelve el índice de la palabra formada o -1.
+## La palabra debe TERMINAR justo en el cubo nuevo: al construir de
+## izquierda a derecha, el segmento que termina en "pos" es la palabra;
+## al construir de derecha a izquierda, el segmento que empieza en
+## "pos", leído al revés, es la palabra. Así poner otra letra después
+## (p. ej. GATOO) no vuelve a disparar la magia.
+static func magic_word_in_run(run: Array, pos: int, palabras: Array) -> int:
+	if pos < 0 or pos >= run.size():
+		return -1
+	for wi in range(palabras.size()):
+		var esperadas: Array = palabras[wi].get("letras", [])
+		var n := esperadas.size()
+		if n == 0:
+			continue
+		# Hacia adelante: la palabra termina en el cubo nuevo.
+		if pos - n + 1 >= 0:
+			var ok := true
+			for i in range(n):
+				if int(run[pos - n + 1 + i]) != int(esperadas[i]):
+					ok = false
+					break
+			if ok:
+				return wi
+		# Hacia atrás: la palabra empieza en el cubo nuevo (lectura
+		# de derecha a izquierda).
+		if pos + n - 1 < run.size():
+			var ok2 := true
+			for i in range(n):
+				if int(run[pos + i]) != int(esperadas[n - 1 - i]):
+					ok2 = false
+					break
+			if ok2:
+				return wi
+	return -1
 
 
 static func _contar(colocados: Array, tipo: String, dato: int) -> int:

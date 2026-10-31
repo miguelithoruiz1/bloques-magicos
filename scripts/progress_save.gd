@@ -7,7 +7,7 @@ extends RefCounted
 
 const SAVE_PATH := "user://progreso.json"
 const SAVE_VERSION := 1
-const NIVELES_POR_MUNDO := 5
+const NIVELES_POR_MUNDO := 10
 
 
 static func load_progress() -> Dictionary:

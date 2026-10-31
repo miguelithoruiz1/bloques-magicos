@@ -20,6 +20,12 @@ const COLORS: Array = [
 	Color(0.30, 0.75, 0.35),
 	Color(0.98, 0.55, 0.15),
 	Color(0.60, 0.35, 0.90),
+	Color(1.00, 0.55, 0.75),
+	Color(0.55, 0.38, 0.22),
+	Color(0.15, 0.15, 0.18),
+	Color(1.00, 1.00, 1.00),
+	Color(0.60, 0.60, 0.62),
+	Color(0.55, 0.85, 1.00),
 ]
 const NUMBER_TILE_COLOR := Color(1.0, 0.95, 0.78)
 const SUMANDO_COLOR := Color(0.20, 0.45, 0.95)
@@ -53,10 +59,10 @@ static func items_for_level(tipo: String, params: Dictionary, objetivo: int) -> 
 			if objetivo >= 0 and objetivo < COLORS.size():
 				out.append(_item(Vector2i(10, 10), COLORS[objetivo]))
 		"arcoiris":
-			var orden: Array = [0, 4, 2, 3, 1, 5]
+			var orden: Array = params.get("secuencia", [0, 4, 2, 3, 1, 5])
 			var cells := _fila(10, orden.size())
 			for i in range(orden.size()):
-				out.append(_item(cells[i], COLORS[int(orden[i])]))
+				out.append(_item(cells[i], COLORS[clampi(int(orden[i]), 0, COLORS.size() - 1)]))
 		"contar":
 			var cantidad := int(params.get("cantidad", 1))
 			var cells := _fila(10, cantidad)

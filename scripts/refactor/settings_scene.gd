@@ -30,6 +30,20 @@ func _ready() -> void:
 	settings = SettingsRefactor.load_settings()
 	_build_ui()
 	_show_section(2) # Táctil por defecto: es la sección más usada.
+	# 3.0.2 TV: sin foco inicial, la cruceta no navega Ajustes.
+	_focus_first(self)
+
+
+func _focus_first(node: Node) -> bool:
+	if node is Button or node is OptionButton or node is CheckButton:
+		var c := node as Control
+		if c.visible:
+			c.grab_focus()
+			return true
+	for child in node.get_children():
+		if _focus_first(child):
+			return true
+	return false
 
 
 func _build_ui() -> void:

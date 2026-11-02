@@ -30,6 +30,8 @@ var _controller: Node = null
 var _settings: Dictionary = {}
 var _ui_layer: CanvasLayer = null
 var _title_panel: Control = null
+var _play_btn: Button = null
+var _pause_first_btn: Button = null
 var _pause_panel: Control = null
 var _message_label: Label = null
 var _message_timer := 0.0
@@ -189,6 +191,7 @@ func _build_overlays() -> void:
 	play.text = "Jugar"
 	play.pressed.connect(_start_world)
 	vbox.add_child(play)
+	_play_btn = play
 	var settings_btn := Button.new()
 	settings_btn.text = "Ajustes"
 	settings_btn.pressed.connect(_open_settings)
@@ -198,6 +201,10 @@ func _build_overlays() -> void:
 	plaza_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://hub.tscn"))
 	vbox.add_child(plaza_btn)
 	_ui_layer.add_child(_title_panel)
+	# 3.0.2 TV: sin foco inicial, la cruceta del mando
+	# no selecciona nada en el título. El grab_focus
+	# va DESPUÉS de entrar al árbol o no hace nada.
+	play.grab_focus()
 	# Pausa.
 	_pause_panel = _panel()
 	_pause_panel.visible = false
@@ -208,6 +215,8 @@ func _build_overlays() -> void:
 		b.text = data[0]
 		b.pressed.connect(data[1])
 		pbox.add_child(b)
+		if _pause_first_btn == null:
+			_pause_first_btn = b
 	_ui_layer.add_child(_pause_panel)
 
 
@@ -312,6 +321,32 @@ func _set_pause(value: bool) -> void:
 	if _pause_panel != null:
 		_pause_panel.visible = value
 	get_tree().paused = value
+	if value:
+		if _pause_first_btn != null:
+			_pause_first_btn.grab_focus()
+	else:
+		get_viewport().gui_release_focus()
+
+
+## 3.0.2 TV/mando a distancia: la cruceta mueve
+## (respaldo ui_* en PlayerBlocky), OK pone bloque
+## y Atrás abre/cierra la pausa. Con título, pausa
+## o modal abierto, la UI se encarga sola.
+func _input(event: InputEvent) -> void:
+	if _title_panel != null and _title_panel.visible:
+		return
+	if event.is_action_pressed("ui_cancel"):
+		if _ui != null and _ui.close_open_modal():
+			get_viewport().gui_release_focus()
+			return
+		if _pause_panel != null and _pause_panel.visible:
+			_set_pause(false)
+		elif _started:
+			_set_pause(true)
+		return
+	if event.is_action_pressed("ui_accept"):
+		if _started and (_pause_panel == null or not _pause_panel.visible) and _ui != null and not _ui.has_open_modal():
+			_on_place()
 
 
 func _start_world() -> void:
@@ -357,6 +392,7 @@ func _start_world() -> void:
 		_player.apply_avatar(hat, AvatarCustom.shirt_color(shirt))
 		_spawn_animals()
 	_title_panel.visible = false
+	get_viewport().gui_release_focus()
 	_started = true
 	if _controller != null and _controller.has_method("set_in_world"):
 		_controller.set_in_world(true)

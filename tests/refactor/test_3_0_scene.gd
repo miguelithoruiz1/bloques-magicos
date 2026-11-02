@@ -67,6 +67,9 @@ func _process(_delta: float) -> bool:
 	_check("horde_nodo", _has_script_class(_root, "HordeSystem"))
 	_check("mundo_existe", _root.get_node_or_null("VoxelWorld") != null)
 	_check("jugador_existe", _root.get_node_or_null("PlayerBlocky") != null)
+	# 3.0.2 TV: el título arranca con foco en «Jugar».
+	var focus := get_root().gui_get_focus_owner()
+	_check("titulo_foco_jugar", focus != null and focus is Button and (focus as Button).text == "Jugar")
 	if _failures > 0:
 		printerr("test_3_0_scene: " + str(_failures) + " FALLOS")
 		quit(1)

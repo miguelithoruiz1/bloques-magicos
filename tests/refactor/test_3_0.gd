@@ -555,6 +555,13 @@ func _init() -> void:
 	_check("hud_clamp_low", UIController.clamp_hud_offset(Vector2(-1000, 1000)) == Vector2(-400, 150))
 	_check("hud_offset_array", UIController.offset_from_settings({"action_offset": [10.0, -20.0]}, "action_offset") == Vector2(10, -20))
 	_check("hud_offset_missing", UIController.offset_from_settings({}, "action_offset") == Vector2.ZERO)
+	# 28. 3.0.2 TV/celular: rejilla en pantallas cortas y
+	# botón adaptativo (columnas que no tapan la hotbar).
+	_check("hud_grid_tv", UIController.action_columns(1080.0) == 1)
+	_check("hud_grid_phone", UIController.action_columns(720.0) == 2)
+	_check("hud_size_tv", UIController.action_button_size(1080.0, 1.0) == 72.0)
+	_check("hud_size_phone", UIController.action_button_size(720.0, 1.0) == 64.0)
+	_check("hud_size_small_setting", UIController.action_button_size(720.0, 0.5) == 36.0)
 
 	if _failures > 0:
 		printerr("test_3_0: " + str(_failures) + " FALLOS")

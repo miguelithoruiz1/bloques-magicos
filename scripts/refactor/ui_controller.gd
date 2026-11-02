@@ -256,7 +256,7 @@ func _build_ui() -> void:
 
 	# 6. Sugerencias de mando (solo TV).
 	_hints = Label.new()
-	_hints.text = "[A] Saltar  ·  [RT] Poner  ·  [Y] Inventario"
+	_hints.text = "Cruceta mover · OK poner · Atrás pausa · [A] saltar · [Y] inventario"
 	_hints.visible = false
 	_hints.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	_hints.offset_top = -36.0
@@ -326,8 +326,8 @@ const COL1_LEFT := -220.0
 const COL1_TOP := -340.0
 const COL2_LEFT := -310.0
 const COL2_TOP := -340.0
-var _action_col: VBoxContainer = null
-var _action_col2: VBoxContainer = null
+var _action_col: Container = null
+var _action_col2: Container = null
 
 
 ## Desplazamiento guardado (Array [x, y] o Vector2).
@@ -352,15 +352,39 @@ func _apply_settings() -> void:
 	_apply_settings_to_ui()
 
 
-func _make_drag_handle(col: VBoxContainer) -> Button:
+## 3.0.2: en pantallas cortas (celular apaisado) las
+## columnas de 8-9 botones de 72 px desbordaban por
+## abajo y tapaban la hotbar; ahora se anclan por
+## ABAJO (offset_bottom -90, encima de la hotbar) y
+## en alto < 1080 usan rejilla de 2 columnas con
+## botón máximo de 64 px. La posición natural es
+## -90 - altura_contenido; el desplazamiento del
+## editor se guarda relativo a esa posición.
+static func action_columns(viewport_h: float) -> int:
+	return 1 if viewport_h >= 1080.0 else 2
+
+
+static func action_button_size(viewport_h: float, setting_size: float) -> float:
+	var s := 72.0 * setting_size
+	if viewport_h >= 1080.0:
+		return s
+	return minf(s, 64.0)
+
+
+func _natural_col_top(col: Container) -> float:
+	return -90.0 - col.get_combined_minimum_size().y
+
+
+func _make_drag_handle(col: Container, size: float) -> Button:
 	var handle := Button.new()
 	handle.text = "⠿"
+	handle.custom_minimum_size = Vector2(size, 36.0)
 	handle.visible = bool(settings.get("hud_edit_mode", false))
 	handle.gui_input.connect(_on_handle_drag.bind(col))
 	return handle
 
 
-func _on_handle_drag(event: InputEvent, col: VBoxContainer) -> void:
+func _on_handle_drag(event: InputEvent, col: Container) -> void:
 	var rel := Vector2.ZERO
 	if event is InputEventScreenDrag:
 		rel = event.relative
@@ -372,7 +396,7 @@ func _on_handle_drag(event: InputEvent, col: VBoxContainer) -> void:
 	else:
 		return
 	var base_left := COL1_LEFT if col == _action_col else COL2_LEFT
-	var base_top := COL1_TOP if col == _action_col else COL2_TOP
+	var base_top := _natural_col_top(col)
 	var off := clamp_hud_offset(Vector2(col.offset_left - base_left + rel.x, col.offset_top - base_top + rel.y))
 	col.offset_left = base_left + off.x
 	col.offset_top = base_top + off.y
@@ -380,10 +404,61 @@ func _on_handle_drag(event: InputEvent, col: VBoxContainer) -> void:
 
 func _save_col_offsets() -> void:
 	if _action_col != null:
-		settings["action_offset"] = [_action_col.offset_left - COL1_LEFT, _action_col.offset_top - COL1_TOP]
+		settings["action_offset"] = [_action_col.offset_left - COL1_LEFT, _action_col.offset_top - _natural_col_top(_action_col)]
 	if _action_col2 != null:
-		settings["action2_offset"] = [_action_col2.offset_left - COL2_LEFT, _action_col2.offset_top - COL2_TOP]
+		settings["action2_offset"] = [_action_col2.offset_left - COL2_LEFT, _action_col2.offset_top - _natural_col_top(_action_col2)]
 	SettingsRefactor.save_settings(settings)
+
+
+## 3.0.2 TV: foco inicial para navegar con cruceta.
+## Devuelve true si enfocó algo.
+func _focus_first(node: Node) -> bool:
+	if node is Button or node is OptionButton:
+		var c := node as Control
+		if c.visible:
+			c.grab_focus()
+			return true
+	for child in node.get_children():
+		if _focus_first(child):
+			return true
+	return false
+
+
+func has_open_modal() -> bool:
+	for panel in [_inventory, _quest_panel, _workshop_panel, _forge_panel, _station_panel, _character_panel, _lan_panel]:
+		if panel != null and panel.visible:
+			return true
+	return false
+
+
+## Cierra el primer modal visible (para Atrás en TV).
+func close_open_modal() -> bool:
+	for panel in [_inventory, _quest_panel, _workshop_panel, _forge_panel, _station_panel, _character_panel, _lan_panel]:
+		if panel != null and panel.visible:
+			panel.visible = false
+			return true
+	return false
+
+
+func _new_action_col(base_left: float) -> Container:
+	var vh := get_viewport().get_visible_rect().size.y if get_viewport() != null else 1080.0
+	var col: Container
+	if action_columns(vh) == 2:
+		var grid := GridContainer.new()
+		grid.columns = 2
+		grid.add_theme_constant_override("h_separation", 10)
+		grid.add_theme_constant_override("v_separation", 10)
+		col = grid
+	else:
+		var vbox := VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 10)
+		col = vbox
+	col.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	col.offset_left = base_left
+	col.offset_bottom = -90.0
+	col.modulate.a = float(settings.get("button_opacity", 1.0))
+	_touch_ui.add_child(col)
+	return col
 
 
 func _build_action_buttons() -> void:
@@ -391,18 +466,13 @@ func _build_action_buttons() -> void:
 		_touch_ui.remove_child(_action_col)
 		_action_col.free()
 		_action_col = null
-	var col := VBoxContainer.new()
-	col.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	var vh := get_viewport().get_visible_rect().size.y if get_viewport() != null else 1080.0
+	var size := action_button_size(vh, float(settings.get("button_size", 1.0)))
+	var col := _new_action_col(COL1_LEFT)
 	var off := offset_from_settings(settings, "action_offset")
 	col.offset_left = COL1_LEFT + off.x
-	col.offset_top = COL1_TOP + off.y
-	col.offset_bottom = -90.0
-	col.add_theme_constant_override("separation", 10)
-	col.modulate.a = float(settings.get("button_opacity", 1.0))
-	_touch_ui.add_child(col)
 	_action_col = col
-	col.add_child(_make_drag_handle(col))
-	var size := 72.0 * float(settings.get("button_size", 1.0))
+	col.add_child(_make_drag_handle(col, size))
 	for data in [["↑", func(): jump_pressed.emit()], ["👁", func(): perspective_pressed.emit()], ["+", func(): _on_place()], ["−", func(): _on_remove()], ["🐴", func(): mount_pressed.emit()], ["⚔", func(): attack_pressed.emit()], ["💨", func(): dodge_pressed.emit()]]:
 		var b := _make_button(data[0], data[1])
 		b.custom_minimum_size = Vector2(size, size)
@@ -414,6 +484,7 @@ func _build_action_buttons() -> void:
 	crouch_btn.button_down.connect(func(): crouch_pressed.emit())
 	crouch_btn.button_up.connect(func(): crouch_released.emit())
 	col.add_child(crouch_btn)
+	col.offset_top = _natural_col_top(col) + off.y
 
 
 func _build_dpad() -> void:
@@ -681,6 +752,7 @@ func _on_more_pressed() -> void:
 
 func _open_inventory() -> void:
 	_inventory.visible = true
+	_focus_first(_inventory)
 	inventory_opened.emit()
 
 
@@ -786,6 +858,7 @@ func show_quests(data: Array[Dictionary]) -> void:
 			str(q.get("desc", "")), int(q.get("progress", 0)), int(q.get("target", 0))]
 		_quest_list.add_child(label)
 	_quest_panel.visible = true
+	_focus_first(_quest_panel)
 
 
 func _build_workshop_panel(root: Control) -> void:
@@ -823,6 +896,7 @@ func show_workshop(recipes: Array[Dictionary]) -> void:
 		row.add_child(btn)
 		_workshop_list.add_child(row)
 	_workshop_panel.visible = true
+	_focus_first(_workshop_panel)
 
 
 func _on_craft_pick(recipe_id: String) -> void:
@@ -839,22 +913,18 @@ func _build_action_buttons2() -> void:
 		_touch_ui.remove_child(_action_col2)
 		_action_col2.free()
 		_action_col2 = null
-	var col := VBoxContainer.new()
-	col.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	var vh := get_viewport().get_visible_rect().size.y if get_viewport() != null else 1080.0
+	var size := action_button_size(vh, float(settings.get("button_size", 1.0)))
+	var col := _new_action_col(COL2_LEFT)
 	var off := offset_from_settings(settings, "action2_offset")
 	col.offset_left = COL2_LEFT + off.x
-	col.offset_top = COL2_TOP + off.y
-	col.offset_bottom = -90.0
-	col.add_theme_constant_override("separation", 10)
-	col.modulate.a = float(settings.get("button_opacity", 1.0))
-	_touch_ui.add_child(col)
 	_action_col2 = col
-	col.add_child(_make_drag_handle(col))
-	var size := 72.0 * float(settings.get("button_size", 1.0))
+	col.add_child(_make_drag_handle(col, size))
 	for data in [["⚒", func(): forge_pressed.emit()], ["🏭", func(): stations_pressed.emit()], ["👤", func(): character_pressed.emit()], ["🧪", func(): potion_pressed.emit()], ["🍎", func(): food_pressed.emit()], ["🌐", func(): lan_pressed.emit()]]:
 		var b := _make_button(data[0], data[1])
 		b.custom_minimum_size = Vector2(size, size)
 		col.add_child(b)
+	col.offset_top = _natural_col_top(col) + off.y
 
 
 func _build_forge_panel(root: Control) -> void:
@@ -963,6 +1033,7 @@ func show_forge(recipes: Array[Dictionary], materials: Dictionary, spirits: Dict
 		row.add_child(btn)
 		_forge_list.add_child(row)
 	_forge_panel.visible = true
+	_focus_first(_forge_panel)
 
 
 func _on_forge_pick(recipe_id: String) -> void:
@@ -990,6 +1061,7 @@ func show_stations(sections: Array[Dictionary]) -> void:
 			row.add_child(btn)
 			_station_list.add_child(row)
 	_station_panel.visible = true
+	_focus_first(_station_panel)
 
 
 func _on_station_pick(station_id: String, recipe_id: String) -> void:
@@ -1029,6 +1101,7 @@ func show_character(data: Dictionary, races: Array[Dictionary]) -> void:
 		row.add_child(btn)
 	_character_list.add_child(row)
 	_character_panel.visible = true
+	_focus_first(_character_panel)
 
 
 func _on_race_pick(race_id: String) -> void:
@@ -1082,6 +1155,7 @@ func show_lan(hosts: Dictionary, connected: bool, status: String) -> void:
 			hrow.add_child(_make_button("Unirse", _on_lan_join_pick.bind(str(ip))))
 			_lan_list.add_child(hrow)
 	_lan_panel.visible = true
+	_focus_first(_lan_panel)
 
 
 func _on_lan_join_pick(ip: String) -> void:

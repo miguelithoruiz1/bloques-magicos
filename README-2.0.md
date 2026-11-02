@@ -93,6 +93,17 @@ Tests: 54/54 en 2.0 y 25/25 en el viejo. Detalle en
 `COMO-SE-CONSTRUYO-2.0.1.md`. La 1.16-refactor tiene el mismo
 bug sin corregir.
 
+## 2.0.2 — corrección HUD ausente (2026-11-02)
+
+En la 2.0.1 el mundo se veía iluminado pero no salían botones ni
+joystick. Causa: `ui_controller.gd` no compilaba (`var x :=` con
+el Variant de `mk.call()`), así que el HUD quedaba en 0 hijos.
+También se corrigió en esta versión: faltaba la «N» en LETRAS
+(bloque 76 rompía el inventario de Letras) y `settings_scene.gd`
+usaba `_set` con firma incompatible (Ajustes no cargaba).
+Tests: 54/54 en 2.0 y 27/27 en el viejo; importación y exports
+con 0 errores de script. Detalle en `COMO-SE-CONSTRUYO-2.0.2.md`.
+
 ## Pendiente de validación (no afirmado)
 
 - Ejecución real en celular y stick: la prueba headless no

@@ -274,13 +274,18 @@ func _build_dpad() -> void:
 		b.button_down.connect(func(): _set_dpad(vec))
 		b.button_up.connect(func(): _set_dpad(Vector2.ZERO))
 		return b
-	var up := mk.call("▲", Vector2(0, 1))
+	# 2.0.2 — CORRECCIÓN HUD AUSENTE: `mk.call()` devuelve Variant
+	# y `var x :=` con Variant no compila en este Godot (la
+	# inferencia se trata como error): el script entero no cargaba
+	# y el HUD quedaba en 0 hijos, justo lo que se vio en el
+	# celular. Con tipo explícito Button compila siempre.
+	var up: Button = mk.call("▲", Vector2(0, 1))
 	up.position = Vector2(84, 0)
-	var down := mk.call("▼", Vector2(0, -1))
+	var down: Button = mk.call("▼", Vector2(0, -1))
 	down.position = Vector2(84, 168)
-	var left := mk.call("◀", Vector2(-1, 0))
+	var left: Button = mk.call("◀", Vector2(-1, 0))
 	left.position = Vector2(0, 84)
-	var right := mk.call("▶", Vector2(1, 0))
+	var right: Button = mk.call("▶", Vector2(1, 0))
 	right.position = Vector2(168, 84)
 	_dpad.add_child(up)
 	_dpad.add_child(down)

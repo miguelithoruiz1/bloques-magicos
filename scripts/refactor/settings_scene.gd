@@ -78,7 +78,7 @@ func _check(text: String, key: String) -> CheckButton:
 	var c := CheckButton.new()
 	c.text = text
 	c.button_pressed = bool(settings.get(key, false))
-	c.toggled.connect(func(v: bool): _set(key, v))
+	c.toggled.connect(func(v: bool): _set_setting(key, v))
 	_right.add_child(c)
 	return c
 
@@ -95,7 +95,7 @@ func _slider(text: String, key: String, min_v: float, max_v: float, step_v: floa
 	slider.value = float(settings.get(key, 0))
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.value_changed.connect(func(v: float):
-		_set(key, v)
+		_set_setting(key, v)
 		label.text = "%s: %s" % [text, str(v)])
 	row.add_child(slider)
 	_right.add_child(row)
@@ -112,13 +112,17 @@ func _option(text: String, key: String, labels: Array, keys: Array) -> OptionBut
 		opt.add_item(str(item))
 	var current := str(settings.get(key, ""))
 	opt.selected = keys.find(current) if keys.has(current) else 0
-	opt.item_selected.connect(func(idx: int): _set(key, keys[idx]))
+	opt.item_selected.connect(func(idx: int): _set_setting(key, keys[idx]))
 	row.add_child(opt)
 	_right.add_child(row)
 	return opt
 
 
-func _set(key: String, value: Variant) -> void:
+## 2.0.2 — antes se llamaba `_set`, pero Object ya tiene un
+## `_set(StringName, Variant) -> bool` virtual y la firma distinta
+## era error de compilación: la pantalla de Ajustes no cargaba.
+## Renombrado a `_set_setting`, sin cambiar comportamiento.
+func _set_setting(key: String, value: Variant) -> void:
 	settings[key] = value
 	SettingsRefactor.save_settings(settings)
 
@@ -169,7 +173,7 @@ func _show_gamepad() -> void:
 		spin.value = int(remap.get(action, 0))
 		spin.value_changed.connect(func(v: float):
 			remap[action] = int(v)
-			_set("remap", remap))
+			_set_setting("remap", remap))
 		row.add_child(spin)
 		_right.add_child(row)
 	var reset := Button.new()
@@ -211,14 +215,14 @@ func _show_world() -> void:
 	_seed_field.text = str(settings.get("seed_text", ""))
 	_seed_field.placeholder_text = "Ej. MUNDO-PAPA-HIJO-777 (vacío = aleatoria al crear)"
 	_seed_field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_seed_field.text_changed.connect(func(t: String): _set("seed_text", t))
+	_seed_field.text_changed.connect(func(t: String): _set_setting("seed_text", t))
 	row.add_child(_seed_field)
 	_right.add_child(row)
 	var random_btn := Button.new()
 	random_btn.text = "Generar semilla aleatoria"
 	random_btn.pressed.connect(func():
 		var s := WorldSeedManager.random_seed_text()
-		_set("seed_text", s)
+		_set_setting("seed_text", s)
 		if _seed_field != null:
 			_seed_field.text = s)
 	_right.add_child(random_btn)

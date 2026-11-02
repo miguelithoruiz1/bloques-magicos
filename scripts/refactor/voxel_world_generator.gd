@@ -60,10 +60,15 @@ const COLORES: Array[Color] = [
 	Color(0.95, 0.45, 0.65), Color(0.55, 0.35, 0.20), Color(0.10, 0.10, 0.12),
 	Color(0.95, 0.95, 0.95), Color(0.55, 0.55, 0.58), Color(0.45, 0.80, 0.95),
 ]
-const LETRAS: Array[String] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
-# Mismo orden que levels_data.gd de 1.15.0 (27 letras): Ñ = 13,
-# O = 14. No reordenar: los clips letra_* y las palabras mágicas
-# dependen de estos índices.
+## 2.0.2 — faltaba la «N»: eran 26 entradas y el bloque 76
+## (índice 26) rompía _block_label al abrir el inventario de
+## Letras. Orden verificado contra levels_data.gd de la 1.15:
+## 27 letras, N en el 13 y Ñ en el 14 (el test viejo que pedía
+## Ñ en el 63 quedó corregido a N en el 63, Ñ en el 64).
+const LETRAS: Array[String] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+# Mismo orden que levels_data.gd de 1.15.0 (27 letras): N = 13,
+# Ñ = 14, O = 15. No reordenar: los clips letra_* y las palabras
+# mágicas dependen de estos índices.
 
 @export var render_radius := 24
 @export var water_level := 2

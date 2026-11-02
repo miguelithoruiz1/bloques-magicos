@@ -70,7 +70,10 @@ func _init() -> void:
 	_check("suma_invalida", GameModes.detect_math(["3", "+", "2"])[0] == "")
 	# 7. Biomas y etiquetas.
 	_check("bioma_ciber_montanas", VoxelWorld.biome_params("ciber_nucleo").z > 0.5)
-	_check("etiqueta_letra_NN", VoxelWorld.block_label(63) == "Ñ")
+	# 2.0.2: la N faltaba en LETRAS (63 era Ñ por error); orden 1.15: N=63, Ñ=64, Z=76.
+	_check("etiqueta_letra_N", VoxelWorld.block_label(63) == "N")
+	_check("etiqueta_letra_NN", VoxelWorld.block_label(64) == "Ñ")
+	_check("etiqueta_letra_Z", VoxelWorld.block_label(76) == "Z")
 	_check("etiqueta_numero_1", VoxelWorld.block_label(31) == "1")
 	_check("scatter_determinista", is_equal_approx(VoxelWorld.scatter_hash(3, 7, 42), VoxelWorld.scatter_hash(3, 7, 42)))
 

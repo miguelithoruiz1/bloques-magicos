@@ -1,6 +1,6 @@
 {
  "version": 2,
- "count": 173,
+ "count": 176,
  "nota": "Catalogo de bloques 3.0 segun la seccion 4 del documento de arquitectura: las 18 entradas originales (ids 0-93) mas las del documento con ids desde 100, en 8 categorias. Nombres y datos propios; nada copiado de otro juego.",
  "blocks": [
   {
@@ -2561,6 +2561,51 @@
    "light": 0,
    "sound": "stone",
    "category": "construccion"
+  },
+  {
+   "id": 260,
+   "key": "glow_shroom",
+   "name": "Seta luminosa",
+   "color": [
+    0.45,
+    0.95,
+    0.55
+   ],
+   "hardness": 0.3,
+   "shape": "solid",
+   "light": 10,
+   "sound": "crystal",
+   "category": "flora"
+  },
+  {
+   "id": 261,
+   "key": "crystal_cyan",
+   "name": "Cristal cian",
+   "color": [
+    0.275,
+    0.863,
+    1.0
+   ],
+   "hardness": 0.8,
+   "shape": "solid",
+   "light": 12,
+   "sound": "crystal",
+   "category": "minerales"
+  },
+  {
+   "id": 262,
+   "key": "crystal_magenta",
+   "name": "Cristal magenta",
+   "color": [
+    0.941,
+    0.314,
+    0.863
+   ],
+   "hardness": 0.8,
+   "shape": "solid",
+   "light": 12,
+   "sound": "crystal",
+   "category": "minerales"
   }
  ]
 }

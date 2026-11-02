@@ -127,6 +127,8 @@ func _mostrar() -> void:
 	_filas["volumen_musica"] = _add_button(_texto_opcion("volumen_musica", "Volumen de música", _ajustes.get("volumen_musica"), [[0.0, "Silencio"], [0.5, "Medio"], [1.0, "Alto"]]), _ciclo.bind("volumen_musica", [0.0, 0.5, 1.0]))
 	_filas["texto"] = _add_button(_texto_opcion("texto", "Tamaño de texto", _ajustes.get("texto"), [[0.85, "Pequeño"], [1.0, "Normal"], [1.25, "Grande"]]), _ciclo.bind("texto", [0.85, 1.0, 1.25]))
 	_filas["vista"] = _add_button(_texto_opcion("vista", "Vista al caminar", _ajustes.get("vista"), [[0, "Primera persona"], [1, "Segunda persona (Blocky)"]]), _ciclo.bind("vista", [0, 1]))
+	_filas["sensibilidad_camara"] = _add_button(_texto_opcion("sensibilidad_camara", "Sensibilidad de cámara", _ajustes.get("sensibilidad_camara"), [[0.5, "Baja"], [1.0, "Normal"], [1.5, "Alta"]]), _ciclo.bind("sensibilidad_camara", [0.5, 1.0, 1.5]))
+	_filas["volar"] = _add_button(_texto_opcion("volar", "Volar en el paseo", _ajustes.get("volar"), [[false, "No"], [true, "Sí"]]), _ciclo.bind("volar", [false, true]))
 	_filas["menos_movimiento"] = _add_button(_texto_opcion("menos_movimiento", "Menos movimiento de cámara", _ajustes.get("menos_movimiento"), [[false, "No"], [true, "Sí"]]), _ciclo.bind("menos_movimiento", [false, true]))
 	_filas["mas_contraste"] = _add_button(_texto_opcion("mas_contraste", "Más contraste", _ajustes.get("mas_contraste"), [[false, "No"], [true, "Sí"]]), _ciclo.bind("mas_contraste", [false, true]))
 	_add_button("Menú clásico (lista)", _menu_clasico)

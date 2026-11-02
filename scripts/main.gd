@@ -28,6 +28,8 @@ const LevelLogic := preload("res://scripts/level_logic.gd")
 const LevelHints := preload("res://scripts/level_hints.gd")
 const ProgressSave := preload("res://scripts/progress_save.gd")
 const SettingsSave := preload("res://scripts/settings_save.gd")
+const InputController := preload("res://scripts/input_controller.gd")
+const TouchControlsScene := preload("res://touch_controls.tscn")
 
 ## 1.10.0: el mundo ya no tiene borde fijo. El terreno se genera por
 ## chunks de 16×16 alrededor del cursor y del avatar (radio 2 chunks =
@@ -209,6 +211,22 @@ var _audio_bank = null
 var _ajustes: Dictionary = {}
 var _portal_nivel: Node3D = null
 
+## 1.13.0: entrada dual unificada. _current_input_velocity es la
+## ÚNICA variable de movimiento: x = lateral, y = adelante, en
+## [-1, 1]. La escriben el joystick virtual y el mando; main.gd
+## solo la lee (nunca hay dos lógicas de movimiento por fuente).
+var _current_input_velocity := Vector2.ZERO
+var _touch_controls = null
+var _input_ctrl = null
+var _sprinting := false
+var _cam_pitch := 0.0
+var _walk_jump_height := 0.0
+var _walk_jump_vel := 0.0
+var _crouching := false
+var _fly_height := 0.0
+var _attack_prev := false
+var _use_prev := false
+
 var _mouse_down := false
 var _mouse_start := Vector2.ZERO
 var _mouse_dragged := false
@@ -261,6 +279,13 @@ func _ready() -> void:
 	_palette.radial_exit_requested.connect(_exit_walk_mode)
 	# 1.5 (F3): ciclar la cámara de construcción (desde la paleta TV).
 	_palette.camera_cycle_requested.connect(_on_camera_cycle)
+	# 1.13.0: capa táctil Minecraft (CanvasLayer TouchControls).
+	# Solo en el mundo; la Plaza tiene su propia cruceta (1.12.0).
+	_input_ctrl = InputController.new()
+	_touch_controls = TouchControlsScene.instantiate()
+	add_child(_touch_controls)
+	_touch_controls.tap_interact.connect(_on_touch_tap)
+	_touch_controls.hold_interact.connect(_on_touch_hold)
 	# Fase 2: en modo nivel se empieza con un tablero vacío (la meta se
 	# mide solo con lo colocado en el nivel) y el mundo libre NO se toca:
 	# ni se carga ni se guarda. En juego libre todo sigue igual que F1.
@@ -280,6 +305,8 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_update_input_velocity(delta)
+	_handle_gamepad_buttons()
 	# Pulsación OK con duración: corta = colocar (o confirmar dentro de
 	# la paleta TV); larga (OK_HOLD_SECONDS) = abrir la paleta en el TV.
 	var ok_event := _poll_ok(delta)
@@ -319,11 +346,15 @@ func _process(delta: float) -> void:
 			iv.y += 1
 		if Input.is_action_pressed("move_forward"):
 			iv.y -= 1
+		# 1.13.0: si no hay paso discreto (mando/teclado) pero el
+		# joystick táctil empuja, el paso viene de _current_input_velocity.
+		if iv == Vector2i.ZERO and _touch_controls != null and _touch_controls.visible:
+			iv = InputController.step_direction(Vector2(_current_input_velocity.x, -_current_input_velocity.y))
 		if iv != Vector2i.ZERO:
 			_move_timer -= delta
 			if _move_timer <= 0.0:
 				_step_cursor(iv)
-				_move_timer = 0.16
+				_move_timer = 0.10 if _sprinting else 0.16
 		else:
 			_move_timer = 0.0
 
@@ -347,11 +378,12 @@ func _process(delta: float) -> void:
 		_pivot.rotation.y = lerp_angle(_pivot.rotation.y, _walk_yaw, minf(1.0, delta * 10.0))
 		var wtarget := Vector3(float(_walk_cell.x) + 0.5, 0.0, float(_walk_cell.y) + 0.5)
 		_pivot.position = _pivot.position.lerp(wtarget, minf(1.0, delta * 8.0))
-		var cam_pos := Vector3(0.0, 1.5, 0.0)
-		var cam_rot_x := 0.0
+		var base_y := 1.0 if _crouching else 1.5
+		var cam_pos := Vector3(0.0, base_y + _walk_jump_height + _fly_height, 0.0)
+		var cam_rot_x := _cam_pitch
 		if _walk_view == 1:
-			cam_pos = Vector3(0.0, 2.1, 3.4)
-			cam_rot_x = deg_to_rad(-14.0)
+			cam_pos = Vector3(0.0, 2.1 + _walk_jump_height + _fly_height, 3.4)
+			cam_rot_x = deg_to_rad(-14.0) + _cam_pitch
 		_camera.position = _camera.position.lerp(cam_pos, minf(1.0, delta * 8.0))
 		_camera.rotation.x = lerpf(_camera.rotation.x, cam_rot_x, minf(1.0, delta * 8.0))
 		_camera.rotation.y = lerpf(_camera.rotation.y, 0.0, minf(1.0, delta * 8.0))
@@ -502,6 +534,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	# El tacto llega como ratón emulado (emulate_mouse_from_touch=true en
 	# project.godot): UN solo camino de entrada para ratón real (PC) y
 	# dedo (Android), sin procesar ningún toque dos veces.
+	if _touch_controls != null and _touch_controls.gesture_active:
+		# El gesto táctil ya lo procesa TouchControls: el ratón
+		# emulado no debe procesarlo una segunda vez.
+		if event is InputEventMouseButton or event is InputEventMouseMotion:
+			return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_LEFT:
@@ -801,19 +838,68 @@ func _handle_walk_mode(delta: float, ok_event: String) -> void:
 		elif Input.is_action_just_pressed("move_right"):
 			_palette.radial_move(1)
 		return
-	if ok_event == "short":
-		_exit_walk_mode()
-		return
+	# 1.13.0: en paseo, OK corto YA NO sale (A = saltar en el
+	# esquema Minecraft). Salir es: Atrás, o Salir del menú radial.
 	if ok_event == "long":
 		_open_radial()
 		return
 	if Input.is_action_just_pressed("remove_block"):
 		_open_radial()
 		return
+	# 1.13.0: salto / agacharse / volar (mando A/B, ver huecos en
+	# input_controller.gd). B corto sigue abriendo el radial por
+	# compatibilidad (legado): agacharse es B mantenido.
+	_crouching = Input.is_action_pressed("crouch") and not bool(_ajustes.get("volar", false))
+	if bool(_ajustes.get("volar", false)):
+		if Input.is_action_pressed("jump"):
+			_fly_height = minf(3.0, _fly_height + delta * 1.5)
+		if Input.is_action_pressed("crouch"):
+			_fly_height = maxf(0.0, _fly_height - delta * 1.5)
+	elif Input.is_action_just_pressed("jump") and _walk_jump_height <= 0.0:
+		_walk_jump_vel = 3.2
+	if _walk_jump_height > 0.0 or _walk_jump_vel > 0.0:
+		_walk_jump_vel -= 9.8 * delta
+		_walk_jump_height += _walk_jump_vel * delta
+		if _walk_jump_height <= 0.0:
+			_walk_jump_height = 0.0
+			_walk_jump_vel = 0.0
 	if Input.is_action_just_pressed("move_left"):
 		_walk_yaw += deg_to_rad(45.0)
 	if Input.is_action_just_pressed("move_right"):
 		_walk_yaw -= deg_to_rad(45.0)
+	# Movimiento analógico (joystick táctil o stick izquierdo del
+	# mando): adelante/atrás y lateral. Si no hay analógico, cae al
+	# camino discreto de siempre (cruceta/teclado) más abajo.
+	var a_fb := 0
+	var a_side := 0
+	if _touch_controls != null and _touch_controls.visible and _touch_controls.move_vector.length() > 0.3:
+		var tv: Vector2 = _touch_controls.move_vector
+		if absf(tv.y) >= absf(tv.x):
+			a_fb = 1 if tv.y > 0.0 else -1
+		else:
+			a_side = 1 if tv.x > 0.0 else -1
+	elif InputController.has_gamepad():
+		var ax := Input.get_joy_axis(0, JOY_AXIS_LEFT_X)
+		var ay := Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
+		if absf(ax) > 0.3 or absf(ay) > 0.3:
+			if absf(ay) >= absf(ax):
+				a_fb = -1 if ay > 0.0 else 1
+			else:
+				a_side = 1 if ax > 0.0 else -1
+	if a_fb != 0 or a_side != 0:
+		_walk_move_timer -= delta
+		if _walk_move_timer <= 0.0:
+			if a_side != 0:
+				_step_walk_side(a_side)
+			else:
+				_step_walk(a_fb)
+			var rate := 0.2 / float(_ajustes.get("caminar", 1.0))
+			if _sprinting:
+				rate *= 0.65
+			if _crouching:
+				rate *= 1.6
+			_walk_move_timer = rate
+		return
 	var fb := 0
 	if Input.is_action_pressed("move_forward"):
 		fb += 1
@@ -877,6 +963,104 @@ func _step_walk(dir: int) -> void:
 		return
 	_walk_cell = next
 	_ensure_chunks_around(_walk_cell)
+
+
+## 1.13.0: paso lateral (strafe) del joystick analógico.
+func _step_walk_side(dir: int) -> void:
+	var f := Vector3(-sin(_walk_yaw), 0.0, -cos(_walk_yaw))
+	var f_step := Vector2i.ZERO
+	if absf(f.x) > absf(f.z):
+		f_step = Vector2i(1 if f.x > 0.0 else -1, 0)
+	else:
+		f_step = Vector2i(0, 1 if f.z > 0.0 else -1)
+	var r_step := Vector2i(-f_step.y, f_step.x)
+	var next := _walk_cell + r_step * dir
+	if _walk_blocked(next.x, next.y):
+		return
+	_walk_cell = next
+	_ensure_chunks_around(_walk_cell)
+
+
+## 1.13.0: velocidad unificada + cámara por stick derecho y por
+## arrastre táctil derecho. Se llama al inicio de cada _process.
+func _update_input_velocity(delta: float) -> void:
+	var vel := Vector2.ZERO
+	if _touch_controls != null and _touch_controls.visible and _touch_controls.move_vector.length() > 0.05:
+		vel = _touch_controls.move_vector
+	else:
+		vel = InputController.pad_vector()
+	_current_input_velocity = vel
+	if _input_ctrl != null:
+		_sprinting = _input_ctrl.update_sprint(vel.length(), delta)
+	var sens := float(_ajustes.get("sensibilidad_camara", 1.0))
+	if bool(_ajustes.get("menos_movimiento", false)):
+		sens *= 0.5
+	if _touch_controls != null and _touch_controls.visible:
+		if _walk_mode:
+			_walk_yaw += _touch_controls.camera_yaw_delta * sens
+		else:
+			_yaw_target += _touch_controls.camera_yaw_delta * sens
+		_cam_pitch = clampf(_cam_pitch + _touch_controls.camera_pitch_delta * sens, -0.5, 0.5)
+		_touch_controls.camera_yaw_delta = 0.0
+		_touch_controls.camera_pitch_delta = 0.0
+	# Stick derecho del mando: yaw continuo + pitch (eje Y).
+	if InputController.has_gamepad():
+		var rsx := Input.get_axis("camera_left", "camera_right")
+		if absf(rsx) > 0.2:
+			if _walk_mode:
+				_walk_yaw -= rsx * deg_to_rad(90.0) * sens * delta
+			else:
+				_yaw_target -= rsx * deg_to_rad(90.0) * sens * delta
+		var rsy := Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
+		if absf(rsy) > 0.2:
+			_cam_pitch = clampf(_cam_pitch + (-rsy) * 0.8 * sens * delta, -0.5, 0.5)
+
+
+## 1.13.0: botones del mando que no existían. X = paleta
+## (inventario, sin crafteo); LB/RB = cambiar selección; RT/LT
+## en paseo = quitar/poner (en construcción siguen siendo altura,
+## por compatibilidad con la 1.12.0).
+func _handle_gamepad_buttons() -> void:
+	if Input.is_action_just_pressed("inventory"):
+		if _walk_mode:
+			_open_radial()
+		elif not _palette_mode and not _level_completed:
+			_open_palette_mode()
+	if Input.is_action_just_pressed("palette_prev"):
+		_palette.cycle_selection(-1)
+	if Input.is_action_just_pressed("palette_next"):
+		_palette.cycle_selection(1)
+	if _walk_mode:
+		var atk := Input.get_action_strength("attack") > 0.5
+		if atk and not _attack_prev:
+			_walk_remove()
+		_attack_prev = atk
+		var use := Input.get_action_strength("use_block") > 0.5
+		if use and not _use_prev:
+			_walk_place()
+		_use_prev = use
+
+
+## 1.13.0: toque corto en el área derecha = colocar; mantener =
+## quitar. En paseo usan el punto de mira, no el cursor.
+func _on_touch_tap(pos: Vector2) -> void:
+	if _level_completed or _palette_mode:
+		return
+	if _walk_mode:
+		_walk_place()
+		return
+	_handle_tap(pos)
+	place_at_cursor()
+
+
+func _on_touch_hold(pos: Vector2) -> void:
+	if _level_completed or _palette_mode:
+		return
+	if _walk_mode:
+		_walk_remove()
+		return
+	_handle_tap(pos)
+	remove_at_cursor()
 
 
 ## Colisión simple a nivel del suelo: fuera de la rejilla bloquea;

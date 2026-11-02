@@ -999,6 +999,19 @@ func _index_of_selection() -> int:
 	return 0
 
 
+## 1.13.0: LB/RB del mando cambian la selección sin abrir la
+## paleta: avanza o retrocede en la lista visible de botones y
+## aplica la misma selección que tocar el botón.
+func cycle_selection(dir: int) -> void:
+	if _palette_buttons.is_empty():
+		return
+	var idx := (_index_of_selection() + dir) % _palette_buttons.size()
+	if idx < 0:
+		idx += _palette_buttons.size()
+	var entry: Dictionary = _palette_buttons[idx]
+	_select(String(entry["modo"]), int(entry["dato"]))
+
+
 func open_tv_palette() -> void:
 	tv_palette_open = true
 	_tv_highlight = _index_of_selection()

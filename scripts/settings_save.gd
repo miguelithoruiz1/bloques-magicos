@@ -15,6 +15,10 @@ extends RefCounted
 ##   vista: 0 (primera persona) | 1 (segunda persona, Blocky)
 ##   menos_movimiento: false | true
 ##   mas_contraste: false | true
+##   sensibilidad_camara: 0.5 | 1.0 | 1.5 (1.13.0: arrastre
+##     derecho y stick derecho; guardada aquí, no en progreso)
+##   volar: false | true (1.13.0: modo opcional solo en paseo;
+##     si está apagado, A salta y B agacha)
 
 const SAVE_PATH := "user://ajustes.json"
 const SAVE_VERSION := 1
@@ -34,6 +38,8 @@ static func defaults() -> Dictionary:
 		"vista": 0,
 		"menos_movimiento": false,
 		"mas_contraste": false,
+		"sensibilidad_camara": 1.0,
+		"volar": false,
 	}
 
 
@@ -74,6 +80,10 @@ static func load_settings() -> Dictionary:
 		result["menos_movimiento"] = bool(d["menos_movimiento"])
 	if d.has("mas_contraste"):
 		result["mas_contraste"] = bool(d["mas_contraste"])
+	if d.has("sensibilidad_camara") and float(d["sensibilidad_camara"]) in [0.5, 1.0, 1.5]:
+		result["sensibilidad_camara"] = float(d["sensibilidad_camara"])
+	if d.has("volar"):
+		result["volar"] = bool(d["volar"])
 	return result
 
 

@@ -1,0 +1,23 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/refactor/refactor_main.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/voxel_world.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/player_blocky.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/touch_and_tv_controls.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/refactor/game_mode_manager.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/refactor/refactor_controller.gd" id="6"]
+
+[node name="RefactorMain" type="Node3D"]
+script = ExtResource("1")
+
+[node name="VoxelWorld" parent="." instance=ExtResource("2")]
+
+[node name="PlayerBlocky" parent="." instance=ExtResource("3")]
+
+[node name="TouchAndTVControls" parent="." instance=ExtResource("4")]
+
+[node name="GameModeManager" type="Node" parent="."]
+script = ExtResource("5")
+
+[node name="RefactorController" type="Node" parent="."]
+script = ExtResource("6")

@@ -12,8 +12,8 @@ config_version=5
 
 config/name="Bloques Mágicos"
 config/description="Constructor de bloques 3D educativo y seguro para niños de 5 años. Sin red, sin anuncios, sin cuentas."
-config/version="1.14.0"
-config/version_code=6
+config/version="1.15.0"
+config/version_code=7
 run/main_scene="res://hub.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 config/icon="res://icon.svg"

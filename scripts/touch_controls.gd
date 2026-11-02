@@ -1,30 +1,48 @@
 extends CanvasLayer
-## TouchControls 1.14.0 — nodo raíz CanvasLayer para la UI móvil
+## TouchControls 1.15.0 — nodo raíz CanvasLayer para la UI móvil
 ## del mundo (main.tscn) Y de la Plaza (hub.tscn). La lógica pura
 ## (joystick normalizado, cámara por arrastre, hold) vive en
 ## InputController y NO se duplica: esta escena solo construye la
 ## UI y emite el vector / los deltas.
 ##
-## Variante Plaza (hub.gd la instancia con estos dos parámetros
-## antes de añadirla al árbol; el mundo no los toca y queda igual
-## que en la 1.13.0):
+## Variante Plaza (hub.gd la instancia con estos parámetros
+## antes de añadirla al árbol; el mundo no los toca):
 ## - enable_interact = false: el área de cámara solo gira la
 ##   vista; no emite tap_interact ni hold_interact (en la Plaza
 ##   no se coloca ni se quita nada).
 ## - camera_bottom_offset = -200.0: el área de cámara termina
 ##   200 px antes del borde inferior, por encima de la fila de
 ##   botones «Entrar» / «Ajustes» (margen 96 + alto 84 = 180 px),
-##   para no taparlos. En el mundo el valor es -170.0 (la franja
-##   de la paleta queda libre para sus botones).
+##   para no taparlos.
+##
+## 1.15.0 — zona libre de botones (fallo reportado con captura):
+## en la 1.14.0 el área de cámara cubría toda la mitad derecha
+## (y 0..550, x 640..1280) en la capa 5, por encima de la paleta
+## (capa 1): tapaba la barra superior (Plaza/Ajustes/Empezar),
+## la columna Poner/Quitar/Subir/Bajar/Caminar y parte del dock
+## de la paleta, así que ningún botón recibía el toque. Ahora el
+## área de cámara es SOLO la zona central libre del mundo:
+##   x: mitad derecha hasta width-230 (antes de la columna de
+##      acciones, que empieza en width-208)
+##   y: desde 210 px (por debajo de la barra superior) hasta
+##      height-390 (por encima del dock, que empieza en
+##      height-350, y de la caja de paseo, que empieza en
+##      height-384). En la Plaza se mantiene bottom -200, que
+##      deja 20 px libres sobre Entrar/Ajustes (y 540..624).
+## El joystick se sube por encima del dock (base -620..-380, el
+## dock empieza en -350): ya no tapa ningún color ni letra, y
+## tiene base oscura visible + knob amarillo contrastante (en
+## la 1.14.0 era un cuadrado blanco pálido pegado a la paleta).
+## Además, `suppress = true` (menú radial abierto en paseo)
+## oculta la capa: el radial es modal y sus botones deben
+## recibir el toque, no el área de cámara.
 ##
 ## Layout (horizontal, stretch/mode = canvas_items en
 ## project.godot, así que escala con la resolución):
 ## - Joystick virtual, zona FIJA abajo a la izquierda, POR ENCIMA
-##   de la paleta (mundo) / de la fila de botones (Plaza):
-##   base 240×240, borde inferior a 190 px (por encima de ambas
-##   franjas, 170 px mundo / 180 px Plaza).
-## - Área de cámara, mitad derecha, desde arriba hasta
-##   camera_bottom_offset antes del borde inferior.
+##   del dock de la paleta (mundo) / de la fila de botones (Plaza):
+##   base 240×240, borde inferior a 380 px.
+## - Área de cámara, zona central libre (ver arriba).
 ## - El área de cámara distingue: arrastre > 24 px = girar cámara;
 ##   toque corto (< 0.45 s, sin arrastre) = colocar; mantener
 ##   >= 0.45 s sin arrastre = quitar. Solo con enable_interact.
@@ -44,12 +62,17 @@ signal hold_interact(screen_pos: Vector2)
 ## 1.14.0: parámetros de variante (ver cabecera). El mundo usa
 ## los valores por defecto; la Plaza los cambia antes de añadir.
 @export var enable_interact := true
-@export var camera_bottom_offset := -170.0
+@export var camera_bottom_offset := -390.0
+@export var camera_top_offset := 210.0
+@export var camera_right_offset := -230.0
+@export var joy_top_offset := -620.0
+@export var joy_bottom_offset := -380.0
 
 var move_vector := Vector2.ZERO
 var camera_yaw_delta := 0.0
 var camera_pitch_delta := 0.0
 var gesture_active := false
+var suppress := false
 
 var _joy_base: Control = null
 var _joy_knob: Control = null
@@ -79,37 +102,47 @@ func _build_ui() -> void:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
-	# Joystick fijo abajo a la izquierda, por encima de la paleta.
+	# Joystick fijo abajo a la izquierda, POR ENCIMA del dock de
+	# la paleta (1.15.0): el dock empieza en -350, así que la
+	# base termina en -380 y ya no tapa ningún botón.
 	_joy_base = Control.new()
 	_joy_base.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	_joy_base.offset_left = 36.0
-	_joy_base.offset_top = -430.0
+	_joy_base.offset_top = joy_top_offset
 	_joy_base.offset_right = 36.0 + 240.0
-	_joy_base.offset_bottom = -190.0
+	_joy_base.offset_bottom = joy_bottom_offset
 	_joy_base.mouse_filter = Control.MOUSE_FILTER_STOP
 	_joy_base.gui_input.connect(_on_joy_gui_input)
 	root.add_child(_joy_base)
-	# Sin fondo de pantalla completa: un ColorRect a pantalla
-	# completa taparía los botones de la paleta. La zona del
-	# joystick es su propio rect (240×240) y el knob la marca.
+	# Base visible: fondo oscuro translúcido a pantalla del rect
+	# (no a pantalla completa, para no tapar la paleta) + knob
+	# amarillo contrastante, no un cuadrado blanco pálido.
+	var joy_bg := ColorRect.new()
+	joy_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	joy_bg.color = Color(0.0, 0.0, 0.0, 0.35)
+	joy_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_joy_base.add_child(joy_bg)
 	_joy_knob = Control.new()
 	_joy_knob.custom_minimum_size = Vector2(96, 96)
 	_joy_knob.position = Vector2(72, 72)
 	_joy_knob.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var knob_bg := ColorRect.new()
 	knob_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	knob_bg.color = Color(1.0, 1.0, 1.0, 0.55)
+	knob_bg.color = Color(0.95, 0.80, 0.15, 0.95)
+	knob_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_joy_knob.add_child(knob_bg)
 	_joy_base.add_child(_joy_knob)
-	# Área de cámara: mitad derecha, sin la franja de la paleta.
+	# Área de cámara: SOLO la zona central libre (1.15.0), no
+	# toda la mitad derecha: fuera de la barra superior, fuera
+	# de la columna de acciones y fuera del dock / paseo.
 	_cam_area = Control.new()
 	_cam_area.set_anchor(SIDE_LEFT, 0.5)
 	_cam_area.set_anchor(SIDE_TOP, 0.0)
 	_cam_area.set_anchor(SIDE_RIGHT, 1.0)
 	_cam_area.set_anchor(SIDE_BOTTOM, 1.0)
 	_cam_area.offset_left = 0.0
-	_cam_area.offset_top = 0.0
-	_cam_area.offset_right = 0.0
+	_cam_area.offset_top = camera_top_offset
+	_cam_area.offset_right = camera_right_offset
 	_cam_area.offset_bottom = camera_bottom_offset
 	_cam_area.mouse_filter = Control.MOUSE_FILTER_STOP
 	_cam_area.gui_input.connect(_on_cam_gui_input)
@@ -123,7 +156,7 @@ func _process(delta: float) -> void:
 		var aj := SettingsSave.load_settings()
 		_control_cache = String(aj.get("control", "tv"))
 		_sens_cache = float(aj.get("sensibilidad_camara", 1.0))
-	var show := not InputController.has_gamepad() and (_control_cache == "tactil" or OS.has_feature("phone"))
+	var show := (not suppress) and not InputController.has_gamepad() and (_control_cache == "tactil" or OS.has_feature("phone"))
 	# Si el ajuste dice mando TV y hay mando, se oculta (caso TV);
 	# si el ajuste dice táctil, el mando lo oculta igual (foco).
 	if InputController.has_gamepad():
@@ -197,3 +230,15 @@ func _on_cam_gui_input(event: InputEvent) -> void:
 				var cd := InputController.camera_delta(rel, _sens_cache)
 				camera_yaw_delta += cd.x
 				camera_pitch_delta += cd.y
+
+
+## 1.15.0 — rects calculados para la comprobación headless
+## (viewport de referencia 1280×720, el de project.godot).
+## Devuelven los rects interactivos de TouchControls en
+## coordenadas de pantalla, sin instanciar la escena.
+static func joy_rect(vw: float = 1280.0, vh: float = 720.0) -> Rect2:
+	return Rect2(36.0, vh - 620.0, 240.0, 240.0)
+
+static func cam_rect(vw: float = 1280.0, vh: float = 720.0, bottom_offset: float = -390.0) -> Rect2:
+	# x: mitad derecha hasta vw-230; y: 210 hasta vh+bottom_offset.
+	return Rect2(vw * 0.5, 210.0, (vw - 230.0) - vw * 0.5, (vh + bottom_offset) - 210.0)

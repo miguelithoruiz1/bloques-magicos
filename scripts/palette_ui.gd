@@ -38,6 +38,7 @@ signal radial_exit_requested
 ## cicla Arriba → Cerca → Lado → Lejos (la paleta queda abierta).
 signal camera_cycle_requested
 
+const SettingsSave := preload("res://scripts/settings_save.gd")
 const HOLD_SECONDS := 1.5
 
 const COLOR_DATA: Array = [
@@ -351,7 +352,15 @@ func _build_announce_label(root: Control) -> void:
 ## que manteniendo OK se abre la paleta de colores y números.
 func _build_help_label(root: Control) -> void:
 	_help_label = Label.new()
-	_help_label.text = "Mando: cruceta mueve · OK pone · mantén OK para elegir · Atrás = menú"
+	# 1.15.0: el texto fijo de TV confundía en el celular (decía
+	# «Mando: cruceta...» aunque se jugara con joystick). En
+	# táctil/celular muestra el esquema real; en TV con mando
+	# queda el texto de siempre, sin tocarlo.
+	var control := String(SettingsSave.load_settings().get("control", "tv"))
+	if control == "tactil" or OS.has_feature("phone"):
+		_help_label.text = "Joystick: mueve · Arrastra a la derecha: gira la cámara (arriba/abajo y lados) · Toque: coloca · Mantener: quita · Botones: Poner, Quitar, Caminar"
+	else:
+		_help_label.text = "Mando: cruceta mueve · OK pone · mantén OK para elegir · Atrás = menú"
 	_help_label.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	_help_label.offset_left = 96.0
 	_help_label.offset_top = 160.0

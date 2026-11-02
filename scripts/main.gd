@@ -305,6 +305,10 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	# 1.15.0: con el radial abierto, los botones del radial son
+	# modales: TouchControls no debe comerse el toque.
+	if _touch_controls != null:
+		_touch_controls.suppress = _radial_open
 	_update_input_velocity(delta)
 	_handle_gamepad_buttons()
 	# Pulsación OK con duración: corta = colocar (o confirmar dentro de
@@ -404,7 +408,14 @@ func _process(delta: float) -> void:
 		# rama arriba y no se ve afectado.
 		var cp: Dictionary = _cam_presets[_cam_preset]
 		_camera.position = _camera.position.lerp(Vector3(cp["offset"]), minf(1.0, delta * 8.0))
-		_camera.rotation.x = lerpf(_camera.rotation.x, deg_to_rad(float(cp["rot_x"])), minf(1.0, delta * 8.0))
+		# 1.15.0: pitch táctil/mando como OFFSET sobre el preset
+		# (antes se sobrescribía con el preset y el arrastre
+		# vertical no se veía: solo giraba a los lados). El
+		# preset no se pierde: al cambiar de preset, el pitch
+		# se mantiene y se suma al nuevo rot_x, clampado para
+		# no voltear la cámara.
+		var build_rot_x := clampf(deg_to_rad(float(cp["rot_x"])) + _cam_pitch, deg_to_rad(-80.0), deg_to_rad(20.0))
+		_camera.rotation.x = lerpf(_camera.rotation.x, build_rot_x, minf(1.0, delta * 8.0))
 		_camera.rotation.y = lerpf(_camera.rotation.y, 0.0, minf(1.0, delta * 8.0))
 		_camera.rotation.z = lerpf(_camera.rotation.z, 0.0, minf(1.0, delta * 8.0))
 
@@ -1132,7 +1143,7 @@ func _exit_walk_mode() -> void:
 	# activo (antes forzaba Arriba aunque se hubiera elegido otro).
 	var cp: Dictionary = _cam_presets[_cam_preset]
 	_camera.position = Vector3(cp["offset"])
-	_camera.rotation_degrees = Vector3(float(cp["rot_x"]), 0.0, 0.0)
+	_camera.rotation_degrees = Vector3(clampf(float(cp["rot_x"]) + rad_to_deg(_cam_pitch), -80.0, 20.0), 0.0, 0.0)
 	_ghost_root.visible = true
 	if _walk_avatar != null:
 		_walk_avatar.visible = false

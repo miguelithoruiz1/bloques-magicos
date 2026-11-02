@@ -1,0 +1,81 @@
+name: Bloques Mágicos 4.0 — Validar y compilar APK Android
+
+# Cada push a refactor-4.0 (y lanzamientos manuales) valida los
+# scripts con Godot 4.3 y compila un APK debug instalable en
+# celular y Google TV. El APK queda en Actions > Artifacts.
+# Es un APK DEBUG (firmado con la clave de depuración generada
+# en el propio runner): sirve para instalar y probar en casa,
+# no es un APK de tienda (release). No se sube ninguna clave
+# privada al repo: la clave debug se genera en cada corrida.
+on:
+  push:
+    branches: [refactor-4.0]
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: "4.3"
+  EXPORT_NAME: "BloquesMagicos"
+
+jobs:
+  android-apk:
+    name: Validar scripts y compilar APK
+    runs-on: ubuntu-latest
+    # Imagen abarichello/godot-ci (Docker Hub: barichello/godot-ci):
+    # trae Godot 4.3, plantillas de exportación y SDK de Android.
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Reubicar plantillas de exportación
+        # La imagen las instala en /root/... pero el runner
+        # corre como otro usuario: Godot las busca en $HOME.
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates/
+          if [ -d "/root/.local/share/godot/export_templates/${GODOT_VERSION}.stable" ]; then
+            mv "/root/.local/share/godot/export_templates/${GODOT_VERSION}.stable" \
+               ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          fi
+          godot --version
+
+      - name: Validar sintaxis GDScript de todo el proyecto
+        # --import parsea todos los scripts y recursos; si un
+        # script nuevo o modificado tiene un error, el paso
+        # falla y NO se compila el APK.
+        run: |
+          godot --headless --import
+          for script in scripts/refactor/cognitive_profile.gd scripts/refactor/adaptive_hud.gd scripts/refactor/educational_blocks_pbr.gd scripts/refactor/central_plaza.gd scripts/refactor/neuro_manager.gd scripts/refactor/night_lighting.gd scripts/refactor/refactor_main.gd scripts/refactor/voxel_world_generator.gd scripts/refactor/settings_refactor.gd scripts/refactor/settings_scene.gd; do
+            echo "Comprobando $script"
+            godot --headless --check-only --script "$script"
+          done
+
+      - name: Generar keystore de depuración y activar TV
+        # El preset del repo deja keystore/debug vacío y
+        # show_in_android_tv en false. En CI se genera una
+        # clave debug nueva y se activa Leanback para que el
+        # APK también aparezca/instale en Google TV. Solo
+        # afecta a esta corrida: export_presets.cfg del repo
+        # no se modifica en el commit.
+        run: |
+          if command -v keytool >/dev/null 2>&1; then
+            keytool -genkeypair -v -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" || true
+          fi
+          sed -i 's#keystore/debug=""#keystore/debug="debug.keystore"#' export_presets.cfg || true
+          sed -i 's#keystore/debug_user=""#keystore/debug_user="androiddebugkey"#' export_presets.cfg || true
+          sed -i 's#keystore/debug_password=""#keystore/debug_password="android"#' export_presets.cfg || true
+          sed -i 's#package/show_in_android_tv=false#package/show_in_android_tv=true#' export_presets.cfg || true
+          grep -E 'keystore/debug=|show_in_android_tv' export_presets.cfg || true
+
+      - name: Compilar APK (debug)
+        run: |
+          mkdir -p build
+          godot --headless --export-debug "Android" "build/${EXPORT_NAME}.apk"
+          ls -lh build/
+
+      - name: Subir el APK como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: BloquesMagicos-Android-debug
+          path: build/*.apk
+          if-no-files-found: error

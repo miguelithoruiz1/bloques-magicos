@@ -51,6 +51,12 @@ const DEFAULTS := {
 	"biome": "pradera_verde", # 2.0 default para instalaciones nuevas; los 4 viejos siguen en la lista. Usuarios con cfg guardada conservan su bioma.
 	"render_radius": 20, # 3.0: menos columnas que 24 (~1/3 menos) para el stick. Usuarios con cfg guardada conservan su radio.
 	"age_band": "5-7", # 3.0 multiedad: 5-7 | 8-12 | 13+ (palabras y operaciones por banda).
+	# 4.0: perfil cognitivo y modo desarrollador, espejo de
+	# CognitiveProfile (personaje.json). SettingsScene los edita
+	# y actualiza ambos guardados a la vez (ver settings_scene.gd).
+	"perfil_cognitivo": "explorador", # explorador | constructor | maestro
+	"modo_desarrollador": false,
+	"edad_jugador": 6,
 	# Remapeo de mando: acción -> botón Joypad (índices Godot).
 	"remap": {
 		"jump": 0, "crouch": 1, "inventory": 3,

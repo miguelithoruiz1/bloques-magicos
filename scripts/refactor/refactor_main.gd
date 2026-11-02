@@ -1,7 +1,7 @@
 extends Node3D
 ## RefactorMain — escena principal de la variante refactorizada.
 ##
-## Cableado (sin tocar hub.tscn, main.tscn ni ningún nivel):
+## Cableado 4.0 (hub.tscn ya no es el camino de la Plaza desde aqui):
 ##   VoxelWorldGenerator  → terreno por semilla + bloques
 ##   PlayerBlocky         → movimiento/cámara (ver su convención)
 ##   UIController         → HUD Minecraft (hotbar, inventario, TV)
@@ -9,9 +9,20 @@ extends Node3D
 ##   RefactorController   → Atrás nunca cierra la app por accidente
 ##   SettingsScene        → Ajustes (se instancia al pulsar Ajustes)
 ##
-## La Plaza y los niveles de 1.15.0 quedan intactos y accesibles:
-## «Volver a la Plaza» cambia a res://hub.tscn, que es el mismo
-## archivo de 1.15.0 copiado sin cambios.
+## 4.0: la Plaza Central vive DENTRO del mundo voxel
+## (CentralPlaza, en el punto de aparicion). «Volver a la Plaza»
+## ya NO cambia a hub.tscn: teletransporta al spawn del mundo
+## actual. hub.tscn / main.tscn de 1.15.0 siguen en el repo,
+## pero ya no son el camino de la Plaza desde este mundo.
+## AdaptiveHUD 4.0: se instancia y se conecta para telemetria
+## (FPS/vitales solo con modo desarrollador), prompt por
+## dispositivo y bloqueo de stats en Explorador. Sus filas de
+## hotbar/botones gigantes quedan ocultas en 4.0 porque
+## UIController 3.0.2 sigue llevando el joystick, la hotbar y
+## las columnas de acciones (AdaptiveHUD aun no tiene joystick
+## ni paneles de taller/misiones/LAN); ocultar UIController
+## romperia el movimiento en movil. La sustitucion visual
+## completa es el siguiente paso, no un cambio silencioso aqui.
 ##
 ## Mira: el terreno no tiene cuerpos de colisión, así que la mira
 ## usa ray-marching sobre los datos de bloques (no sobre física):
@@ -65,6 +76,12 @@ var _character: CharacterData = null
 var _char_save_timer := 0.0
 # 3.0: música procedural por bioma y foley.
 var _music: MusicSystem = null
+# 4.0: perfil, HUD adaptativo, Plaza, neurociencia y noche.
+var _profile: CognitiveProfile = null
+var _adaptive_hud: AdaptiveHUD = null
+var _plaza: CentralPlaza = null
+var _neuro: NeuroManager = null
+var _night: NightLighting = null
 # 3.0: multijugador LAN.
 var _lan: LanNet = null
 var _remote_avatars := {}
@@ -74,6 +91,33 @@ var _snapshot_count := 0
 
 func _ready() -> void:
 	_settings = SettingsRefactor.load_settings()
+	# 4.0: el perfil es la fuente de verdad; los ajustes son
+	# su espejo (SettingsScene actualiza ambos al cambiarlos).
+	_profile = CognitiveProfile.load_or_create()
+	_settings["perfil_cognitivo"] = _profile.profile_name()
+	_settings["modo_desarrollador"] = _profile.developer_mode
+	_settings["edad_jugador"] = _profile.age_years
+	match _profile.profile:
+		CognitiveProfile.Profile.EXPLORER:
+			_age_band = "5-7"
+		CognitiveProfile.Profile.BUILDER:
+			_age_band = "8-12"
+		_:
+			_age_band = "13+"
+	_settings["age_band"] = _age_band
+	# 4.0: nuevos sistemas, antes de cablear senales.
+	_adaptive_hud = AdaptiveHUD.new()
+	_adaptive_hud.profile = _profile
+	add_child(_adaptive_hud)
+	_adaptive_hud.set_hud_rows_visible(false)
+	_neuro = NeuroManager.new()
+	_neuro.profile = _profile
+	add_child(_neuro)
+	_night = NightLighting.new()
+	add_child(_night)
+	_plaza = CentralPlaza.new()
+	_plaza.profile = _profile
+	add_child(_plaza)
 	_world = get_node_or_null("VoxelWorld") as VoxelWorldGenerator
 	_player = get_node_or_null("PlayerBlocky") as PlayerBlocky
 	_ui = get_node_or_null("TouchAndTVControls") as UIController
@@ -150,7 +194,7 @@ func _build_overlays() -> void:
 	title.text = "Bloques Mágicos — 3.0"
 	vbox.add_child(title)
 	var note := Label.new()
-	note.text = "3.0: 41 biomas, 20 misiones, mundo en vivo, taller, niveles y 246 criaturas. La Plaza y los niveles de 1.15.0 siguen intactos: 'Volver a la Plaza' los abre."
+	note.text = "4.0: Plaza Central dentro del mundo voxel, perfil cognitivo, noche visible y APK por GitHub Actions en la rama refactor-4.0."
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(note)
 	_mode_option = OptionButton.new()
@@ -198,7 +242,7 @@ func _build_overlays() -> void:
 	vbox.add_child(settings_btn)
 	var plaza_btn := Button.new()
 	plaza_btn.text = "Volver a la Plaza"
-	plaza_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://hub.tscn"))
+	plaza_btn.pressed.connect(func(): _go_to_plaza())
 	vbox.add_child(plaza_btn)
 	_ui_layer.add_child(_title_panel)
 	# 3.0.2 TV: sin foco inicial, la cruceta del mando
@@ -210,7 +254,7 @@ func _build_overlays() -> void:
 	_pause_panel.visible = false
 	var pbox := VBoxContainer.new()
 	_pause_panel.add_child(pbox)
-	for data in [["Continuar", func(): _set_pause(false)], ["Ajustes", func(): _open_settings()], ["Guardar mundo", func(): _save_world()], ["Exportar mundo (copiar código)", func(): _export_world()], ["Importar mundo (desde portapapeles)", func(): _import_world()], ["Volver a la Plaza", func(): _save_world(); get_tree().change_scene_to_file("res://hub.tscn")]]:
+	for data in [["Continuar", func(): _set_pause(false)], ["Ajustes", func(): _open_settings()], ["Guardar mundo", func(): _save_world()], ["Exportar mundo (copiar código)", func(): _export_world()], ["Importar mundo (desde portapapeles)", func(): _import_world()], ["Volver a la Plaza", func(): _go_to_plaza()]]:
 		var b := Button.new()
 		b.text = data[0]
 		b.pressed.connect(data[1])
@@ -234,6 +278,40 @@ func _panel() -> Control:
 
 
 func _wire_signals() -> void:
+	# 4.0: AdaptiveHUD (telemetria/prompt). Sus botones de
+	# accion estan ocultos en 4.0 (ver nota en la cabecera),
+	# asi que estas senales solo se dispararan cuando sus
+	# filas se muestren en una version posterior.
+	if _adaptive_hud != null:
+		_adaptive_hud.place_pressed.connect(_on_place)
+		_adaptive_hud.remove_pressed.connect(_on_remove)
+		_adaptive_hud.jump_pressed.connect(func():
+			if _player != null:
+				_player.jumping = true)
+		_adaptive_hud.pause_pressed.connect(func(): _set_pause(true))
+		_adaptive_hud.perspective_pressed.connect(func():
+			if _player != null:
+				_player.cycle_perspective())
+	if _neuro != null:
+		_neuro.srs_due_ready.connect(func(_items: Array):
+			_show_message("Tienes retos para repasar hoy."))
+		_neuro.feynman_requested.connect(func(prompt_text: String, _steps: Array):
+			_show_message(prompt_text)
+			if _player != null:
+				_player.set_perspective(PlayerBlocky.Perspective.SECOND))
+		_neuro.feynman_completed.connect(func(_n: int):
+			_show_message("¡Le enseñaste a tu mascota!"))
+		_neuro.pomodoro_focus_ended.connect(func():
+			_show_message("¡Pausa activa! Muévete un poco para recargar cristales."))
+		_neuro.active_break_requested.connect(func(activity: String):
+			_show_message(activity))
+		_neuro.feedback_shown.connect(func(text: String, _kind: String):
+			_show_message(text))
+		_neuro.night_transition_requested.connect(func(is_night: bool):
+			_show_message("Ya es de noche: el cerebro consolida lo aprendido." if is_night else "Amaneció en el mundo."))
+	if _plaza != null:
+		_plaza.portal_entered.connect(_on_plaza_entered)
+		_plaza.portal_locked.connect(_on_plaza_locked)
 	if _ui == null:
 		return
 	_ui.move_input_changed.connect(func(v: Vector2):
@@ -286,12 +364,18 @@ func _wire_signals() -> void:
 			if _quests != null:
 				_quests.on_word()
 			if _levels != null:
-				_levels.gain_exp(10))
+				_levels.gain_exp(10)
+			if _neuro != null:
+				_neuro.record_hit("palabra_" + _word)
+				_neuro.feedback_for(true, "¡Buena palabra!"))
 		_modes.math_solved.connect(func(_expr: String, _value: int):
 			if _quests != null:
 				_quests.on_math()
 			if _levels != null:
-				_levels.gain_exp(10))
+				_levels.gain_exp(10)
+			if _neuro != null:
+				_neuro.record_hit("suma_" + _expr)
+				_neuro.feedback_for(true, "¡Buena cuenta!"))
 		_modes.feynman_request.connect(func(text: String):
 			_show_message(text)
 			if _player != null:
@@ -361,6 +445,10 @@ func _start_world() -> void:
 	var bands: Array[String] = ["5-7", "8-12", "13+"]
 	_age_band = bands[_age_option.selected] if _age_option != null and _age_option.selected >= 0 and _age_option.selected < bands.size() else "5-7"
 	_settings["age_band"] = _age_band
+	if _profile != null:
+		_profile.set_profile_from_band(_age_band)
+		_settings["perfil_cognitivo"] = _profile.profile_name()
+		_settings["modo_desarrollador"] = _profile.developer_mode
 	SettingsRefactor.save_settings(_settings)
 	var seed := WorldSeedManager.seed_from_string(seed_text)
 	var biome := str(_settings.get("biome", "croma_isla"))
@@ -369,6 +457,11 @@ func _start_world() -> void:
 		var saved := WorldSeedManager.load_world(world_name, seed_text)
 		if not saved.is_empty():
 			_world.apply_modified(saved.get("modified_blocks", {}))
+	if _world != null and _night != null:
+		_night.setup(_world.get_node_or_null("Ambiente") as WorldEnvironment, _world.get_node_or_null("Sol") as DirectionalLight3D)
+	if _neuro != null:
+		_neuro.start_pomodoro()
+		_neuro.notify_due()
 	if _modes != null:
 		_modes.setup(_world)
 		_modes.set_mode(GameModeManager.Mode.CREATIVE if _mode_option.selected == 0 else GameModeManager.Mode.SURVIVAL)
@@ -376,6 +469,10 @@ func _start_world() -> void:
 		var h := _world.terrain_height(0, 0) if _world != null else 2
 		_player.global_position = Vector3(0.5, float(h) + 2.0, 0.5)
 		_spawn_pos = _player.global_position
+		# 4.0: la Plaza Central nace en el punto de aparicion.
+		if _plaza != null:
+			_plaza.position = _spawn_pos
+			_plaza.setup(_profile)
 		_prev_time = _modes.time_of_day if _modes != null else 10.0
 		if _ui != null and _world != null:
 			_ui.setup_minimap(_world)
@@ -978,6 +1075,15 @@ func _open_settings() -> void:
 			_controller.unregister_panel(node)
 		node.queue_free()
 		_settings = SettingsRefactor.load_settings()
+		if _profile != null:
+			_profile = CognitiveProfile.load_or_create()
+			_settings["perfil_cognitivo"] = _profile.profile_name()
+			_settings["modo_desarrollador"] = _profile.developer_mode
+		if _adaptive_hud != null:
+			_adaptive_hud.setup(_profile, 0)
+			_adaptive_hud.set_hud_rows_visible(false)
+		if _plaza != null:
+			_plaza.setup(_profile)
 		if _player != null:
 			_player.camera_sensitivity = SettingsRefactor.camera_sensitivity_factor(_settings)
 			_player.invert_y = bool(_settings.get("invert_y", false))
@@ -997,14 +1103,16 @@ func _process(delta: float) -> void:
 		if _modes.time_of_day < _prev_time:
 			_day += 1
 		_prev_time = _modes.time_of_day
-		# 3.0: sol con energía de día y tenue de noche.
-		if _world != null:
-			var sun := _world.get_node_or_null("Sol") as DirectionalLight3D
-			if sun != null:
-				sun.light_energy = 1.15 if not _modes.is_night() else 0.4
+		# 4.0: NightLighting manda en sol/luna/cielo/ambiente.
+		# Ya no se baja el sol a 0.4 a mano: la noche tiene
+		# suelo azulado minimo y nunca queda negra.
+		if _night != null and _modes != null:
+			_night.apply_time_of_day(_modes.time_of_day)
 		# 3.0: Luna Carmesí cada 8 noches: la horda se acerca
 		# al caer la noche y se disuelve al amanecer.
 		var is_night := _modes.is_night()
+		if is_night != _was_night and _neuro != null:
+			_neuro.notify_night_transition(is_night)
 		if is_night and not _was_night and _day % 8 == 0 and _horde != null and _player != null:
 			_horde.start_horde(12, _player.global_position)
 			_show_message("¡Luna Carmesí! La horda se acerca...")
@@ -1033,10 +1141,18 @@ func _process(delta: float) -> void:
 			var dx2: float = _player.global_position.x - _spawn_pos.x
 			var dz2: float = _player.global_position.z - _spawn_pos.z
 			var dist: float = sqrt(dx2 * dx2 + dz2 * dz2)
-			_ui.set_stats("Nv %d · %d/%d EXP · Día %d · %s · Zona %d · %s · %d fps" % [
+			# 4.0: FPS/vitales SOLO con modo desarrollador.
+			# AdaptiveHUD guarda el texto pero no lo muestra si
+			# el interruptor esta apagado; UIController ya no
+			# recibe set_stats/set_vitals en esta rama.
+			var stats_text := "Nv %d · %d/%d EXP · Día %d · %s · Zona %d · %s · %d fps" % [
 				_levels.level, _levels.exp, LevelSystem.exp_needed(_levels.level),
 				_day, season, LevelSystem.zone_for_distance(dist),
-				_weather.weather, Engine.get_frames_per_second()])
+				_weather.weather, Engine.get_frames_per_second()]
+			if _adaptive_hud != null:
+				_adaptive_hud.set_stats(stats_text)
+			elif _ui != null:
+				_ui.set_stats(stats_text)
 			# 3.0: calor cercano (antorcha/farol/brillo) 2×/s.
 			_near_heat = false
 			if _world != null:
@@ -1049,8 +1165,8 @@ func _process(delta: float) -> void:
 							var b := _world.get_block(Vector3i(px2 + dx, py2 + dy, pz2 + dz))
 							if b == VoxelWorldGenerator.BLOCK_TORCH or b == VoxelWorldGenerator.BLOCK_LANTERN or b == VoxelWorldGenerator.BLOCK_GLOW:
 								_near_heat = true
-			if _vitals != null and _ui != null:
-				_ui.set_vitals(_vitals.health, _vitals.mana, _vitals.stamina, _vitals.oxygen, _vitals.temperature)
+			if _vitals != null and _adaptive_hud != null:
+				_adaptive_hud.set_vitals(_vitals.health, _vitals.mana, _vitals.stamina, _vitals.oxygen, _vitals.temperature)
 			# 3.0: la música sigue al bioma.
 			if _music != null and _world != null and _world.biome != _music.current_biome:
 				_music.start_biome(_world.biome)
@@ -1093,6 +1209,39 @@ func _process(delta: float) -> void:
 			var rsy := Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
 			if absf(rsx) > 0.2 or absf(rsy) > 0.2:
 				_player.add_right_stick(rsx, rsy, delta)
+
+
+## 4.0: «Volver a la Plaza» dentro del mismo mundo voxel.
+## Si aun no se entro al mundo, entrar (el spawn ES la Plaza).
+func _go_to_plaza() -> void:
+	_save_world()
+	if not _started:
+		_start_world()
+		return
+	if _player != null:
+		_player.global_position = _spawn_pos + Vector3(0.0, 2.0, 0.0)
+	_set_pause(false)
+	_show_message("Plaza Central: camina hacia un portal y pulsa OK para entrar.")
+
+
+func _on_plaza_entered(portal_id: String) -> void:
+	if _player == null:
+		return
+	var offsets := {
+		"colores": Vector3(100.0, 0.0, 0.0),
+		"numeros": Vector3(200.0, 0.0, 0.0),
+		"letras": Vector3(300.0, 0.0, 0.0),
+		"sumas": Vector3(400.0, 0.0, 0.0),
+		"logica": Vector3(500.0, 0.0, 0.0),
+	}
+	var dest: Vector3 = _spawn_pos + offsets.get(portal_id, Vector3.ZERO)
+	var h := _world.terrain_height(int(dest.x), int(dest.z)) if _world != null else 2
+	_player.global_position = Vector3(dest.x, float(h) + 2.0, dest.z)
+	_show_message("Portal " + portal_id + ": zona en el mismo mundo.")
+
+
+func _on_plaza_locked(portal_id: String) -> void:
+	_show_message("Ese portal está cerrado para tu perfil. ¡Sigue explorando!")
 
 
 func _show_message(text: String) -> void:
@@ -1139,6 +1288,12 @@ func _ray_cells() -> Array:
 func _on_place() -> void:
 	if _world == null or _player == null or _ui == null:
 		return
+	# 4.0: cerca de un portal de la Plaza, OK entra al portal
+	# en lugar de poner un bloque.
+	if _started and _plaza != null and _player != null:
+		if not _plaza.portal_near(_player.global_position).is_empty():
+			_plaza.try_enter_near(_player.global_position)
+			return
 	var cells := _ray_cells()
 	if cells.is_empty():
 		return
@@ -1214,6 +1369,14 @@ func _after_place(cell: Vector3i) -> void:
 			break
 	if letters.size() >= 3:
 		var word := GameModeManager.detect_word(letters)
+		if word == "" and _neuro != null:
+			var joined := ""
+			for letter in letters:
+				joined += str(letter)
+			_neuro.record_miss("palabra_" + joined)
+			_neuro.feedback_for(false)
+		if word != "" and _plaza != null:
+			_plaza.try_word(letters)
 		# 3.0 multiedad: solo se invoca si la banda la permite.
 		if word != "" and _modes != null:
 			if word in GameModeManager.words_for_band(_age_band):

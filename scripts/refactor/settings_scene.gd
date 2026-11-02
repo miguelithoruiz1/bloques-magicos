@@ -11,7 +11,9 @@ extends Control
 
 signal closed
 
-const SECTIONS := ["Teclado y ratón", "Mando", "Táctil", "Audio y Voces", "Mundo y Semilla"]
+const SECTIONS := ["Teclado y ratón", "Mando", "Táctil", "Audio y Voces", "Mundo y Semilla", "Perfil y Desarrollador"]
+const PROFILE_LABELS := ["Explorador Inicial (3-6 años)", "Constructor Creativo (7-12 años)", "Maestro y Mente Activa (13-50+ años)"]
+const PROFILE_KEYS := ["explorador", "constructor", "maestro"]
 const CONTROL_MODES := ["Joystick y pulsar para interactuar", "Cruceta y pulsar para interactuar", "Joystick y apuntar con el retículo"]
 const CONTROL_MODE_KEYS := ["joystick_tap", "dpad_tap", "joystick_crosshair"]
 const JOY_VIS := ["Siempre visible", "Siempre oculto", "Oculto cuando no se usa"]
@@ -139,6 +141,16 @@ func _option(text: String, key: String, labels: Array, keys: Array) -> OptionBut
 func _set_setting(key: String, value: Variant) -> void:
 	settings[key] = value
 	SettingsRefactor.save_settings(settings)
+	# 4.0: el perfil y el modo desarrollador viven tambien en
+	# personaje.json (CognitiveProfile). Cambiarlos aqui los
+	# actualiza en ambos sitios, sin pasos manuales.
+	if key == "perfil_cognitivo":
+		var prof := CognitiveProfile.load_or_create()
+		prof.set_profile_from_name(str(value))
+	elif key == "modo_desarrollador":
+		var prof2 := CognitiveProfile.load_or_create()
+		prof2.developer_mode = bool(value)
+		prof2.save()
 
 
 func _show_section(index: int) -> void:
@@ -154,6 +166,8 @@ func _show_section(index: int) -> void:
 			_show_audio()
 		4:
 			_show_world()
+		5:
+			_show_profile()
 
 
 func _show_keyboard() -> void:
@@ -245,6 +259,14 @@ func _show_world() -> void:
 	_option("Bioma", "biome", BIOMES, BIOME_KEYS)
 	_slider("Radio de terreno (bloques)", "render_radius", 12, 40)
 	_note("La semilla alimenta el ruido del terreno: el mismo texto genera siempre el mismo mundo, en el celular y en el televisor.")
+
+
+func _show_profile() -> void:
+	_title("Perfil y Desarrollador")
+	_note("El perfil adapta la dificultad, las cámaras y lo que se muestra. En Explorador (3-6) la dificultad queda fija en Pacífico y se ocultan las estadísticas complejas.")
+	_option("Perfil Cognitivo", "perfil_cognitivo", PROFILE_LABELS, PROFILE_KEYS)
+	_check("Modo desarrollador (mostrar FPS y vitales)", "modo_desarrollador")
+	_note("Con el modo desarrollador apagado (por defecto), la línea de FPS y vitales no se muestra en juego, aunque el juego siga calculándola.")
 
 
 func _note(text: String) -> void:

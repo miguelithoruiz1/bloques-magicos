@@ -61,6 +61,10 @@ const BLOCK_STAR := 90
 const BLOCK_HEART := 91
 const BLOCK_LANTERN := 92
 const BLOCK_SYLLABLE_MA := 93
+# 4.0: bloques de luz nuevos (libres en blocks.json, maximo 254).
+const BLOCK_GLOW_SHROOM := 260
+const BLOCK_CRYSTAL_CYAN := 261
+const BLOCK_CRYSTAL_MAGENTA := 262
 # 3.0: bloques del catálogo (data/blocks.json v2, ids 100+).
 const BLOCK_BEDROCK := 144
 const BLOCK_COAL_ORE := 145
@@ -517,7 +521,7 @@ func _clear_placed() -> void:
 ## en el MultiMesh. El nombre viejo se conserva para no tocar
 ## a sus llamadores; en 2.0 ya no es solo aprendizaje.
 func _is_learning_block(block_id: int) -> bool:
-	return (block_id >= 10 and block_id <= 21) or (block_id >= 30 and block_id <= 39) or (block_id >= 40 and block_id <= 44) or (block_id >= 50 and block_id <= 76) or block_id == BLOCK_TORCH or block_id == BLOCK_CHEST or block_id == BLOCK_PORTAL or (block_id >= 84 and block_id <= 88) or (block_id >= 90 and block_id <= 93)
+	return (block_id >= 10 and block_id <= 21) or (block_id >= 30 and block_id <= 39) or (block_id >= 40 and block_id <= 44) or (block_id >= 50 and block_id <= 76) or block_id == BLOCK_TORCH or block_id == BLOCK_CHEST or block_id == BLOCK_PORTAL or (block_id >= 84 and block_id <= 88) or (block_id >= 90 and block_id <= 93) or block_id == BLOCK_GLOW_SHROOM or block_id == BLOCK_CRYSTAL_CYAN or block_id == BLOCK_CRYSTAL_MAGENTA
 
 
 func _refresh_placed(cell: Vector3i, block_id: int) -> void:
@@ -526,32 +530,12 @@ func _refresh_placed(cell: Vector3i, block_id: int) -> void:
 		_placed.erase(cell)
 	if block_id == BLOCK_AIR or not _is_learning_block(block_id):
 		return
-	var mesh_inst := MeshInstance3D.new()
-	mesh_inst.mesh = BoxMesh.new()
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = block_color(block_id)
-	# Antorcha: luz real (pocas, son retos). Cristal brillo:
-	# solo emisión, sin luz puntual, para no cargar el stick
-	# si el niño pone muchos cristales.
-	mat.emission_enabled = block_id == BLOCK_TORCH or block_id == BLOCK_GLOW or block_id == BLOCK_STAR or block_id == BLOCK_LANTERN
-	if mat.emission_enabled:
-		if block_id == BLOCK_GLOW:
-			mat.emission = Color(0.2, 0.9, 1.0)
-		elif block_id == BLOCK_STAR or block_id == BLOCK_LANTERN:
-			mat.emission = Color(1.0, 0.85, 0.2)
-		else:
-			mat.emission = Color(1.0, 0.7, 0.2)
-	if block_id == BLOCK_TORCH:
-		mesh_inst.add_child(_make_point_light())
-	mesh_inst.material_override = mat
+	# 4.0: bloques colocados con Stylized PBR (pares metalicos,
+	# vocales translucidas con emision, normales procedurales).
+	# El terreno MultiMesh NO se toca: solo los colocados son
+	# MeshInstance3D individuales, como antes.
+	var mesh_inst := EducationalBlockFactory.create_block_mesh(block_id)
 	mesh_inst.position = Vector3(float(cell.x) + 0.5, float(cell.y) + 0.5, float(cell.z) + 0.5)
-	var label := block_label(block_id)
-	if label != "":
-		var lab := Label3D.new()
-		lab.text = label
-		lab.font_size = 96
-		lab.position = Vector3(0.0, 0.0, 0.55)
-		mesh_inst.add_child(lab)
 	add_child(mesh_inst)
 	_placed[cell] = mesh_inst
 
@@ -632,6 +616,12 @@ static func block_color(block_id: int) -> Color:
 			return Color(1.0, 0.75, 0.25)
 		BLOCK_SYLLABLE_MA:
 			return Color(0.65, 0.30, 0.85)
+		BLOCK_GLOW_SHROOM:
+			return Color(0.45, 0.95, 0.55)
+		BLOCK_CRYSTAL_CYAN:
+			return EducationalBlockFactory.CRYSTAL_CYAN
+		BLOCK_CRYSTAL_MAGENTA:
+			return EducationalBlockFactory.CRYSTAL_MAGENTA
 		_:
 			pass
 	if block_id >= 10 and block_id <= 21:

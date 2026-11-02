@@ -39,6 +39,10 @@ const FALLBACK := {
 	86: {"name": "Vidrio", "color": [0.65, 0.85, 0.95], "hardness": 0.3, "shape": "solid", "light": 0, "sound": "crystal"},
 	87: {"name": "Nieve", "color": [0.95, 0.97, 1.0], "hardness": 0.4, "shape": "solid", "light": 0, "sound": "snow"},
 	88: {"name": "Cristal brillo", "color": [0.20, 0.95, 1.0], "hardness": 0.8, "shape": "solid", "light": 11, "sound": "crystal"},
+	# 4.0: bloques de luz nuevos (tambien en data/blocks.json).
+	260: {"name": "Seta luminosa", "color": [0.45, 0.95, 0.55], "hardness": 0.3, "shape": "solid", "light": 10, "sound": "crystal"},
+	261: {"name": "Cristal cian", "color": [0.275, 0.863, 1.0], "hardness": 0.8, "shape": "solid", "light": 12, "sound": "crystal"},
+	262: {"name": "Cristal magenta", "color": [0.941, 0.314, 0.863], "hardness": 0.8, "shape": "solid", "light": 12, "sound": "crystal"},
 }
 
 var _data: Dictionary = {}

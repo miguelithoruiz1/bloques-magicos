@@ -16,7 +16,8 @@ extends RefCounted
 
 class_name Biomes2
 
-const BIOMES := ["pradera_verde", "playa_mar", "bosque_magico", "montana_nevada"]
+const BIOMES := ["pradera_verde", "playa_mar", "bosque_magico", "montana_nevada",
+	"oceano", "rio", "pantano", "tundra_nevada", "sabana", "desierto", "jungla"]
 const WATER_LEVEL := 2
 
 
@@ -35,10 +36,12 @@ static func biome_for(height: int, temp: float, water_level: int = WATER_LEVEL) 
 ## Bloque de superficie del bioma (IDs del generador).
 static func surface_block(biome: String) -> int:
 	match biome:
-		"playa_mar":
+		"playa_mar", "desierto", "rio", "oceano":
 			return 7 # arena
-		"montana_nevada":
-			return 87 # nieve (nuevo en 2.0)
+		"montana_nevada", "tundra_nevada":
+			return 87 # nieve
+		"pantano":
+			return 2 # lodo
 		_:
 			return 1 # hierba
 
@@ -50,8 +53,14 @@ static func tree_kind(biome: String) -> String:
 			return "palma"
 		"bosque_magico":
 			return "magico"
-		"montana_nevada":
+		"montana_nevada", "tundra_nevada":
 			return "pino"
+		"sabana":
+			return "acacia"
+		"desierto":
+			return "cactus"
+		"jungla":
+			return "magico"
 		_:
 			return "roble"
 
@@ -62,8 +71,10 @@ static func decoration(biome: String) -> String:
 			return "seta_brillo"
 		"playa_mar":
 			return "palma"
-		"montana_nevada":
+		"montana_nevada", "tundra_nevada":
 			return "pino_nevado"
+		"desierto":
+			return "cactus"
 		_:
 			return "flor"
 

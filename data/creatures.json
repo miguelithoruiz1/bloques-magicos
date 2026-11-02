@@ -1,0 +1,6083 @@
+{
+ "version": 1,
+ "count": 246,
+ "nota": "Catalogo de criaturas 3.0 segun la seccion 5 del documento de arquitectura: 22 pacificas + 20 depredadores + 40 fantasticas/jefes + 50 de facciones (10 x 5 roles) + 106 variantes por bioma + 8 unicos con nombre = 246. Nombres y datos propios; las criaturas se dibujan con cubos procedurales, no con modelos .vox ajenos.",
+ "creatures": [
+  {
+   "id": "oveja",
+   "name": "Oveja",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "baya",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "vaca",
+   "name": "Vaca",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "trigo",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "cerdo",
+   "name": "Cerdo",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "zanahoria",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "gallina",
+   "name": "Gallina",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "pato",
+   "name": "Pato",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": false,
+   "biomes": [
+    "rio",
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "cabra",
+   "name": "Cabra",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada",
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "alpaca",
+   "name": "Alpaca",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "yak",
+   "name": "Yak",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "caballo",
+   "name": "Caballo",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "manzana",
+   "rideable": true,
+   "biomes": [
+    "pradera_verde",
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "camello",
+   "name": "Camello",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": true,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "reno",
+   "name": "Reno",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": true,
+   "biomes": [
+    "tundra_nevada",
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "avestruz",
+   "name": "Avestruz",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": true,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "perro",
+   "name": "Perro",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "carne",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "gato",
+   "name": "Gato",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "pescado",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "loro",
+   "name": "Loro",
+   "category": "pacifica",
+   "archetype": "avian",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": false,
+   "biomes": [
+    "jungla",
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "conejo",
+   "name": "Conejo",
+   "category": "pacifica",
+   "archetype": "hopper",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "zanahoria",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "ciervo",
+   "name": "Ciervo",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "capibara",
+   "name": "Capibara",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "rio",
+    "pantano"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "tortuga",
+   "name": "Tortuga",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "playa_mar",
+    "rio"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "rana",
+   "name": "Rana",
+   "category": "pacifica",
+   "archetype": "hopper",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "mosca",
+   "rideable": false,
+   "biomes": [
+    "pantano",
+    "rio"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "pinguino",
+   "name": "Pingüino",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "pescado",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "delfin",
+   "name": "Delfín",
+   "category": "pacifica",
+   "archetype": "aquatic",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "pescado",
+   "rideable": false,
+   "biomes": [
+    "oceano"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    3,
+    6
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "lobo",
+   "name": "Lobo",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": true,
+   "food": "carne",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "oso_pardo",
+   "name": "Oso Pardo",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "oso_polar",
+   "name": "Oso Polar",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "jabali",
+   "name": "Jabalí",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "aguila",
+   "name": "Águila",
+   "category": "depredador",
+   "archetype": "avian",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "leon",
+   "name": "León",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "tigre",
+   "name": "Tigre",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "pantera",
+   "name": "Pantera",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "hiena",
+   "name": "Hiena",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "sabana",
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "cocodrilo",
+   "name": "Cocodrilo",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pantano",
+    "rio"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "escorpion",
+   "name": "Escorpión",
+   "category": "depredador",
+   "archetype": "arachnid",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "vibora",
+   "name": "Víbora",
+   "category": "depredador",
+   "archetype": "serpent",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto",
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "buitre",
+   "name": "Buitre",
+   "category": "depredador",
+   "archetype": "avian",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "sabana",
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "rinoceronte",
+   "name": "Rinoceronte",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "hipopotamo",
+   "name": "Hipopótamo",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "rio",
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "gorila",
+   "name": "Gorila",
+   "category": "depredador",
+   "archetype": "biped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "mamut",
+   "name": "Mamut",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "tiburon",
+   "name": "Tiburón",
+   "category": "depredador",
+   "archetype": "aquatic",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "oceano"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "pirana",
+   "name": "Piraña",
+   "category": "depredador",
+   "archetype": "aquatic",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "rio",
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "arana_gigante",
+   "name": "Araña Gigante",
+   "category": "depredador",
+   "archetype": "arachnid",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    1,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "slime_limo",
+   "name": "Slime de Limo",
+   "category": "fantastica",
+   "archetype": "hopper",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pantano"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "slime_magma",
+   "name": "Slime de Magma",
+   "category": "fantastica",
+   "archetype": "hopper",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tierras_magma"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "slime_hielo",
+   "name": "Slime de Hielo",
+   "category": "fantastica",
+   "archetype": "hopper",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "slime_veneno",
+   "name": "Slime de Veneno",
+   "category": "fantastica",
+   "archetype": "hopper",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pantano_niebla"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "goblin",
+   "name": "Goblin",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "orc",
+   "name": "Orco",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "troll",
+   "name": "Troll",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "ogre",
+   "name": "Ogro",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "skeleton",
+   "name": "Esqueleto",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "night",
+   "zoneMin": 2,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "zombie",
+   "name": "Zombi",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "night",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "mummy",
+   "name": "Momia",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "ghost",
+   "name": "Fantasma",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "night",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "wraith",
+   "name": "Espectro",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "suelo_corrupto"
+   ],
+   "time": "night",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "vampire",
+   "name": "Vampiro",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "night",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "werewolf",
+   "name": "Hombre Lobo",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "night",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "gargoyle",
+   "name": "Gárgola",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "mimic",
+   "name": "Mímico",
+   "category": "fantastica",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "harpy",
+   "name": "Arpía",
+   "category": "fantastica",
+   "archetype": "avian",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "minotaur",
+   "name": "Minotauro",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "centaur",
+   "name": "Centauro",
+   "category": "fantastica",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "cyclops",
+   "name": "Cíclope",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "golem_piedra",
+   "name": "Gólem de Piedra",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "golem_hierro",
+   "name": "Gólem de Hierro",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "golem_cristal",
+   "name": "Gólem de Cristal",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tierras_cristal"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "golem_magma",
+   "name": "Gólem de Magma",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tierras_magma"
+   ],
+   "time": "any",
+   "zoneMin": 5,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "ice_elemental",
+   "name": "Elemental de Hielo",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "fire_elemental",
+   "name": "Elemental de Fuego",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tierras_magma"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "treant",
+   "name": "Treant",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "basilisk",
+   "name": "Basilisco",
+   "category": "fantastica",
+   "archetype": "serpent",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "unicorn",
+   "name": "Unicornio",
+   "category": "fantastica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "manzana",
+   "rideable": false,
+   "biomes": [
+    "tierras_celestiales"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "phoenix",
+   "name": "Fénix",
+   "category": "fantastica",
+   "archetype": "avian",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tierras_magma"
+   ],
+   "time": "any",
+   "zoneMin": 5,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "griffin",
+   "name": "Grifo",
+   "category": "fantastica",
+   "archetype": "avian",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": true,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "wyvern",
+   "name": "Wyvern",
+   "category": "fantastica",
+   "archetype": "avian",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": true,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "manticore",
+   "name": "Mantícora",
+   "category": "fantastica",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "hydra",
+   "name": "Hidra",
+   "category": "fantastica",
+   "archetype": "serpent",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pantano"
+   ],
+   "time": "any",
+   "zoneMin": 5,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "kraken",
+   "name": "Kraken",
+   "category": "fantastica",
+   "archetype": "aquatic",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "oceano"
+   ],
+   "time": "any",
+   "zoneMin": 5,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "leviathan",
+   "name": "Leviatán",
+   "category": "fantastica",
+   "archetype": "aquatic",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "oceano"
+   ],
+   "time": "any",
+   "zoneMin": 6,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "void_stalker",
+   "name": "Acechador del Vacío",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "jardin_vacio"
+   ],
+   "time": "any",
+   "zoneMin": 5,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "chrono_warden",
+   "name": "Guardián del Tiempo",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tierras_celestiales"
+   ],
+   "time": "any",
+   "zoneMin": 6,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "titan_colossus",
+   "name": "Coloso Titánico",
+   "category": "fantastica",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "abismo_cristal"
+   ],
+   "time": "any",
+   "zoneMin": 6,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": ""
+  },
+  {
+   "id": "explorers_warrior",
+   "name": "Guerrero Orden de Exploradores",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "explorers",
+   "role": "warrior",
+   "base": ""
+  },
+  {
+   "id": "explorers_shieldbearer",
+   "name": "Portaescudos Orden de Exploradores",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "explorers",
+   "role": "shieldbearer",
+   "base": ""
+  },
+  {
+   "id": "explorers_shooter",
+   "name": "Tirador Orden de Exploradores",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "explorers",
+   "role": "shooter",
+   "base": ""
+  },
+  {
+   "id": "explorers_caster",
+   "name": "Hechicero Orden de Exploradores",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "explorers",
+   "role": "caster",
+   "base": ""
+  },
+  {
+   "id": "explorers_leader",
+   "name": "Capitán Orden de Exploradores",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 2,
+   "group": [
+    2,
+    5
+   ],
+   "boss": true,
+   "faction": "explorers",
+   "role": "leader",
+   "base": ""
+  },
+  {
+   "id": "bandits_warrior",
+   "name": "Guerrero Bandidos",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "bandits",
+   "role": "warrior",
+   "base": ""
+  },
+  {
+   "id": "bandits_shieldbearer",
+   "name": "Portaescudos Bandidos",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "bandits",
+   "role": "shieldbearer",
+   "base": ""
+  },
+  {
+   "id": "bandits_shooter",
+   "name": "Tirador Bandidos",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "bandits",
+   "role": "shooter",
+   "base": ""
+  },
+  {
+   "id": "bandits_caster",
+   "name": "Hechicero Bandidos",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "bandits",
+   "role": "caster",
+   "base": ""
+  },
+  {
+   "id": "bandits_leader",
+   "name": "Capitán Bandidos",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": true,
+   "faction": "bandits",
+   "role": "leader",
+   "base": ""
+  },
+  {
+   "id": "ogres_warrior",
+   "name": "Guerrero Clan Ogro",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "ogres",
+   "role": "warrior",
+   "base": ""
+  },
+  {
+   "id": "ogres_shieldbearer",
+   "name": "Portaescudos Clan Ogro",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "ogres",
+   "role": "shieldbearer",
+   "base": ""
+  },
+  {
+   "id": "ogres_shooter",
+   "name": "Tirador Clan Ogro",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "ogres",
+   "role": "shooter",
+   "base": ""
+  },
+  {
+   "id": "ogres_caster",
+   "name": "Hechicero Clan Ogro",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "ogres",
+   "role": "caster",
+   "base": ""
+  },
+  {
+   "id": "ogres_leader",
+   "name": "Capitán Clan Ogro",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    2,
+    5
+   ],
+   "boss": true,
+   "faction": "ogres",
+   "role": "leader",
+   "base": ""
+  },
+  {
+   "id": "undead_warrior",
+   "name": "Guerrero Legión No-Muerta",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "undead",
+   "role": "warrior",
+   "base": ""
+  },
+  {
+   "id": "undead_shieldbearer",
+   "name": "Portaescudos Legión No-Muerta",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "undead",
+   "role": "shieldbearer",
+   "base": ""
+  },
+  {
+   "id": "undead_shooter",
+   "name": "Tirador Legión No-Muerta",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "undead",
+   "role": "shooter",
+   "base": ""
+  },
+  {
+   "id": "undead_caster",
+   "name": "Hechicero Legión No-Muerta",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "undead",
+   "role": "caster",
+   "base": ""
+  },
+  {
+   "id": "undead_leader",
+   "name": "Capitán Legión No-Muerta",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    2,
+    5
+   ],
+   "boss": true,
+   "faction": "undead",
+   "role": "leader",
+   "base": ""
+  },
+  {
+   "id": "cultists_warrior",
+   "name": "Guerrero Culto del Vacío",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "cultists",
+   "role": "warrior",
+   "base": ""
+  },
+  {
+   "id": "cultists_shieldbearer",
+   "name": "Portaescudos Culto del Vacío",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "cultists",
+   "role": "shieldbearer",
+   "base": ""
+  },
+  {
+   "id": "cultists_shooter",
+   "name": "Tirador Culto del Vacío",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "cultists",
+   "role": "shooter",
+   "base": ""
+  },
+  {
+   "id": "cultists_caster",
+   "name": "Hechicero Culto del Vacío",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "cultists",
+   "role": "caster",
+   "base": ""
+  },
+  {
+   "id": "cultists_leader",
+   "name": "Capitán Culto del Vacío",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 4,
+   "zoneMax": 6,
+   "group": [
+    2,
+    5
+   ],
+   "boss": true,
+   "faction": "cultists",
+   "role": "leader",
+   "base": ""
+  },
+  {
+   "id": "pirates_warrior",
+   "name": "Guerrero Corsarios",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "pirates",
+   "role": "warrior",
+   "base": ""
+  },
+  {
+   "id": "pirates_shieldbearer",
+   "name": "Portaescudos Corsarios",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "pirates",
+   "role": "shieldbearer",
+   "base": ""
+  },
+  {
+   "id": "pirates_shooter",
+   "name": "Tirador Corsarios",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "pirates",
+   "role": "shooter",
+   "base": ""
+  },
+  {
+   "id": "pirates_caster",
+   "name": "Hechicero Corsarios",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "pirates",
+   "role": "caster",
+   "base": ""
+  },
+  {
+   "id": "pirates_leader",
+   "name": "Capitán Corsarios",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": true,
+   "faction": "pirates",
+   "role": "leader",
+   "base": ""
+  },
+  {
+   "id": "frostborn_warrior",
+   "name": "Guerrero Hijos del Hielo",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "frostborn",
+   "role": "warrior",
+   "base": ""
+  },
+  {
+   "id": "frostborn_shieldbearer",
+   "name": "Portaescudos Hijos del Hielo",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "frostborn",
+   "role": "shieldbearer",
+   "base": ""
+  },
+  {
+   "id": "frostborn_shooter",
+   "name": "Tirador Hijos del Hielo",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "frostborn",
+   "role": "shooter",
+   "base": ""
+  },
+  {
+   "id": "frostborn_caster",
+   "name": "Hechicero Hijos del Hielo",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "frostborn",
+   "role": "caster",
+   "base": ""
+  },
+  {
+   "id": "frostborn_leader",
+   "name": "Capitán Hijos del Hielo",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 5,
+   "group": [
+    2,
+    5
+   ],
+   "boss": true,
+   "faction": "frostborn",
+   "role": "leader",
+   "base": ""
+  },
+  {
+   "id": "desert_raiders_warrior",
+   "name": "Guerrero Nómadas del Desierto",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "desert_raiders",
+   "role": "warrior",
+   "base": ""
+  },
+  {
+   "id": "desert_raiders_shieldbearer",
+   "name": "Portaescudos Nómadas del Desierto",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "desert_raiders",
+   "role": "shieldbearer",
+   "base": ""
+  },
+  {
+   "id": "desert_raiders_shooter",
+   "name": "Tirador Nómadas del Desierto",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "desert_raiders",
+   "role": "shooter",
+   "base": ""
+  },
+  {
+   "id": "desert_raiders_caster",
+   "name": "Hechicero Nómadas del Desierto",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "desert_raiders",
+   "role": "caster",
+   "base": ""
+  },
+  {
+   "id": "desert_raiders_leader",
+   "name": "Capitán Nómadas del Desierto",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 2,
+   "zoneMax": 4,
+   "group": [
+    2,
+    5
+   ],
+   "boss": true,
+   "faction": "desert_raiders",
+   "role": "leader",
+   "base": ""
+  },
+  {
+   "id": "sylvan_warrior",
+   "name": "Guerrero Guardianes Silvanos",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "sylvan",
+   "role": "warrior",
+   "base": ""
+  },
+  {
+   "id": "sylvan_shieldbearer",
+   "name": "Portaescudos Guardianes Silvanos",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "sylvan",
+   "role": "shieldbearer",
+   "base": ""
+  },
+  {
+   "id": "sylvan_shooter",
+   "name": "Tirador Guardianes Silvanos",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "sylvan",
+   "role": "shooter",
+   "base": ""
+  },
+  {
+   "id": "sylvan_caster",
+   "name": "Hechicero Guardianes Silvanos",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "sylvan",
+   "role": "caster",
+   "base": ""
+  },
+  {
+   "id": "sylvan_leader",
+   "name": "Capitán Guardianes Silvanos",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": true,
+   "faction": "sylvan",
+   "role": "leader",
+   "base": ""
+  },
+  {
+   "id": "infernal_warrior",
+   "name": "Guerrero Hueste Infernal",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 5,
+   "zoneMax": 6,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "infernal",
+   "role": "warrior",
+   "base": ""
+  },
+  {
+   "id": "infernal_shieldbearer",
+   "name": "Portaescudos Hueste Infernal",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 5,
+   "zoneMax": 6,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "infernal",
+   "role": "shieldbearer",
+   "base": ""
+  },
+  {
+   "id": "infernal_shooter",
+   "name": "Tirador Hueste Infernal",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 5,
+   "zoneMax": 6,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "infernal",
+   "role": "shooter",
+   "base": ""
+  },
+  {
+   "id": "infernal_caster",
+   "name": "Hechicero Hueste Infernal",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 5,
+   "zoneMax": 6,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "infernal",
+   "role": "caster",
+   "base": ""
+  },
+  {
+   "id": "infernal_leader",
+   "name": "Capitán Hueste Infernal",
+   "category": "faccion",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde",
+    "bosque_magico",
+    "desierto",
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 5,
+   "zoneMax": 6,
+   "group": [
+    2,
+    5
+   ],
+   "boss": true,
+   "faction": "infernal",
+   "role": "leader",
+   "base": ""
+  },
+  {
+   "id": "oveja_pradera_verde",
+   "name": "Oveja de la Pradera",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "baya",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "oveja"
+  },
+  {
+   "id": "oveja_montana_nevada",
+   "name": "Oveja de la Montaña",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "baya",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "oveja"
+  },
+  {
+   "id": "oveja_jungla",
+   "name": "Oveja de la Jungla",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "baya",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "oveja"
+  },
+  {
+   "id": "vaca_bosque_magico",
+   "name": "Vaca de el Bosque",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "trigo",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "vaca"
+  },
+  {
+   "id": "vaca_sabana",
+   "name": "Vaca de la Sabana",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "trigo",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "vaca"
+  },
+  {
+   "id": "vaca_tundra_nevada",
+   "name": "Vaca de la Tundra",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "trigo",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "vaca"
+  },
+  {
+   "id": "cerdo_playa_mar",
+   "name": "Cerdo de la Playa",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "zanahoria",
+   "rideable": false,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "cerdo"
+  },
+  {
+   "id": "cerdo_desierto",
+   "name": "Cerdo de el Desierto",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "zanahoria",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "cerdo"
+  },
+  {
+   "id": "cerdo_pradera_verde",
+   "name": "Cerdo de la Pradera",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "zanahoria",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "cerdo"
+  },
+  {
+   "id": "gallina_montana_nevada",
+   "name": "Gallina de la Montaña",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "gallina"
+  },
+  {
+   "id": "gallina_jungla",
+   "name": "Gallina de la Jungla",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "gallina"
+  },
+  {
+   "id": "gallina_bosque_magico",
+   "name": "Gallina de el Bosque",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "gallina"
+  },
+  {
+   "id": "pato_sabana",
+   "name": "Pato de la Sabana",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "pato"
+  },
+  {
+   "id": "pato_tundra_nevada",
+   "name": "Pato de la Tundra",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "pato"
+  },
+  {
+   "id": "pato_playa_mar",
+   "name": "Pato de la Playa",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": false,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "pato"
+  },
+  {
+   "id": "cabra_desierto",
+   "name": "Cabra de el Desierto",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "cabra"
+  },
+  {
+   "id": "cabra_pradera_verde",
+   "name": "Cabra de la Pradera",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "cabra"
+  },
+  {
+   "id": "cabra_montana_nevada",
+   "name": "Cabra de la Montaña",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "cabra"
+  },
+  {
+   "id": "alpaca_jungla",
+   "name": "Alpaca de la Jungla",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "alpaca"
+  },
+  {
+   "id": "alpaca_bosque_magico",
+   "name": "Alpaca de el Bosque",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "alpaca"
+  },
+  {
+   "id": "alpaca_sabana",
+   "name": "Alpaca de la Sabana",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "alpaca"
+  },
+  {
+   "id": "yak_tundra_nevada",
+   "name": "Yak de la Tundra",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "yak"
+  },
+  {
+   "id": "yak_playa_mar",
+   "name": "Yak de la Playa",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "yak"
+  },
+  {
+   "id": "yak_desierto",
+   "name": "Yak de el Desierto",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "yak"
+  },
+  {
+   "id": "caballo_pradera_verde",
+   "name": "Caballo de la Pradera",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "manzana",
+   "rideable": true,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "caballo"
+  },
+  {
+   "id": "caballo_montana_nevada",
+   "name": "Caballo de la Montaña",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "manzana",
+   "rideable": true,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "caballo"
+  },
+  {
+   "id": "caballo_jungla",
+   "name": "Caballo de la Jungla",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "manzana",
+   "rideable": true,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "caballo"
+  },
+  {
+   "id": "camello_bosque_magico",
+   "name": "Camello de el Bosque",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": true,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "camello"
+  },
+  {
+   "id": "camello_sabana",
+   "name": "Camello de la Sabana",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": true,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "camello"
+  },
+  {
+   "id": "camello_tundra_nevada",
+   "name": "Camello de la Tundra",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": true,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "camello"
+  },
+  {
+   "id": "reno_playa_mar",
+   "name": "Reno de la Playa",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": true,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "reno"
+  },
+  {
+   "id": "reno_desierto",
+   "name": "Reno de el Desierto",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": true,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "reno"
+  },
+  {
+   "id": "reno_pradera_verde",
+   "name": "Reno de la Pradera",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": true,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "reno"
+  },
+  {
+   "id": "avestruz_montana_nevada",
+   "name": "Avestruz de la Montaña",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": true,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "avestruz"
+  },
+  {
+   "id": "avestruz_jungla",
+   "name": "Avestruz de la Jungla",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": true,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "avestruz"
+  },
+  {
+   "id": "avestruz_bosque_magico",
+   "name": "Avestruz de el Bosque",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": true,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "avestruz"
+  },
+  {
+   "id": "perro_sabana",
+   "name": "Perro de la Sabana",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "carne",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "perro"
+  },
+  {
+   "id": "perro_tundra_nevada",
+   "name": "Perro de la Tundra",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "carne",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "perro"
+  },
+  {
+   "id": "perro_playa_mar",
+   "name": "Perro de la Playa",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "carne",
+   "rideable": false,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "perro"
+  },
+  {
+   "id": "gato_desierto",
+   "name": "Gato de el Desierto",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "pescado",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "gato"
+  },
+  {
+   "id": "gato_pradera_verde",
+   "name": "Gato de la Pradera",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "pescado",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "gato"
+  },
+  {
+   "id": "gato_montana_nevada",
+   "name": "Gato de la Montaña",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "pescado",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "gato"
+  },
+  {
+   "id": "loro_jungla",
+   "name": "Loro de la Jungla",
+   "category": "pacifica",
+   "archetype": "avian",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "loro"
+  },
+  {
+   "id": "loro_bosque_magico",
+   "name": "Loro de el Bosque",
+   "category": "pacifica",
+   "archetype": "avian",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "loro"
+  },
+  {
+   "id": "loro_sabana",
+   "name": "Loro de la Sabana",
+   "category": "pacifica",
+   "archetype": "avian",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "semillas",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "loro"
+  },
+  {
+   "id": "conejo_tundra_nevada",
+   "name": "Conejo de la Tundra",
+   "category": "pacifica",
+   "archetype": "hopper",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "zanahoria",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "conejo"
+  },
+  {
+   "id": "conejo_playa_mar",
+   "name": "Conejo de la Playa",
+   "category": "pacifica",
+   "archetype": "hopper",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "zanahoria",
+   "rideable": false,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "conejo"
+  },
+  {
+   "id": "conejo_desierto",
+   "name": "Conejo de el Desierto",
+   "category": "pacifica",
+   "archetype": "hopper",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "zanahoria",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "conejo"
+  },
+  {
+   "id": "ciervo_pradera_verde",
+   "name": "Ciervo de la Pradera",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "ciervo"
+  },
+  {
+   "id": "ciervo_montana_nevada",
+   "name": "Ciervo de la Montaña",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "ciervo"
+  },
+  {
+   "id": "ciervo_jungla",
+   "name": "Ciervo de la Jungla",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "ciervo"
+  },
+  {
+   "id": "capibara_bosque_magico",
+   "name": "Capibara de el Bosque",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "capibara"
+  },
+  {
+   "id": "capibara_sabana",
+   "name": "Capibara de la Sabana",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "capibara"
+  },
+  {
+   "id": "capibara_tundra_nevada",
+   "name": "Capibara de la Tundra",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "capibara"
+  },
+  {
+   "id": "tortuga_playa_mar",
+   "name": "Tortuga de la Playa",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "tortuga"
+  },
+  {
+   "id": "tortuga_desierto",
+   "name": "Tortuga de el Desierto",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "tortuga"
+  },
+  {
+   "id": "tortuga_pradera_verde",
+   "name": "Tortuga de la Pradera",
+   "category": "pacifica",
+   "archetype": "quadruped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "hierba",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "tortuga"
+  },
+  {
+   "id": "rana_montana_nevada",
+   "name": "Rana de la Montaña",
+   "category": "pacifica",
+   "archetype": "hopper",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "mosca",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "rana"
+  },
+  {
+   "id": "rana_jungla",
+   "name": "Rana de la Jungla",
+   "category": "pacifica",
+   "archetype": "hopper",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "mosca",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "rana"
+  },
+  {
+   "id": "rana_bosque_magico",
+   "name": "Rana de el Bosque",
+   "category": "pacifica",
+   "archetype": "hopper",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "mosca",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "rana"
+  },
+  {
+   "id": "pinguino_sabana",
+   "name": "Pingüino de la Sabana",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "pescado",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "pinguino"
+  },
+  {
+   "id": "pinguino_tundra_nevada",
+   "name": "Pingüino de la Tundra",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "pescado",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "pinguino"
+  },
+  {
+   "id": "pinguino_playa_mar",
+   "name": "Pingüino de la Playa",
+   "category": "pacifica",
+   "archetype": "biped",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "pescado",
+   "rideable": false,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "pinguino"
+  },
+  {
+   "id": "delfin_desierto",
+   "name": "Delfín de el Desierto",
+   "category": "pacifica",
+   "archetype": "aquatic",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "pescado",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "delfin"
+  },
+  {
+   "id": "delfin_pradera_verde",
+   "name": "Delfín de la Pradera",
+   "category": "pacifica",
+   "archetype": "aquatic",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "pescado",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "delfin"
+  },
+  {
+   "id": "delfin_montana_nevada",
+   "name": "Delfín de la Montaña",
+   "category": "pacifica",
+   "archetype": "aquatic",
+   "temperament": "passive",
+   "tameable": true,
+   "food": "pescado",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 3,
+   "group": [
+    2,
+    5
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "delfin"
+  },
+  {
+   "id": "lobo_bosque_magico",
+   "name": "Lobo de el Bosque",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": true,
+   "food": "carne",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "lobo"
+  },
+  {
+   "id": "lobo_sabana",
+   "name": "Lobo de la Sabana",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": true,
+   "food": "carne",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "lobo"
+  },
+  {
+   "id": "oso_pardo_playa_mar",
+   "name": "Oso Pardo de la Playa",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "oso_pardo"
+  },
+  {
+   "id": "oso_pardo_desierto",
+   "name": "Oso Pardo de el Desierto",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "oso_pardo"
+  },
+  {
+   "id": "oso_polar_montana_nevada",
+   "name": "Oso Polar de la Montaña",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "oso_polar"
+  },
+  {
+   "id": "oso_polar_jungla",
+   "name": "Oso Polar de la Jungla",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "oso_polar"
+  },
+  {
+   "id": "jabali_sabana",
+   "name": "Jabalí de la Sabana",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "jabali"
+  },
+  {
+   "id": "jabali_tundra_nevada",
+   "name": "Jabalí de la Tundra",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "jabali"
+  },
+  {
+   "id": "aguila_desierto",
+   "name": "Águila de el Desierto",
+   "category": "depredador",
+   "archetype": "avian",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "aguila"
+  },
+  {
+   "id": "aguila_pradera_verde",
+   "name": "Águila de la Pradera",
+   "category": "depredador",
+   "archetype": "avian",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "aguila"
+  },
+  {
+   "id": "leon_jungla",
+   "name": "León de la Jungla",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "leon"
+  },
+  {
+   "id": "leon_bosque_magico",
+   "name": "León de el Bosque",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "leon"
+  },
+  {
+   "id": "tigre_tundra_nevada",
+   "name": "Tigre de la Tundra",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "tigre"
+  },
+  {
+   "id": "tigre_playa_mar",
+   "name": "Tigre de la Playa",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "tigre"
+  },
+  {
+   "id": "pantera_pradera_verde",
+   "name": "Pantera de la Pradera",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "pantera"
+  },
+  {
+   "id": "pantera_montana_nevada",
+   "name": "Pantera de la Montaña",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "pantera"
+  },
+  {
+   "id": "hiena_bosque_magico",
+   "name": "Hiena de el Bosque",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "hiena"
+  },
+  {
+   "id": "hiena_sabana",
+   "name": "Hiena de la Sabana",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "hiena"
+  },
+  {
+   "id": "cocodrilo_playa_mar",
+   "name": "Cocodrilo de la Playa",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "cocodrilo"
+  },
+  {
+   "id": "cocodrilo_desierto",
+   "name": "Cocodrilo de el Desierto",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "cocodrilo"
+  },
+  {
+   "id": "escorpion_montana_nevada",
+   "name": "Escorpión de la Montaña",
+   "category": "depredador",
+   "archetype": "arachnid",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "escorpion"
+  },
+  {
+   "id": "escorpion_jungla",
+   "name": "Escorpión de la Jungla",
+   "category": "depredador",
+   "archetype": "arachnid",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "escorpion"
+  },
+  {
+   "id": "vibora_sabana",
+   "name": "Víbora de la Sabana",
+   "category": "depredador",
+   "archetype": "serpent",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "vibora"
+  },
+  {
+   "id": "vibora_tundra_nevada",
+   "name": "Víbora de la Tundra",
+   "category": "depredador",
+   "archetype": "serpent",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "vibora"
+  },
+  {
+   "id": "buitre_desierto",
+   "name": "Buitre de el Desierto",
+   "category": "depredador",
+   "archetype": "avian",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "buitre"
+  },
+  {
+   "id": "buitre_pradera_verde",
+   "name": "Buitre de la Pradera",
+   "category": "depredador",
+   "archetype": "avian",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "buitre"
+  },
+  {
+   "id": "rinoceronte_jungla",
+   "name": "Rinoceronte de la Jungla",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "rinoceronte"
+  },
+  {
+   "id": "rinoceronte_bosque_magico",
+   "name": "Rinoceronte de el Bosque",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "rinoceronte"
+  },
+  {
+   "id": "hipopotamo_tundra_nevada",
+   "name": "Hipopótamo de la Tundra",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "hipopotamo"
+  },
+  {
+   "id": "hipopotamo_playa_mar",
+   "name": "Hipopótamo de la Playa",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "hipopotamo"
+  },
+  {
+   "id": "gorila_pradera_verde",
+   "name": "Gorila de la Pradera",
+   "category": "depredador",
+   "archetype": "biped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "pradera_verde"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "gorila"
+  },
+  {
+   "id": "gorila_montana_nevada",
+   "name": "Gorila de la Montaña",
+   "category": "depredador",
+   "archetype": "biped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "gorila"
+  },
+  {
+   "id": "mamut_bosque_magico",
+   "name": "Mamut de el Bosque",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "mamut"
+  },
+  {
+   "id": "mamut_sabana",
+   "name": "Mamut de la Sabana",
+   "category": "depredador",
+   "archetype": "quadruped",
+   "temperament": "neutral",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "mamut"
+  },
+  {
+   "id": "tiburon_playa_mar",
+   "name": "Tiburón de la Playa",
+   "category": "depredador",
+   "archetype": "aquatic",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "playa_mar"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "tiburon"
+  },
+  {
+   "id": "tiburon_desierto",
+   "name": "Tiburón de el Desierto",
+   "category": "depredador",
+   "archetype": "aquatic",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "desierto"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "tiburon"
+  },
+  {
+   "id": "pirana_montana_nevada",
+   "name": "Piraña de la Montaña",
+   "category": "depredador",
+   "archetype": "aquatic",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "montana_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "pirana"
+  },
+  {
+   "id": "pirana_jungla",
+   "name": "Piraña de la Jungla",
+   "category": "depredador",
+   "archetype": "aquatic",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "jungla"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "pirana"
+  },
+  {
+   "id": "arana_gigante_sabana",
+   "name": "Araña Gigante de la Sabana",
+   "category": "depredador",
+   "archetype": "arachnid",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "sabana"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "arana_gigante"
+  },
+  {
+   "id": "arana_gigante_tundra_nevada",
+   "name": "Araña Gigante de la Tundra",
+   "category": "depredador",
+   "archetype": "arachnid",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "tundra_nevada"
+   ],
+   "time": "any",
+   "zoneMin": 1,
+   "zoneMax": 4,
+   "group": [
+    1,
+    4
+   ],
+   "boss": false,
+   "faction": "",
+   "role": "",
+   "base": "arana_gigante"
+  },
+  {
+   "id": "lobo_alfa",
+   "name": "Lobo Alfa",
+   "category": "unico",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": "lobo"
+  },
+  {
+   "id": "oso_rey",
+   "name": "Oso Rey",
+   "category": "unico",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": "oso_pardo"
+  },
+  {
+   "id": "tiburon_blanco",
+   "name": "Tiburón Blanco",
+   "category": "unico",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": "tiburon"
+  },
+  {
+   "id": "arana_reina",
+   "name": "Araña Reina",
+   "category": "unico",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": "arana_gigante"
+  },
+  {
+   "id": "golem_anciano",
+   "name": "Gólem Anciano",
+   "category": "unico",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": "golem_piedra"
+  },
+  {
+   "id": "fenix_renacido",
+   "name": "Fénix Renacido",
+   "category": "unico",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": "phoenix"
+  },
+  {
+   "id": "hidra_menor",
+   "name": "Hidra Menor",
+   "category": "unico",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": "hydra"
+  },
+  {
+   "id": "kraken_joven",
+   "name": "Kraken Joven",
+   "category": "unico",
+   "archetype": "biped",
+   "temperament": "aggressive",
+   "tameable": false,
+   "food": "",
+   "rideable": false,
+   "biomes": [
+    "bosque_magico"
+   ],
+   "time": "any",
+   "zoneMin": 3,
+   "zoneMax": 6,
+   "group": [
+    1,
+    1
+   ],
+   "boss": true,
+   "faction": "",
+   "role": "",
+   "base": "kraken"
+  }
+ ]
+}

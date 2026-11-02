@@ -16,8 +16,8 @@ const CONTROL_MODES := ["Joystick y pulsar para interactuar", "Cruceta y pulsar 
 const CONTROL_MODE_KEYS := ["joystick_tap", "dpad_tap", "joystick_crosshair"]
 const JOY_VIS := ["Siempre visible", "Siempre oculto", "Oculto cuando no se usa"]
 const JOY_VIS_KEYS := ["always", "hidden", "when_used"]
-const BIOMES := ["Croma-Isla", "Forja de los Números", "Valle del Eco", "Ciber-Núcleo", "Pradera Verde", "Playa y Mar", "Bosque Mágico", "Montaña Nevada"]
-const BIOME_KEYS := ["croma_isla", "forja_numeros", "valle_eco", "ciber_nucleo", "pradera_verde", "playa_mar", "bosque_magico", "montana_nevada"]
+const BIOMES := ["Croma-Isla", "Forja de los Números", "Valle del Eco", "Ciber-Núcleo", "Pradera Verde", "Playa y Mar", "Bosque Mágico", "Montaña Nevada", "Océano", "Río", "Pantano", "Tundra Nevada", "Sabana", "Desierto", "Jungla", "Valle Tranquilo (Zona 1)", "Bosque de Luciérnagas (Zona 1)", "Colinas de Cristal (Zona 2)", "Pantano Luminoso (Zona 2)", "Desierto de Sal (Zona 2)", "Bosque Otoñal (Zona 2)", "Montañas de Cobre (Zona 3)", "Selva de Bambú (Zona 3)", "Tundra Azul (Zona 3)", "Meseta Roja (Zona 3)", "Llanura de Girasoles (Zona 3)", "Tierras de Cristal (Zona 4)", "Bosque de Setas Gigantes (Zona 4)", "Glaciar Eterno (Zona 4)", "Volcán Dormido (Zona 4)", "Altiplano de Nubes (Zona 4)", "Bosque Petrificado (Zona 5)", "Desierto de Obsidiana (Zona 5)", "Pantano de Niebla (Zona 5)", "Montañas del Eco (Zona 5)", "Suelo Corrupto (Zona 5)", "Tierras Celestiales (Zona 6)", "Abismo de Cristal (Zona 6)", "Hielo Eterno (Zona 6)", "Tierras de Magma (Zona 6)", "Jardín del Vacío (Zona 6)"]
+const BIOME_KEYS := ["croma_isla", "forja_numeros", "valle_eco", "ciber_nucleo", "pradera_verde", "playa_mar", "bosque_magico", "montana_nevada", "oceano", "rio", "pantano", "tundra_nevada", "sabana", "desierto", "jungla", "valle_tranquilo", "bosque_luciernagas", "colinas_cristal", "pantano_luminoso", "desierto_sal", "bosque_otonal", "montanas_cobre", "selva_bambu", "tundra_azul", "meseta_roja", "llanura_girasoles", "tierras_cristal", "bosque_setas", "glaciar_eterno", "volcan_dormido", "altiplano_nubes", "bosque_petrificado", "desierto_obsidiana", "pantano_niebla", "montanas_eco", "suelo_corrupto", "tierras_celestiales", "abismo_cristal", "hielo_eterno", "tierras_magma", "jardin_vacio"]
 const REMAP_ACTIONS := ["jump", "crouch", "inventory", "place", "remove", "perspective"]
 const REMAP_LABELS := {"jump": "Saltar", "crouch": "Agacharse", "inventory": "Inventario", "place": "Poner", "remove": "Quitar", "perspective": "Cámara"}
 
@@ -195,6 +195,8 @@ func _show_touch() -> void:
 	_check("Botón de perspectiva de cámara", "perspective_button")
 	_slider("Sensibilidad de la cámara", "camera_sensitivity", 0, 100)
 	_slider("Tamaño de botón", "button_size", 0.5, 1.5, 0.1)
+	_slider("Opacidad de botones", "button_opacity", 0.3, 1.0, 0.05)
+	_check("Mover botones (editor TouchHud)", "hud_edit_mode")
 	_slider("Retraso en la ruptura de bloques (s)", "break_delay", 0.0, 1.0, 0.05)
 
 

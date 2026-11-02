@@ -29,6 +29,10 @@ const DEFAULTS := {
 	"break_delay": 0.25,
 	"camera_sensitivity": 50, # 0..100, default 50.
 	"button_size": 1.0,
+	"button_opacity": 1.0, # 3.0: opacidad de los botones táctiles.
+	"hud_edit_mode": false, # 3.0: editor TouchHud (arrastrar botones).
+	"action_offset": [0.0, 0.0], # 3.0: desplazamiento de la columna de acciones.
+	"action2_offset": [0.0, 0.0], # 3.0: desplazamiento de la segunda columna.
 	# Mando (TV).
 	"gamepad_camera_sensitivity": 50,
 	"gamepad_cursor_sensitivity": 50,
@@ -45,7 +49,8 @@ const DEFAULTS := {
 	"seed_text": "",
 	"world_name": "MundoRefactor",
 	"biome": "pradera_verde", # 2.0 default para instalaciones nuevas; los 4 viejos siguen en la lista. Usuarios con cfg guardada conservan su bioma.
-	"render_radius": 24,
+	"render_radius": 20, # 3.0: menos columnas que 24 (~1/3 menos) para el stick. Usuarios con cfg guardada conservan su radio.
+	"age_band": "5-7", # 3.0 multiedad: 5-7 | 8-12 | 13+ (palabras y operaciones por banda).
 	# Remapeo de mando: acción -> botón Joypad (índices Godot).
 	"remap": {
 		"jump": 0, "crouch": 1, "inventory": 3,

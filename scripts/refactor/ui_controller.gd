@@ -36,6 +36,22 @@ class_name UIController
 signal camera_dragged(relative: Vector2)
 signal move_input_changed(input: Vector2)
 signal jump_pressed
+signal attack_pressed
+signal dodge_pressed
+signal mount_pressed
+signal forge_pressed
+signal stations_pressed
+signal character_pressed
+signal potion_pressed
+signal food_pressed
+signal forge_craft_requested(recipe_id: String)
+signal station_craft_requested(station_id: String, recipe_id: String)
+signal race_selected(race_id: String)
+signal lan_pressed
+signal lan_host_pressed
+signal lan_search_pressed
+signal lan_join_pressed(ip: String)
+signal lan_leave_pressed
 signal crouch_pressed
 signal crouch_released
 signal place_pressed
@@ -46,6 +62,9 @@ signal camera_tapped
 signal block_selected(block_id: int)
 signal inventory_opened
 signal inventory_closed
+signal workshop_pressed
+signal quests_pressed
+signal craft_requested(recipe_id: String)
 
 const HOTBAR_SLOTS := 9
 const JOY_RADIUS := 110.0
@@ -57,19 +76,27 @@ const SPRINT_HOLD_SECONDS := 0.30
 # 4 madera, 5 hojas, 7 arena, 8/9 flores, 80 antorcha).
 const TABS := [
 	{"name": "Colores", "blocks": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]},
-	{"name": "Números y Operadores", "blocks": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]},
+	{"name": "Números y Operadores", "blocks": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]},
 	{"name": "Letras y Fonética", "blocks": [50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76]},
 	{"name": "Naturaleza y Decoración", "blocks": [4, 5, 7, 8, 9, 80]},
 	{"name": "Construcción", "blocks": [84, 85, 86, 87, 88]},
-	{"name": "Lógica Viva", "blocks": [31, 32, 33, 40, 41, 42, 43]},
+	{"name": "Lógica Viva", "blocks": [31, 32, 33, 40, 41, 42, 43, 44]},
+	# 3.0: catálogo 160+ por categoría (data/blocks.json v2).
+	{"name": "Suelos", "blocks": [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117]},
+	{"name": "Rocas y Minerales", "blocks": [118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153]},
+	{"name": "Madera", "blocks": [154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186]},
+	{"name": "Construir", "blocks": [187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 247, 248, 249, 250, 251, 252, 253, 254]},
+	{"name": "Fluidos y Flora", "blocks": [203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238]},
+	{"name": "Trampas", "blocks": [239, 240, 241, 242, 243, 244, 245, 246]},
 ]
 const BLOCK_NAMES := {
 	10: "Rojo", 11: "Azul", 12: "Amarillo", 13: "Verde", 14: "Naranja",
 	15: "Morado", 16: "Rosado", 17: "Café", 18: "Negro", 19: "Blanco",
-	20: "Gris", 21: "Celeste", 40: "+", 41: "-", 42: "×", 43: "=",
+	20: "Gris", 21: "Celeste", 40: "+", 41: "-", 42: "×", 43: "=", 44: "÷",
 	4: "Madera", 5: "Hojas", 7: "Arena", 8: "Flor roja", 9: "Flor amarilla",
 	80: "Antorcha", 84: "Tablones", 85: "Ladrillo", 86: "Vidrio",
 	87: "Nieve", 88: "Cristal brillo",
+	90: "Estrella", 91: "Corazón", 92: "Farol", 93: "Sílaba MA",
 }
 
 var move_vector := Vector2.ZERO
@@ -98,6 +125,21 @@ var _hotbar_buttons: Array[Button] = []
 var _inventory: Control = null
 var _break_cooldown := 0.0
 var _dpad: Control = null
+var _stats_label: Label = null
+var _vitals_label: Label = null
+var _minimap: Minimap = null
+var _quest_panel: Control = null
+var _quest_list: VBoxContainer = null
+var _workshop_panel: Control = null
+var _workshop_list: VBoxContainer = null
+var _forge_panel: Control = null
+var _forge_list: VBoxContainer = null
+var _station_panel: Control = null
+var _station_list: VBoxContainer = null
+var _character_panel: Control = null
+var _character_list: VBoxContainer = null
+var _lan_panel: Control = null
+var _lan_list: VBoxContainer = null
 
 
 func _ready() -> void:
@@ -141,7 +183,7 @@ func _build_ui() -> void:
 	_crosshair.add_child(ch_v)
 	root.add_child(_crosshair)
 
-	# 3. Barra superior minimalista: pausa, cámara, progreso.
+	# 3. Barra superior: pausa, cámara, taller, misiones, progreso.
 	var top := HBoxContainer.new()
 	top.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	top.offset_bottom = 72.0
@@ -153,9 +195,32 @@ func _build_ui() -> void:
 	var cam_btn := _make_button("📷", func(): perspective_pressed.emit())
 	cam_btn.custom_minimum_size = Vector2(64, 64)
 	top.add_child(cam_btn)
+	var workshop_btn := _make_button("🔨", func(): workshop_pressed.emit())
+	workshop_btn.custom_minimum_size = Vector2(64, 64)
+	top.add_child(workshop_btn)
+	var quests_btn := _make_button("🎯", func(): quests_pressed.emit())
+	quests_btn.custom_minimum_size = Vector2(64, 64)
+	top.add_child(quests_btn)
 	_top_progress = Label.new()
 	_top_progress.text = "⭐ 0"
 	top.add_child(_top_progress)
+	# 3b. Línea de estado 3.0: nivel, EXP, día, estación, zona,
+	# clima y fps. La actualiza RefactorMain con set_stats().
+	_stats_label = Label.new()
+	_stats_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_stats_label.offset_top = 72.0
+	_stats_label.offset_bottom = 108.0
+	_stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_stats_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_stats_label)
+	# 3.0 vitales: salud, maná, estamina, oxígeno, temperatura.
+	_vitals_label = Label.new()
+	_vitals_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_vitals_label.offset_top = 108.0
+	_vitals_label.offset_bottom = 140.0
+	_vitals_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_vitals_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_vitals_label)
 
 	# 4. Controles táctiles (se ocultan en TV).
 	_touch_ui = Control.new()
@@ -164,6 +229,7 @@ func _build_ui() -> void:
 	root.add_child(_touch_ui)
 	_build_joystick()
 	_build_action_buttons()
+	_build_action_buttons2()
 	_build_dpad()
 
 	# 5. Hotbar inferior centrada + botón [...] (siempre visible).
@@ -200,6 +266,24 @@ func _build_ui() -> void:
 	# 7. Inventario modal (oculto hasta pulsar [...] o Y).
 	_build_inventory(root)
 
+	# 8. Minimapa 3.0 (arriba-derecha, sin bloquear toques).
+	_minimap = Minimap.new()
+	_minimap.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_minimap.offset_left = -230.0
+	_minimap.offset_top = 10.0
+	_minimap.offset_right = -10.0
+	_minimap.offset_bottom = 215.0
+	_minimap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_minimap)
+
+	# 9. Paneles modales 3.0: misiones y taller.
+	_build_quest_panel(root)
+	_build_workshop_panel(root)
+	_build_forge_panel(root)
+	_build_station_panel(root)
+	_build_character_panel(root)
+	_build_lan_panel(root)
+
 
 func _make_button(text: String, on_press: Callable) -> Button:
 	var b := Button.new()
@@ -235,16 +319,91 @@ func _build_joystick() -> void:
 	_joy_base.add_child(_joy_knob)
 
 
+## 3.0 editor TouchHud (§7.3): las columnas de acciones
+## se pueden arrastrar con el asa ⠿ (visible con
+## hud_edit_mode) y su posición persiste en ajustes.
+const COL1_LEFT := -220.0
+const COL1_TOP := -340.0
+const COL2_LEFT := -310.0
+const COL2_TOP := -340.0
+var _action_col: VBoxContainer = null
+var _action_col2: VBoxContainer = null
+
+
+## Desplazamiento guardado (Array [x, y] o Vector2).
+static func offset_from_settings(st: Dictionary, key: String) -> Vector2:
+	var v: Variant = st.get(key, [0.0, 0.0])
+	if v is Array and v.size() >= 2:
+		return Vector2(float(v[0]), float(v[1]))
+	if v is Vector2:
+		return v
+	return Vector2.ZERO
+
+
+## El desplazamiento se mantiene en pantalla.
+static func clamp_hud_offset(off: Vector2) -> Vector2:
+	return Vector2(clampf(off.x, -400.0, 150.0), clampf(off.y, -500.0, 150.0))
+
+
+func _apply_settings() -> void:
+	settings = SettingsRefactor.load_settings()
+	_build_action_buttons()
+	_build_action_buttons2()
+	_apply_settings_to_ui()
+
+
+func _make_drag_handle(col: VBoxContainer) -> Button:
+	var handle := Button.new()
+	handle.text = "⠿"
+	handle.visible = bool(settings.get("hud_edit_mode", false))
+	handle.gui_input.connect(_on_handle_drag.bind(col))
+	return handle
+
+
+func _on_handle_drag(event: InputEvent, col: VBoxContainer) -> void:
+	var rel := Vector2.ZERO
+	if event is InputEventScreenDrag:
+		rel = event.relative
+	elif event is InputEventMouseMotion and (event.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
+		rel = event.relative
+	elif (event is InputEventScreenTouch and not event.pressed) or (event is InputEventMouseButton and not event.pressed):
+		_save_col_offsets()
+		return
+	else:
+		return
+	var base_left := COL1_LEFT if col == _action_col else COL2_LEFT
+	var base_top := COL1_TOP if col == _action_col else COL2_TOP
+	var off := clamp_hud_offset(Vector2(col.offset_left - base_left + rel.x, col.offset_top - base_top + rel.y))
+	col.offset_left = base_left + off.x
+	col.offset_top = base_top + off.y
+
+
+func _save_col_offsets() -> void:
+	if _action_col != null:
+		settings["action_offset"] = [_action_col.offset_left - COL1_LEFT, _action_col.offset_top - COL1_TOP]
+	if _action_col2 != null:
+		settings["action2_offset"] = [_action_col2.offset_left - COL2_LEFT, _action_col2.offset_top - COL2_TOP]
+	SettingsRefactor.save_settings(settings)
+
+
 func _build_action_buttons() -> void:
+	if _action_col != null:
+		_touch_ui.remove_child(_action_col)
+		_action_col.free()
+		_action_col = null
 	var col := VBoxContainer.new()
 	col.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	col.offset_left = -220.0
-	col.offset_top = -340.0
+	var off := offset_from_settings(settings, "action_offset")
+	col.offset_left = COL1_LEFT + off.x
+	col.offset_top = COL1_TOP + off.y
 	col.offset_bottom = -90.0
 	col.add_theme_constant_override("separation", 10)
+	col.modulate.a = float(settings.get("button_opacity", 1.0))
 	_touch_ui.add_child(col)
+	_action_col = col
+	col.add_child(_make_drag_handle(col))
 	var size := 72.0 * float(settings.get("button_size", 1.0))
-	for data in [["↑", func(): jump_pressed.emit()], ["👁", func(): perspective_pressed.emit()], ["+", func(): _on_place()], ["−", func(): _on_remove()]]:
+	for data in [["↑", func(): jump_pressed.emit()], ["👁", func(): perspective_pressed.emit()], ["+", func(): _on_place()], ["−", func(): _on_remove()], ["🐴", func(): mount_pressed.emit()], ["⚔", func(): attack_pressed.emit()], ["💨", func(): dodge_pressed.emit()]]:
 		var b := _make_button(data[0], data[1])
 		b.custom_minimum_size = Vector2(size, size)
 		col.add_child(b)
@@ -343,6 +502,9 @@ func _build_inventory(root: Control) -> void:
 func _block_label(block_id: int) -> String:
 	if BLOCK_NAMES.has(block_id):
 		return str(BLOCK_NAMES[block_id])
+	# 3.0: bloques del catálogo con su nombre.
+	if block_id >= 100:
+		return VoxelWorldGenerator.block_label(block_id)
 	if block_id >= 30 and block_id <= 39:
 		return str(block_id - 30)
 	if block_id >= 50 and block_id <= 76:
@@ -534,3 +696,395 @@ func _on_inventory_pick(block_id: int) -> void:
 	# Al elegir, el inventario se minimiza (se cierra) para no
 	# obstruir la visión, como pide la especificación.
 	_close_inventory()
+
+
+## --- 3.0: stats, minimapa, misiones, taller ---
+
+func set_stats(text: String) -> void:
+	if _stats_label != null:
+		_stats_label.text = text
+
+
+func _bar(value: float) -> String:
+	var filled := int(round(value / 10.0))
+	filled = clampi(filled, 0, 10)
+	return "█".repeat(filled) + "░".repeat(10 - filled)
+
+
+func set_vitals(health: float, mana: float, stamina: float, oxygen: float, temperature: float) -> void:
+	if _vitals_label != null:
+		_vitals_label.text = "❤ %s %d  ✨ %s %d  ⚡ %s %d  🫧 %s %d  🌡 %d" % [
+			_bar(health), int(health), _bar(mana), int(mana),
+			_bar(stamina), int(stamina), _bar(oxygen), int(oxygen),
+			int(temperature)]
+
+
+func setup_minimap(world: VoxelWorldGenerator) -> void:
+	if _minimap != null:
+		_minimap.setup(world)
+
+
+func update_minimap(player_pos: Vector3) -> void:
+	if _minimap != null:
+		_minimap.update_view(player_pos, Time.get_ticks_msec() / 1000.0)
+
+
+func set_hotbar_slot(block_id: int) -> void:
+	hotbar[selected_slot] = block_id
+	_refresh_hotbar_labels()
+	block_selected.emit(block_id)
+
+
+func _modal_panel(root: Control) -> Control:
+	var panel := Control.new()
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel.visible = false
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	root.add_child(panel)
+	var bg := ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.0, 0.0, 0.0, 0.65)
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.add_child(bg)
+	var box := PanelContainer.new()
+	box.set_anchors_preset(Control.PRESET_CENTER)
+	box.custom_minimum_size = Vector2(900, 500)
+	box.offset_left = -450.0
+	box.offset_top = -250.0
+	box.offset_right = 450.0
+	box.offset_bottom = 250.0
+	panel.add_child(box)
+	return panel
+
+
+func _build_quest_panel(root: Control) -> void:
+	_quest_panel = _modal_panel(root)
+	var box := _quest_panel.get_child(1) as PanelContainer
+	var vbox := VBoxContainer.new()
+	box.add_child(vbox)
+	var title := Label.new()
+	title.text = "🎯 Aventuras para empezar"
+	vbox.add_child(title)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(880, 400)
+	_quest_list = VBoxContainer.new()
+	scroll.add_child(_quest_list)
+	vbox.add_child(scroll)
+	var close := _make_button("Cerrar", func(): _quest_panel.visible = false)
+	vbox.add_child(close)
+
+
+func show_quests(data: Array[Dictionary]) -> void:
+	if _quest_panel == null or _quest_list == null:
+		return
+	for child in _quest_list.get_children():
+		child.queue_free()
+	for q in data:
+		var mark: String = "✓" if bool(q.get("done", false)) else "○"
+		var label := Label.new()
+		label.text = "%s %s — %s (%d/%d)" % [mark, str(q.get("title", "")),
+			str(q.get("desc", "")), int(q.get("progress", 0)), int(q.get("target", 0))]
+		_quest_list.add_child(label)
+	_quest_panel.visible = true
+
+
+func _build_workshop_panel(root: Control) -> void:
+	_workshop_panel = _modal_panel(root)
+	var box := _workshop_panel.get_child(1) as PanelContainer
+	var vbox := VBoxContainer.new()
+	box.add_child(vbox)
+	var title := Label.new()
+	title.text = "🔨 Taller"
+	vbox.add_child(title)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(880, 400)
+	_workshop_list = VBoxContainer.new()
+	scroll.add_child(_workshop_list)
+	vbox.add_child(scroll)
+	var close := _make_button("Cerrar", func(): _workshop_panel.visible = false)
+	vbox.add_child(close)
+
+
+func show_workshop(recipes: Array[Dictionary]) -> void:
+	if _workshop_panel == null or _workshop_list == null:
+		return
+	for child in _workshop_list.get_children():
+		child.queue_free()
+	for r in recipes:
+		var row := HBoxContainer.new()
+		var needs := r["needs"] as Dictionary
+		var parts: Array[String] = []
+		for block_id in needs.keys():
+			parts.append("%s ×%d" % [_block_label(int(block_id)), int(needs[block_id])])
+		var label := Label.new()
+		label.text = "%s: %s" % [str(r["name"]), ", ".join(parts)]
+		row.add_child(label)
+		var btn := _make_button("Fabricar", _on_craft_pick.bind(str(r["id"])))
+		row.add_child(btn)
+		_workshop_list.add_child(row)
+	_workshop_panel.visible = true
+
+
+func _on_craft_pick(recipe_id: String) -> void:
+	if _workshop_panel != null:
+		_workshop_panel.visible = false
+	craft_requested.emit(recipe_id)
+
+
+# 3.0: segunda columna de acciones (forja, estaciones,
+# personaje, pociones, comida), a la izquierda de la
+# primera para no alargarla hasta el título.
+func _build_action_buttons2() -> void:
+	if _action_col2 != null:
+		_touch_ui.remove_child(_action_col2)
+		_action_col2.free()
+		_action_col2 = null
+	var col := VBoxContainer.new()
+	col.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	var off := offset_from_settings(settings, "action2_offset")
+	col.offset_left = COL2_LEFT + off.x
+	col.offset_top = COL2_TOP + off.y
+	col.offset_bottom = -90.0
+	col.add_theme_constant_override("separation", 10)
+	col.modulate.a = float(settings.get("button_opacity", 1.0))
+	_touch_ui.add_child(col)
+	_action_col2 = col
+	col.add_child(_make_drag_handle(col))
+	var size := 72.0 * float(settings.get("button_size", 1.0))
+	for data in [["⚒", func(): forge_pressed.emit()], ["🏭", func(): stations_pressed.emit()], ["👤", func(): character_pressed.emit()], ["🧪", func(): potion_pressed.emit()], ["🍎", func(): food_pressed.emit()], ["🌐", func(): lan_pressed.emit()]]:
+		var b := _make_button(data[0], data[1])
+		b.custom_minimum_size = Vector2(size, size)
+		col.add_child(b)
+
+
+func _build_forge_panel(root: Control) -> void:
+	_forge_panel = _modal_panel(root)
+	var box := _forge_panel.get_child(1) as PanelContainer
+	var vbox := VBoxContainer.new()
+	box.add_child(vbox)
+	var title := Label.new()
+	title.text = "⚒ Forja de escultura"
+	vbox.add_child(title)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(880, 400)
+	_forge_list = VBoxContainer.new()
+	scroll.add_child(_forge_list)
+	vbox.add_child(scroll)
+	var close := _make_button("Cerrar", func(): _forge_panel.visible = false)
+	vbox.add_child(close)
+
+
+func _build_station_panel(root: Control) -> void:
+	_station_panel = _modal_panel(root)
+	var box := _station_panel.get_child(1) as PanelContainer
+	var vbox := VBoxContainer.new()
+	box.add_child(vbox)
+	var title := Label.new()
+	title.text = "🏭 Estaciones"
+	vbox.add_child(title)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(880, 400)
+	_station_list = VBoxContainer.new()
+	scroll.add_child(_station_list)
+	vbox.add_child(scroll)
+	var close := _make_button("Cerrar", func(): _station_panel.visible = false)
+	vbox.add_child(close)
+
+
+func _build_character_panel(root: Control) -> void:
+	_character_panel = _modal_panel(root)
+	var box := _character_panel.get_child(1) as PanelContainer
+	var vbox := VBoxContainer.new()
+	box.add_child(vbox)
+	var title := Label.new()
+	title.text = "👤 Personaje"
+	vbox.add_child(title)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(880, 400)
+	_character_list = VBoxContainer.new()
+	scroll.add_child(_character_list)
+	vbox.add_child(scroll)
+	var close := _make_button("Cerrar", func(): _character_panel.visible = false)
+	vbox.add_child(close)
+
+
+func _needs_text(recipe: Dictionary) -> String:
+	var parts: Array[String] = []
+	var needs_m: Dictionary = recipe.get("needs_materials", {})
+	for kind in needs_m.keys():
+		parts.append("%s ×%d" % [str(kind), int(needs_m[kind])])
+	var needs_s: Dictionary = recipe.get("needs_spirits", {})
+	for kind in needs_s.keys():
+		parts.append("espíritu %s ×%d" % [str(kind), int(needs_s[kind])])
+	var needs_b: Dictionary = recipe.get("needs_blocks", {})
+	for block_id in needs_b.keys():
+		parts.append("%s ×%d" % [_block_label(int(block_id)), int(needs_b[block_id])])
+	return ", ".join(parts)
+
+
+func _gives_text(recipe: Dictionary) -> String:
+	var gives_block := int(recipe.get("gives_block", -1))
+	if gives_block >= 0:
+		return _block_label(gives_block)
+	var item := str(recipe.get("gives_item", ""))
+	if item != "":
+		return item
+	var material := str(recipe.get("gives_material", ""))
+	if material != "":
+		return "%s ×%d" % [material, int(recipe.get("gives_amount", 0))]
+	var potion := str(recipe.get("gives_potion", ""))
+	if potion != "":
+		return "poción de %s" % potion
+	var food := int(recipe.get("gives_food", 0))
+	if food > 0:
+		return "comida ×%d" % food
+	return "?"
+
+
+func show_forge(recipes: Array[Dictionary], materials: Dictionary, spirits: Dictionary) -> void:
+	if _forge_panel == null or _forge_list == null:
+		return
+	for child in _forge_list.get_children():
+		child.queue_free()
+	var head := Label.new()
+	var mat_parts: Array[String] = []
+	for kind in materials.keys():
+		mat_parts.append("%s: %d" % [str(kind), int(materials[kind])])
+	for kind in spirits.keys():
+		mat_parts.append("espíritu %s: %d" % [str(kind), int(spirits[kind])])
+	head.text = "Tienes: " + ", ".join(mat_parts)
+	_forge_list.add_child(head)
+	for r in recipes:
+		var row := HBoxContainer.new()
+		var label := Label.new()
+		label.text = "%s: %s → %s" % [str(r["name"]), _needs_text(r), _gives_text(r)]
+		row.add_child(label)
+		var btn := _make_button("Forjar", _on_forge_pick.bind(str(r["id"])))
+		row.add_child(btn)
+		_forge_list.add_child(row)
+	_forge_panel.visible = true
+
+
+func _on_forge_pick(recipe_id: String) -> void:
+	if _forge_panel != null:
+		_forge_panel.visible = false
+	forge_craft_requested.emit(recipe_id)
+
+
+func show_stations(sections: Array[Dictionary]) -> void:
+	if _station_panel == null or _station_list == null:
+		return
+	for child in _station_list.get_children():
+		child.queue_free()
+	for section in sections:
+		var title := Label.new()
+		title.text = "— " + str(section["station_name"])
+		_station_list.add_child(title)
+		var recipes: Array = section["recipes"]
+		for r in recipes:
+			var row := HBoxContainer.new()
+			var label := Label.new()
+			label.text = "%s: %s → %s" % [str(r["name"]), _needs_text(r), _gives_text(r)]
+			row.add_child(label)
+			var btn := _make_button("Fabricar", _on_station_pick.bind(str(section["station_id"]), str(r["id"])))
+			row.add_child(btn)
+			_station_list.add_child(row)
+	_station_panel.visible = true
+
+
+func _on_station_pick(station_id: String, recipe_id: String) -> void:
+	if _station_panel != null:
+		_station_panel.visible = false
+	station_craft_requested.emit(station_id, recipe_id)
+
+
+func show_character(data: Dictionary, races: Array[Dictionary]) -> void:
+	if _character_panel == null or _character_list == null:
+		return
+	for child in _character_list.get_children():
+		child.queue_free()
+	var info := Label.new()
+	var eq: Dictionary = data.get("equipment", {})
+	var sk: Dictionary = data.get("skill_xp", {})
+	var mat: Dictionary = data.get("materials", {})
+	var spi: Dictionary = data.get("spirits", {})
+	var pot: Dictionary = data.get("potions", {})
+	var skill_parts: Array[String] = []
+	for skill in sk.keys():
+		skill_parts.append("%s Nv %d" % [str(skill), int(sk[skill]) / 10])
+	var mat_parts: Array[String] = []
+	for kind in mat.keys():
+		mat_parts.append("%s: %d" % [str(kind), int(mat[kind])])
+	for kind in spi.keys():
+		mat_parts.append("espíritu %s: %d" % [str(kind), int(spi[kind])])
+	info.text = "Raza: %s · Monedas: %d · Mascota: %s\nArma: %s · Armadura: %s · Capa: %s\nHabilidades: %s\nMateriales: %s\nPociones: salud %d, maná %d · Comida: %d" % [
+		str(data.get("race_name", "")), int(data.get("coins", 0)), str(data.get("pet", "")),
+		str(eq.get("arma", "")), str(eq.get("armadura", "")), str(eq.get("capa", "")),
+		", ".join(skill_parts), ", ".join(mat_parts),
+		int(pot.get("salud", 0)), int(pot.get("mana", 0)), int(data.get("food", 0))]
+	_character_list.add_child(info)
+	var row := HBoxContainer.new()
+	for race in races:
+		var btn := _make_button(str(race["name"]), _on_race_pick.bind(str(race["id"])))
+		row.add_child(btn)
+	_character_list.add_child(row)
+	_character_panel.visible = true
+
+
+func _on_race_pick(race_id: String) -> void:
+	if _character_panel != null:
+		_character_panel.visible = false
+	race_selected.emit(race_id)
+
+
+func _build_lan_panel(root: Control) -> void:
+	_lan_panel = _modal_panel(root)
+	var box := _lan_panel.get_child(1) as PanelContainer
+	var vbox := VBoxContainer.new()
+	box.add_child(vbox)
+	var title := Label.new()
+	title.text = "🌐 Multijugador LAN"
+	vbox.add_child(title)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(880, 400)
+	_lan_list = VBoxContainer.new()
+	scroll.add_child(_lan_list)
+	vbox.add_child(scroll)
+	var close := _make_button("Cerrar", func(): _lan_panel.visible = false)
+	vbox.add_child(close)
+
+
+func show_lan(hosts: Dictionary, connected: bool, status: String) -> void:
+	if _lan_panel == null or _lan_list == null:
+		return
+	for child in _lan_list.get_children():
+		child.queue_free()
+	var info := Label.new()
+	info.text = status
+	_lan_list.add_child(info)
+	if connected:
+		var leave := _make_button("Salir de la partida", func(): _lan_panel.visible = false; lan_leave_pressed.emit())
+		_lan_list.add_child(leave)
+	else:
+		var row := HBoxContainer.new()
+		row.add_child(_make_button("Crear partida", func(): _lan_panel.visible = false; lan_host_pressed.emit()))
+		row.add_child(_make_button("Buscar partidas", func(): lan_search_pressed.emit()))
+		_lan_list.add_child(row)
+		if hosts.is_empty():
+			var none := Label.new()
+			none.text = "Sin partidas en tu Wi-Fi. Pulsa Buscar."
+			_lan_list.add_child(none)
+		for ip in hosts.keys():
+			var hrow := HBoxContainer.new()
+			var label := Label.new()
+			label.text = "%s (%s)" % [str(hosts[ip]), str(ip)]
+			hrow.add_child(label)
+			hrow.add_child(_make_button("Unirse", _on_lan_join_pick.bind(str(ip))))
+			_lan_list.add_child(hrow)
+	_lan_panel.visible = true
+
+
+func _on_lan_join_pick(ip: String) -> void:
+	if _lan_panel != null:
+		_lan_panel.visible = false
+	lan_join_pressed.emit(ip)

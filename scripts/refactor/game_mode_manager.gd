@@ -38,7 +38,35 @@ const WORDS := {
 	"CASA": ["C", "A", "S", "A"],
 	"ARBOL": ["A", "R", "B", "O", "L"],
 	"PUENTE": ["P", "U", "E", "N", "T", "E"],
+	# 3.0 multiedad (GDD: MAMÁ y PAPÁ en Valle del Eco).
+	"MAMA": ["M", "A", "M", "A"],
+	"PAPA": ["P", "A", "P", "A"],
+	"LIBRO": ["L", "I", "B", "R", "O"],
+	"MUNDO": ["M", "U", "N", "D", "O"],
 }
+
+
+## Palabras permitidas por banda de edad (3.0, pura).
+static func words_for_band(band: String) -> Array[String]:
+	match band:
+		"8-12":
+			return ["SOL", "CASA", "ARBOL", "PUENTE", "MAMA", "PAPA"]
+		"13+":
+			return ["SOL", "CASA", "ARBOL", "PUENTE", "MAMA", "PAPA", "LIBRO", "MUNDO"]
+		_:
+			return ["SOL", "CASA"]
+
+
+## Operadores permitidos por banda (3.0, pura). La división
+## solo en 13+ y solo exacta (ver detect_math).
+static func ops_for_band(band: String) -> Array[String]:
+	match band:
+		"8-12":
+			return ["+", "-", "×"]
+		"13+":
+			return ["+", "-", "×", "÷"]
+		_:
+			return ["+", "-"]
 const LETTER_CLIP := {
 	"A": "letra_a", "B": "letra_b", "C": "letra_c", "D": "letra_d",
 	"E": "letra_e", "F": "letra_f", "G": "letra_g", "H": "letra_h",
@@ -159,6 +187,8 @@ func invoke_word(word: String, origin: Vector3) -> void:
 
 ## Detecta [n] [op] [m] [=] en fila. Devuelve [expresión, resultado]
 ## o ["", 0] si no es una operación válida.
+## 3.0: la división solo vale exacta y sin dividir por cero
+## (pedagógico: 6÷2=3 sí, 7÷2 y 6÷0 no).
 static func detect_math(tokens: Array) -> Array:
 	# tokens: [3, "+", 2, "="] como strings.
 	if tokens.size() != 4 or tokens[3] != "=":
@@ -174,6 +204,10 @@ static func detect_math(tokens: Array) -> Array:
 			return ["%d - %d" % [a, b], a - b]
 		"x", "*":
 			return ["%d x %d" % [a, b], a * b]
+		"÷", "/":
+			if b == 0 or a % b != 0:
+				return ["", 0]
+			return ["%d ÷ %d" % [a, b], a / b]
 		_:
 			return ["", 0]
 

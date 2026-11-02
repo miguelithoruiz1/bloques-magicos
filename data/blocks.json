@@ -1,1 +1,2566 @@
-{"blocks":[{"color":[0.0,0.0,0.0],"hardness":-1.0,"id":0,"light":0,"name":"Aire","shape":"none","sound":"none"},{"color":[0.25,0.65,0.25],"hardness":0.55,"id":1,"light":0,"name":"Hierba","shape":"solid","sound":"grass"},{"color":[0.55,0.4,0.25],"hardness":0.5,"id":2,"light":0,"name":"Tierra","shape":"solid","sound":"dirt"},{"color":[0.5,0.5,0.52],"hardness":1.5,"id":3,"light":0,"name":"Piedra","shape":"solid","sound":"stone"},{"color":[0.45,0.3,0.15],"hardness":1.2,"id":4,"light":0,"name":"Madera","shape":"solid","sound":"wood"},{"color":[0.15,0.55,0.2],"hardness":0.2,"id":5,"light":0,"name":"Hojas","shape":"solid","sound":"foliage"},{"color":[0.2,0.5,0.9],"hardness":-1.0,"id":6,"light":0,"name":"Agua","shape":"liquid","sound":"water"},{"color":[0.85,0.78,0.55],"hardness":0.45,"id":7,"light":0,"name":"Arena","shape":"solid","sound":"sand"},{"color":[0.9,0.2,0.3],"hardness":0.1,"id":8,"light":0,"name":"Flor roja","shape":"cross","sound":"foliage"},{"color":[0.95,0.85,0.2],"hardness":0.1,"id":9,"light":0,"name":"Flor amarilla","shape":"cross","sound":"foliage"},{"color":[1.0,0.75,0.25],"hardness":0.3,"id":80,"light":14,"name":"Antorcha","shape":"solid","sound":"wood"},{"color":[0.65,0.45,0.15],"hardness":1.0,"id":81,"light":0,"name":"Cofre","shape":"solid","sound":"wood"},{"color":[0.55,0.2,0.9],"hardness":-1.0,"id":82,"light":8,"name":"Portal","shape":"solid","sound":"crystal"},{"color":[0.7,0.5,0.3],"hardness":1.0,"id":84,"light":0,"name":"Tablones","shape":"solid","sound":"wood"},{"color":[0.75,0.25,0.2],"hardness":1.6,"id":85,"light":0,"name":"Ladrillo","shape":"solid","sound":"stone"},{"color":[0.65,0.85,0.95],"hardness":0.3,"id":86,"light":0,"name":"Vidrio","shape":"solid","sound":"crystal"},{"color":[0.95,0.97,1.0],"hardness":0.4,"id":87,"light":0,"name":"Nieve","shape":"solid","sound":"snow"},{"color":[0.2,0.95,1.0],"hardness":0.8,"id":88,"light":11,"name":"Cristal brillo","shape":"solid","sound":"crystal"}],"nota":"Catalogo de bloques de Bloques Magicos 2.0, inspirado en la idea de datos JSON de Cube Unbound. Los IDs son los del generador de la variante (no los del plan de Cube): asi no se rompen colores, numeros ni letras de 1.15. La dureza es informativa en Creativo (romper es instantaneo); en Supervivencia manda el retraso de ruptura de Ajustes. Si este archivo falta en la exportacion, BlockCatalog usa la misma tabla incrustada.","version":1}
+{
+ "version": 2,
+ "count": 173,
+ "nota": "Catalogo de bloques 3.0 segun la seccion 4 del documento de arquitectura: las 18 entradas originales (ids 0-93) mas las del documento con ids desde 100, en 8 categorias. Nombres y datos propios; nada copiado de otro juego.",
+ "blocks": [
+  {
+   "color": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "hardness": -1.0,
+   "id": 0,
+   "light": 0,
+   "name": "Aire",
+   "shape": "none",
+   "sound": "none"
+  },
+  {
+   "color": [
+    0.25,
+    0.65,
+    0.25
+   ],
+   "hardness": 0.55,
+   "id": 1,
+   "light": 0,
+   "name": "Hierba",
+   "shape": "solid",
+   "sound": "grass"
+  },
+  {
+   "color": [
+    0.55,
+    0.4,
+    0.25
+   ],
+   "hardness": 0.5,
+   "id": 2,
+   "light": 0,
+   "name": "Tierra",
+   "shape": "solid",
+   "sound": "dirt"
+  },
+  {
+   "color": [
+    0.5,
+    0.5,
+    0.52
+   ],
+   "hardness": 1.5,
+   "id": 3,
+   "light": 0,
+   "name": "Piedra",
+   "shape": "solid",
+   "sound": "stone"
+  },
+  {
+   "color": [
+    0.45,
+    0.3,
+    0.15
+   ],
+   "hardness": 1.2,
+   "id": 4,
+   "light": 0,
+   "name": "Madera",
+   "shape": "solid",
+   "sound": "wood"
+  },
+  {
+   "color": [
+    0.15,
+    0.55,
+    0.2
+   ],
+   "hardness": 0.2,
+   "id": 5,
+   "light": 0,
+   "name": "Hojas",
+   "shape": "solid",
+   "sound": "foliage"
+  },
+  {
+   "color": [
+    0.2,
+    0.5,
+    0.9
+   ],
+   "hardness": -1.0,
+   "id": 6,
+   "light": 0,
+   "name": "Agua",
+   "shape": "liquid",
+   "sound": "water"
+  },
+  {
+   "color": [
+    0.85,
+    0.78,
+    0.55
+   ],
+   "hardness": 0.45,
+   "id": 7,
+   "light": 0,
+   "name": "Arena",
+   "shape": "solid",
+   "sound": "sand"
+  },
+  {
+   "color": [
+    0.9,
+    0.2,
+    0.3
+   ],
+   "hardness": 0.1,
+   "id": 8,
+   "light": 0,
+   "name": "Flor roja",
+   "shape": "cross",
+   "sound": "foliage"
+  },
+  {
+   "color": [
+    0.95,
+    0.85,
+    0.2
+   ],
+   "hardness": 0.1,
+   "id": 9,
+   "light": 0,
+   "name": "Flor amarilla",
+   "shape": "cross",
+   "sound": "foliage"
+  },
+  {
+   "color": [
+    1.0,
+    0.75,
+    0.25
+   ],
+   "hardness": 0.3,
+   "id": 80,
+   "light": 14,
+   "name": "Antorcha",
+   "shape": "solid",
+   "sound": "wood"
+  },
+  {
+   "color": [
+    0.65,
+    0.45,
+    0.15
+   ],
+   "hardness": 1.0,
+   "id": 81,
+   "light": 0,
+   "name": "Cofre",
+   "shape": "solid",
+   "sound": "wood"
+  },
+  {
+   "color": [
+    0.55,
+    0.2,
+    0.9
+   ],
+   "hardness": -1.0,
+   "id": 82,
+   "light": 8,
+   "name": "Portal",
+   "shape": "solid",
+   "sound": "crystal"
+  },
+  {
+   "color": [
+    0.7,
+    0.5,
+    0.3
+   ],
+   "hardness": 1.0,
+   "id": 84,
+   "light": 0,
+   "name": "Tablones",
+   "shape": "solid",
+   "sound": "wood"
+  },
+  {
+   "color": [
+    0.75,
+    0.25,
+    0.2
+   ],
+   "hardness": 1.6,
+   "id": 85,
+   "light": 0,
+   "name": "Ladrillo",
+   "shape": "solid",
+   "sound": "stone"
+  },
+  {
+   "color": [
+    0.65,
+    0.85,
+    0.95
+   ],
+   "hardness": 0.3,
+   "id": 86,
+   "light": 0,
+   "name": "Vidrio",
+   "shape": "solid",
+   "sound": "crystal"
+  },
+  {
+   "color": [
+    0.95,
+    0.97,
+    1.0
+   ],
+   "hardness": 0.4,
+   "id": 87,
+   "light": 0,
+   "name": "Nieve",
+   "shape": "solid",
+   "sound": "snow"
+  },
+  {
+   "color": [
+    0.2,
+    0.95,
+    1.0
+   ],
+   "hardness": 0.8,
+   "id": 88,
+   "light": 11,
+   "name": "Cristal brillo",
+   "shape": "solid",
+   "sound": "crystal"
+  },
+  {
+   "id": 100,
+   "key": "clay",
+   "name": "Arcilla",
+   "color": [
+    0.72,
+    0.55,
+    0.45
+   ],
+   "hardness": 0.6,
+   "shape": "solid",
+   "light": 0,
+   "sound": "dirt",
+   "category": "suelos"
+  },
+  {
+   "id": 101,
+   "key": "mud",
+   "name": "Barro",
+   "color": [
+    0.45,
+    0.32,
+    0.22
+   ],
+   "hardness": 0.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "dirt",
+   "category": "suelos"
+  },
+  {
+   "id": 102,
+   "key": "red_sand",
+   "name": "Arena roja",
+   "color": [
+    0.8,
+    0.5,
+    0.3
+   ],
+   "hardness": 0.45,
+   "shape": "solid",
+   "light": 0,
+   "sound": "sand",
+   "category": "suelos"
+  },
+  {
+   "id": 103,
+   "key": "gravel",
+   "name": "Grava",
+   "color": [
+    0.55,
+    0.52,
+    0.5
+   ],
+   "hardness": 0.7,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "suelos"
+  },
+  {
+   "id": 104,
+   "key": "snow_grass",
+   "name": "Hierba nevada",
+   "color": [
+    0.65,
+    0.8,
+    0.65
+   ],
+   "hardness": 0.55,
+   "shape": "solid",
+   "light": 0,
+   "sound": "snow",
+   "category": "suelos"
+  },
+  {
+   "id": 105,
+   "key": "savanna_grass",
+   "name": "Hierba de sabana",
+   "color": [
+    0.65,
+    0.7,
+    0.3
+   ],
+   "hardness": 0.55,
+   "shape": "solid",
+   "light": 0,
+   "sound": "grass",
+   "category": "suelos"
+  },
+  {
+   "id": 106,
+   "key": "jungle_grass",
+   "name": "Hierba de jungla",
+   "color": [
+    0.15,
+    0.55,
+    0.25
+   ],
+   "hardness": 0.55,
+   "shape": "solid",
+   "light": 0,
+   "sound": "grass",
+   "category": "suelos"
+  },
+  {
+   "id": 107,
+   "key": "autumn_grass",
+   "name": "Hierba otoñal",
+   "color": [
+    0.75,
+    0.55,
+    0.2
+   ],
+   "hardness": 0.55,
+   "shape": "solid",
+   "light": 0,
+   "sound": "grass",
+   "category": "suelos"
+  },
+  {
+   "id": 108,
+   "key": "bog_mud",
+   "name": "Lodo de pantano",
+   "color": [
+    0.35,
+    0.28,
+    0.2
+   ],
+   "hardness": 0.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "dirt",
+   "category": "suelos"
+  },
+  {
+   "id": 109,
+   "key": "peat",
+   "name": "Turba",
+   "color": [
+    0.3,
+    0.22,
+    0.15
+   ],
+   "hardness": 0.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "dirt",
+   "category": "suelos"
+  },
+  {
+   "id": 110,
+   "key": "mycelium",
+   "name": "Micelio",
+   "color": [
+    0.55,
+    0.45,
+    0.55
+   ],
+   "hardness": 0.6,
+   "shape": "solid",
+   "light": 0,
+   "sound": "dirt",
+   "category": "suelos"
+  },
+  {
+   "id": 111,
+   "key": "ash_block",
+   "name": "Ceniza",
+   "color": [
+    0.45,
+    0.45,
+    0.45
+   ],
+   "hardness": 0.4,
+   "shape": "solid",
+   "light": 0,
+   "sound": "sand",
+   "category": "suelos"
+  },
+  {
+   "id": 112,
+   "key": "salt_crust",
+   "name": "Costra de sal",
+   "color": [
+    0.95,
+    0.95,
+    0.9
+   ],
+   "hardness": 0.4,
+   "shape": "solid",
+   "light": 0,
+   "sound": "snow",
+   "category": "suelos"
+  },
+  {
+   "id": 113,
+   "key": "permafrost",
+   "name": "Permafrost",
+   "color": [
+    0.7,
+    0.75,
+    0.8
+   ],
+   "hardness": 0.8,
+   "shape": "solid",
+   "light": 0,
+   "sound": "snow",
+   "category": "suelos"
+  },
+  {
+   "id": 114,
+   "key": "celestial_turf",
+   "name": "Césped celestial",
+   "color": [
+    0.65,
+    0.8,
+    1.0
+   ],
+   "hardness": 0.6,
+   "shape": "solid",
+   "light": 0,
+   "sound": "grass",
+   "category": "suelos"
+  },
+  {
+   "id": 115,
+   "key": "corrupted_soil",
+   "name": "Tierra corrupta",
+   "color": [
+    0.3,
+    0.2,
+    0.35
+   ],
+   "hardness": 0.6,
+   "shape": "solid",
+   "light": 0,
+   "sound": "dirt",
+   "category": "suelos"
+  },
+  {
+   "id": 116,
+   "key": "moss_block",
+   "name": "Bloque de musgo",
+   "color": [
+    0.25,
+    0.55,
+    0.3
+   ],
+   "hardness": 0.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "grass",
+   "category": "suelos"
+  },
+  {
+   "id": 117,
+   "key": "path_block",
+   "name": "Camino",
+   "color": [
+    0.65,
+    0.58,
+    0.45
+   ],
+   "hardness": 0.6,
+   "shape": "solid",
+   "light": 0,
+   "sound": "dirt",
+   "category": "suelos"
+  },
+  {
+   "id": 118,
+   "key": "cobblestone",
+   "name": "Adoquín",
+   "color": [
+    0.45,
+    0.45,
+    0.48
+   ],
+   "hardness": 1.6,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 119,
+   "key": "mossy_cobble",
+   "name": "Adoquín con musgo",
+   "color": [
+    0.4,
+    0.48,
+    0.35
+   ],
+   "hardness": 1.6,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 120,
+   "key": "granite",
+   "name": "Granito",
+   "color": [
+    0.6,
+    0.45,
+    0.4
+   ],
+   "hardness": 1.8,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 121,
+   "key": "diorite",
+   "name": "Diorita",
+   "color": [
+    0.75,
+    0.75,
+    0.75
+   ],
+   "hardness": 1.7,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 122,
+   "key": "andesite",
+   "name": "Andesita",
+   "color": [
+    0.55,
+    0.55,
+    0.58
+   ],
+   "hardness": 1.7,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 123,
+   "key": "limestone",
+   "name": "Caliza",
+   "color": [
+    0.85,
+    0.82,
+    0.7
+   ],
+   "hardness": 1.4,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 124,
+   "key": "slate",
+   "name": "Pizarra",
+   "color": [
+    0.35,
+    0.35,
+    0.4
+   ],
+   "hardness": 1.6,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 125,
+   "key": "shale",
+   "name": "Esquisto",
+   "color": [
+    0.4,
+    0.38,
+    0.35
+   ],
+   "hardness": 1.3,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 126,
+   "key": "marble",
+   "name": "Mármol",
+   "color": [
+    0.95,
+    0.95,
+    0.93
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 127,
+   "key": "travertine",
+   "name": "Travertino",
+   "color": [
+    0.88,
+    0.8,
+    0.65
+   ],
+   "hardness": 1.4,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 128,
+   "key": "chalk",
+   "name": "Tiza",
+   "color": [
+    0.98,
+    0.98,
+    0.95
+   ],
+   "hardness": 1.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 129,
+   "key": "basalt",
+   "name": "Basalto",
+   "color": [
+    0.25,
+    0.25,
+    0.28
+   ],
+   "hardness": 1.9,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 130,
+   "key": "obsidian",
+   "name": "Obsidiana",
+   "color": [
+    0.12,
+    0.1,
+    0.18
+   ],
+   "hardness": 2.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 131,
+   "key": "sandstone",
+   "name": "Arenisca",
+   "color": [
+    0.85,
+    0.75,
+    0.55
+   ],
+   "hardness": 1.3,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 132,
+   "key": "red_sandstone",
+   "name": "Arenisca roja",
+   "color": [
+    0.75,
+    0.45,
+    0.3
+   ],
+   "hardness": 1.3,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 133,
+   "key": "terracotta",
+   "name": "Terracota",
+   "color": [
+    0.7,
+    0.45,
+    0.3
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 134,
+   "key": "terracotta_red",
+   "name": "Terracota roja",
+   "color": [
+    0.65,
+    0.25,
+    0.2
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 135,
+   "key": "terracotta_orange",
+   "name": "Terracota naranja",
+   "color": [
+    0.85,
+    0.5,
+    0.2
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 136,
+   "key": "terracotta_yellow",
+   "name": "Terracota amarilla",
+   "color": [
+    0.9,
+    0.75,
+    0.3
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 137,
+   "key": "terracotta_blue",
+   "name": "Terracota azul",
+   "color": [
+    0.3,
+    0.45,
+    0.7
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 138,
+   "key": "terracotta_white",
+   "name": "Terracota blanca",
+   "color": [
+    0.92,
+    0.9,
+    0.85
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 139,
+   "key": "glacial_stone",
+   "name": "Piedra glacial",
+   "color": [
+    0.7,
+    0.85,
+    0.9
+   ],
+   "hardness": 1.7,
+   "shape": "solid",
+   "light": 0,
+   "sound": "snow",
+   "category": "rocas"
+  },
+  {
+   "id": 140,
+   "key": "dark_stone",
+   "name": "Piedra oscura",
+   "color": [
+    0.2,
+    0.2,
+    0.22
+   ],
+   "hardness": 1.8,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 141,
+   "key": "void_stone",
+   "name": "Piedra del vacío",
+   "color": [
+    0.15,
+    0.1,
+    0.25
+   ],
+   "hardness": 2.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 142,
+   "key": "null_stone",
+   "name": "Piedra nula",
+   "color": [
+    0.1,
+    0.1,
+    0.1
+   ],
+   "hardness": 2.4,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 143,
+   "key": "abyssal_rock",
+   "name": "Roca abisal",
+   "color": [
+    0.18,
+    0.12,
+    0.2
+   ],
+   "hardness": 2.3,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 144,
+   "key": "bedrock",
+   "name": "Roca madre",
+   "color": [
+    0.08,
+    0.08,
+    0.08
+   ],
+   "hardness": -1.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "rocas"
+  },
+  {
+   "id": 145,
+   "key": "coal_ore",
+   "name": "Mena de carbón",
+   "color": [
+    0.3,
+    0.3,
+    0.3
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "minerales"
+  },
+  {
+   "id": 146,
+   "key": "copper_ore",
+   "name": "Mena de cobre",
+   "color": [
+    0.75,
+    0.45,
+    0.25
+   ],
+   "hardness": 1.6,
+   "shape": "solid",
+   "light": 0,
+   "sound": "metal",
+   "category": "minerales"
+  },
+  {
+   "id": 147,
+   "key": "tin_ore",
+   "name": "Mena de estaño",
+   "color": [
+    0.7,
+    0.72,
+    0.75
+   ],
+   "hardness": 1.6,
+   "shape": "solid",
+   "light": 0,
+   "sound": "metal",
+   "category": "minerales"
+  },
+  {
+   "id": 148,
+   "key": "iron_ore",
+   "name": "Mena de hierro",
+   "color": [
+    0.8,
+    0.65,
+    0.55
+   ],
+   "hardness": 1.8,
+   "shape": "solid",
+   "light": 0,
+   "sound": "metal",
+   "category": "minerales"
+  },
+  {
+   "id": 149,
+   "key": "silver_ore",
+   "name": "Mena de plata",
+   "color": [
+    0.85,
+    0.88,
+    0.9
+   ],
+   "hardness": 2.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "metal",
+   "category": "minerales"
+  },
+  {
+   "id": 150,
+   "key": "gold_ore",
+   "name": "Mena de oro",
+   "color": [
+    1.0,
+    0.85,
+    0.2
+   ],
+   "hardness": 2.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "metal",
+   "category": "minerales"
+  },
+  {
+   "id": 151,
+   "key": "sulfur",
+   "name": "Azufre",
+   "color": [
+    0.9,
+    0.8,
+    0.15
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "minerales"
+  },
+  {
+   "id": 152,
+   "key": "gypsum",
+   "name": "Yeso",
+   "color": [
+    0.95,
+    0.95,
+    0.9
+   ],
+   "hardness": 1.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "minerales"
+  },
+  {
+   "id": 153,
+   "key": "chronolite",
+   "name": "Cronolita",
+   "color": [
+    0.5,
+    0.3,
+    0.85
+   ],
+   "hardness": 2.5,
+   "shape": "solid",
+   "light": 6,
+   "sound": "crystal",
+   "category": "minerales"
+  },
+  {
+   "id": 154,
+   "key": "oak_trunk",
+   "name": "Tronco de roble",
+   "color": [
+    0.45,
+    0.3,
+    0.15
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 155,
+   "key": "oak_leaves",
+   "name": "Hojas de roble",
+   "color": [
+    0.15,
+    0.5,
+    0.2
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 156,
+   "key": "birch_trunk",
+   "name": "Tronco de abedul",
+   "color": [
+    0.75,
+    0.7,
+    0.6
+   ],
+   "hardness": 1.1,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 157,
+   "key": "birch_leaves",
+   "name": "Hojas de abedul",
+   "color": [
+    0.35,
+    0.65,
+    0.25
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 158,
+   "key": "pine_trunk",
+   "name": "Tronco de pino",
+   "color": [
+    0.4,
+    0.26,
+    0.14
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 159,
+   "key": "pine_leaves",
+   "name": "Hojas de pino",
+   "color": [
+    0.1,
+    0.4,
+    0.25
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 160,
+   "key": "acacia_trunk",
+   "name": "Tronco de acacia",
+   "color": [
+    0.55,
+    0.35,
+    0.2
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 161,
+   "key": "acacia_leaves",
+   "name": "Hojas de acacia",
+   "color": [
+    0.45,
+    0.6,
+    0.2
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 162,
+   "key": "jungle_trunk",
+   "name": "Tronco de jungla",
+   "color": [
+    0.35,
+    0.25,
+    0.12
+   ],
+   "hardness": 1.3,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 163,
+   "key": "jungle_leaves",
+   "name": "Hojas de jungla",
+   "color": [
+    0.1,
+    0.55,
+    0.15
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 164,
+   "key": "palm_trunk",
+   "name": "Tronco de palmera",
+   "color": [
+    0.6,
+    0.45,
+    0.25
+   ],
+   "hardness": 1.1,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 165,
+   "key": "palm_leaves",
+   "name": "Hojas de palmera",
+   "color": [
+    0.2,
+    0.65,
+    0.3
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 166,
+   "key": "mangrove_trunk",
+   "name": "Tronco de mangle",
+   "color": [
+    0.38,
+    0.28,
+    0.18
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 167,
+   "key": "mangrove_leaves",
+   "name": "Hojas de mangle",
+   "color": [
+    0.15,
+    0.5,
+    0.35
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 168,
+   "key": "maple_trunk",
+   "name": "Tronco de arce",
+   "color": [
+    0.5,
+    0.32,
+    0.18
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 169,
+   "key": "maple_leaves",
+   "name": "Hojas de arce",
+   "color": [
+    0.8,
+    0.35,
+    0.15
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 170,
+   "key": "cherry_trunk",
+   "name": "Tronco de cerezo",
+   "color": [
+    0.42,
+    0.26,
+    0.2
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 171,
+   "key": "cherry_leaves",
+   "name": "Hojas de cerezo",
+   "color": [
+    0.95,
+    0.65,
+    0.75
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 172,
+   "key": "willow_trunk",
+   "name": "Tronco de sauce",
+   "color": [
+    0.45,
+    0.35,
+    0.22
+   ],
+   "hardness": 1.1,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 173,
+   "key": "willow_leaves",
+   "name": "Hojas de sauce",
+   "color": [
+    0.35,
+    0.6,
+    0.35
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 174,
+   "key": "cypress_trunk",
+   "name": "Tronco de ciprés",
+   "color": [
+    0.35,
+    0.25,
+    0.15
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 175,
+   "key": "cypress_leaves",
+   "name": "Hojas de ciprés",
+   "color": [
+    0.12,
+    0.35,
+    0.22
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 176,
+   "key": "darkwood_trunk",
+   "name": "Tronco oscuro",
+   "color": [
+    0.22,
+    0.15,
+    0.1
+   ],
+   "hardness": 1.4,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 177,
+   "key": "darkwood_leaves",
+   "name": "Hojas oscuras",
+   "color": [
+    0.15,
+    0.25,
+    0.3
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 178,
+   "key": "baobab_trunk",
+   "name": "Tronco de baobab",
+   "color": [
+    0.6,
+    0.45,
+    0.3
+   ],
+   "hardness": 1.3,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 179,
+   "key": "baobab_leaves",
+   "name": "Hojas de baobab",
+   "color": [
+    0.3,
+    0.55,
+    0.25
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 180,
+   "key": "charred_trunk",
+   "name": "Tronco carbonizado",
+   "color": [
+    0.12,
+    0.1,
+    0.1
+   ],
+   "hardness": 1.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 181,
+   "key": "charred_leaves",
+   "name": "Hojas carbonizadas",
+   "color": [
+    0.25,
+    0.15,
+    0.1
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 182,
+   "key": "primordial_trunk",
+   "name": "Tronco primordial",
+   "color": [
+    0.3,
+    0.45,
+    0.25
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 183,
+   "key": "primordial_leaves",
+   "name": "Hojas primordiales",
+   "color": [
+    0.2,
+    0.7,
+    0.4
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 184,
+   "key": "celestial_trunk",
+   "name": "Tronco celestial",
+   "color": [
+    0.6,
+    0.7,
+    0.9
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 185,
+   "key": "celestial_leaves",
+   "name": "Hojas celestiales",
+   "color": [
+    0.65,
+    0.8,
+    1.0
+   ],
+   "hardness": 0.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "madera"
+  },
+  {
+   "id": 186,
+   "key": "bamboo",
+   "name": "Bambú",
+   "color": [
+    0.45,
+    0.7,
+    0.3
+   ],
+   "hardness": 0.8,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "madera"
+  },
+  {
+   "id": 187,
+   "key": "stone_bricks",
+   "name": "Ladrillos de piedra",
+   "color": [
+    0.55,
+    0.55,
+    0.58
+   ],
+   "hardness": 1.7,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 188,
+   "key": "cracked_bricks",
+   "name": "Ladrillos agrietados",
+   "color": [
+    0.5,
+    0.5,
+    0.52
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 189,
+   "key": "chiseled_stone",
+   "name": "Piedra cincelada",
+   "color": [
+    0.6,
+    0.6,
+    0.62
+   ],
+   "hardness": 1.7,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 190,
+   "key": "sandstone_bricks",
+   "name": "Ladrillos de arenisca",
+   "color": [
+    0.85,
+    0.75,
+    0.55
+   ],
+   "hardness": 1.4,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 191,
+   "key": "roof_tiles",
+   "name": "Tejas",
+   "color": [
+    0.7,
+    0.3,
+    0.25
+   ],
+   "hardness": 1.3,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 192,
+   "key": "polished_granite",
+   "name": "Granito pulido",
+   "color": [
+    0.65,
+    0.5,
+    0.45
+   ],
+   "hardness": 1.8,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 193,
+   "key": "polished_marble",
+   "name": "Mármol pulido",
+   "color": [
+    0.97,
+    0.97,
+    0.95
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 194,
+   "key": "polished_basalt",
+   "name": "Basalto pulido",
+   "color": [
+    0.28,
+    0.28,
+    0.3
+   ],
+   "hardness": 1.9,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 195,
+   "key": "dungeon_stone",
+   "name": "Piedra de mazmorra",
+   "color": [
+    0.3,
+    0.3,
+    0.35
+   ],
+   "hardness": 2.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 196,
+   "key": "dungeon_floor",
+   "name": "Suelo de mazmorra",
+   "color": [
+    0.38,
+    0.38,
+    0.42
+   ],
+   "hardness": 1.8,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 197,
+   "key": "wood_beam",
+   "name": "Viga de madera",
+   "color": [
+    0.4,
+    0.26,
+    0.12
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "construccion"
+  },
+  {
+   "id": 198,
+   "key": "thatch",
+   "name": "Paja",
+   "color": [
+    0.85,
+    0.75,
+    0.4
+   ],
+   "hardness": 0.4,
+   "shape": "solid",
+   "light": 0,
+   "sound": "grass",
+   "category": "construccion"
+  },
+  {
+   "id": 199,
+   "key": "bone_block",
+   "name": "Bloque de hueso",
+   "color": [
+    0.9,
+    0.88,
+    0.8
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 200,
+   "key": "titan_bone",
+   "name": "Hueso titánico",
+   "color": [
+    0.85,
+    0.82,
+    0.7
+   ],
+   "hardness": 2.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 201,
+   "key": "titan_ivory",
+   "name": "Marfil titánico",
+   "color": [
+    0.95,
+    0.93,
+    0.85
+   ],
+   "hardness": 1.8,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 202,
+   "key": "draconic_fossil",
+   "name": "Fósil dracónico",
+   "color": [
+    0.7,
+    0.65,
+    0.55
+   ],
+   "hardness": 2.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 203,
+   "key": "lava",
+   "name": "Lava",
+   "color": [
+    1.0,
+    0.45,
+    0.1
+   ],
+   "hardness": -1.0,
+   "shape": "liquid",
+   "light": 15,
+   "sound": "stone",
+   "category": "fluidos"
+  },
+  {
+   "id": 204,
+   "key": "poison_sludge",
+   "name": "Lodo venenoso",
+   "color": [
+    0.4,
+    0.7,
+    0.2
+   ],
+   "hardness": -1.0,
+   "shape": "liquid",
+   "light": 0,
+   "sound": "water",
+   "category": "fluidos"
+  },
+  {
+   "id": 205,
+   "key": "acid_pool",
+   "name": "Ácido",
+   "color": [
+    0.6,
+    0.9,
+    0.3
+   ],
+   "hardness": -1.0,
+   "shape": "liquid",
+   "light": 0,
+   "sound": "water",
+   "category": "fluidos"
+  },
+  {
+   "id": 206,
+   "key": "ice",
+   "name": "Hielo",
+   "color": [
+    0.7,
+    0.9,
+    0.95
+   ],
+   "hardness": 0.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "snow",
+   "category": "fluidos"
+  },
+  {
+   "id": 207,
+   "key": "packed_ice",
+   "name": "Hielo compacto",
+   "color": [
+    0.6,
+    0.82,
+    0.9
+   ],
+   "hardness": 0.8,
+   "shape": "solid",
+   "light": 0,
+   "sound": "snow",
+   "category": "fluidos"
+  },
+  {
+   "id": 208,
+   "key": "blue_ice",
+   "name": "Hielo azul",
+   "color": [
+    0.4,
+    0.7,
+    0.95
+   ],
+   "hardness": 1.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "snow",
+   "category": "fluidos"
+  },
+  {
+   "id": 209,
+   "key": "eternal_ice",
+   "name": "Hielo eterno",
+   "color": [
+    0.8,
+    0.95,
+    1.0
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "snow",
+   "category": "fluidos"
+  },
+  {
+   "id": 210,
+   "key": "stygian_ice",
+   "name": "Hielo estigio",
+   "color": [
+    0.2,
+    0.3,
+    0.45
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "snow",
+   "category": "fluidos"
+  },
+  {
+   "id": 211,
+   "key": "vitrified_sand",
+   "name": "Arena vitrificada",
+   "color": [
+    0.75,
+    0.85,
+    0.7
+   ],
+   "hardness": 1.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "crystal",
+   "category": "fluidos"
+  },
+  {
+   "id": 212,
+   "key": "fulgurite",
+   "name": "Fulgurita",
+   "color": [
+    0.65,
+    0.6,
+    0.45
+   ],
+   "hardness": 1.4,
+   "shape": "solid",
+   "light": 0,
+   "sound": "crystal",
+   "category": "fluidos"
+  },
+  {
+   "id": 213,
+   "key": "crystal_magenta",
+   "name": "Cristal magenta",
+   "color": [
+    0.95,
+    0.2,
+    0.85
+   ],
+   "hardness": 0.8,
+   "shape": "solid",
+   "light": 11,
+   "sound": "crystal",
+   "category": "fluidos"
+  },
+  {
+   "id": 214,
+   "key": "tall_grass",
+   "name": "Hierba alta",
+   "color": [
+    0.3,
+    0.65,
+    0.3
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "grass",
+   "category": "flora"
+  },
+  {
+   "id": 215,
+   "key": "fern",
+   "name": "Helecho",
+   "color": [
+    0.2,
+    0.55,
+    0.3
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 216,
+   "key": "sunflower",
+   "name": "Girasol",
+   "color": [
+    0.95,
+    0.8,
+    0.15
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 217,
+   "key": "lavender",
+   "name": "Lavanda",
+   "color": [
+    0.65,
+    0.5,
+    0.85
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 218,
+   "key": "rose_bush",
+   "name": "Rosal",
+   "color": [
+    0.85,
+    0.2,
+    0.3
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 219,
+   "key": "blue_flower",
+   "name": "Flor azul",
+   "color": [
+    0.3,
+    0.5,
+    0.95
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 220,
+   "key": "white_flower",
+   "name": "Flor blanca",
+   "color": [
+    0.95,
+    0.95,
+    0.9
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 221,
+   "key": "purple_flower",
+   "name": "Flor morada",
+   "color": [
+    0.6,
+    0.3,
+    0.85
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 222,
+   "key": "berry_bush",
+   "name": "Arbusto de bayas",
+   "color": [
+    0.25,
+    0.55,
+    0.25
+   ],
+   "hardness": 0.3,
+   "shape": "cross",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 223,
+   "key": "cactus",
+   "name": "Cactus",
+   "color": [
+    0.25,
+    0.6,
+    0.3
+   ],
+   "hardness": 0.4,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 224,
+   "key": "tall_cactus",
+   "name": "Cactus alto",
+   "color": [
+    0.2,
+    0.55,
+    0.25
+   ],
+   "hardness": 0.4,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 225,
+   "key": "flowering_cactus",
+   "name": "Cactus en flor",
+   "color": [
+    0.3,
+    0.6,
+    0.3
+   ],
+   "hardness": 0.4,
+   "shape": "solid",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 226,
+   "key": "reeds",
+   "name": "Juncos",
+   "color": [
+    0.5,
+    0.65,
+    0.3
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "grass",
+   "category": "flora"
+  },
+  {
+   "id": 227,
+   "key": "lily_pad",
+   "name": "Nenúfar",
+   "color": [
+    0.25,
+    0.65,
+    0.3
+   ],
+   "hardness": 0.1,
+   "shape": "carpet",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 228,
+   "key": "vine",
+   "name": "Enredadera",
+   "color": [
+    0.2,
+    0.5,
+    0.2
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 229,
+   "key": "glow_vine",
+   "name": "Enredadera brillante",
+   "color": [
+    0.3,
+    0.9,
+    0.7
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 6,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 230,
+   "key": "mushroom_red",
+   "name": "Seta roja",
+   "color": [
+    0.85,
+    0.25,
+    0.2
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 231,
+   "key": "mushroom_blue",
+   "name": "Seta azul",
+   "color": [
+    0.3,
+    0.45,
+    0.85
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 232,
+   "key": "glow_shroom",
+   "name": "Seta brillante",
+   "color": [
+    0.2,
+    0.95,
+    1.0
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 11,
+   "sound": "foliage",
+   "category": "flora"
+  },
+  {
+   "id": 233,
+   "key": "kelp",
+   "name": "Alga",
+   "color": [
+    0.15,
+    0.5,
+    0.35
+   ],
+   "hardness": 0.1,
+   "shape": "cross",
+   "light": 0,
+   "sound": "water",
+   "category": "flora"
+  },
+  {
+   "id": 234,
+   "key": "coral_red",
+   "name": "Coral rojo",
+   "color": [
+    0.9,
+    0.25,
+    0.25
+   ],
+   "hardness": 0.3,
+   "shape": "cross",
+   "light": 0,
+   "sound": "stone",
+   "category": "flora"
+  },
+  {
+   "id": 235,
+   "key": "coral_pink",
+   "name": "Coral rosado",
+   "color": [
+    0.95,
+    0.6,
+    0.7
+   ],
+   "hardness": 0.3,
+   "shape": "cross",
+   "light": 0,
+   "sound": "stone",
+   "category": "flora"
+  },
+  {
+   "id": 236,
+   "key": "coral_blue",
+   "name": "Coral azul",
+   "color": [
+    0.3,
+    0.55,
+    0.95
+   ],
+   "hardness": 0.3,
+   "shape": "cross",
+   "light": 0,
+   "sound": "stone",
+   "category": "flora"
+  },
+  {
+   "id": 237,
+   "key": "coral_yellow",
+   "name": "Coral amarillo",
+   "color": [
+    0.95,
+    0.85,
+    0.25
+   ],
+   "hardness": 0.3,
+   "shape": "cross",
+   "light": 0,
+   "sound": "stone",
+   "category": "flora"
+  },
+  {
+   "id": 238,
+   "key": "coral_purple",
+   "name": "Coral morado",
+   "color": [
+    0.6,
+    0.35,
+    0.85
+   ],
+   "hardness": 0.3,
+   "shape": "cross",
+   "light": 0,
+   "sound": "stone",
+   "category": "flora"
+  },
+  {
+   "id": 239,
+   "key": "spikes",
+   "name": "Púas",
+   "color": [
+    0.6,
+    0.6,
+    0.65
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "metal",
+   "category": "trampas"
+  },
+  {
+   "id": 240,
+   "key": "dart_trap",
+   "name": "Trampa de dardos",
+   "color": [
+    0.5,
+    0.45,
+    0.4
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "metal",
+   "category": "trampas"
+  },
+  {
+   "id": 241,
+   "key": "flame_jet",
+   "name": "Chorro de llamas",
+   "color": [
+    1.0,
+    0.5,
+    0.1
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 13,
+   "sound": "stone",
+   "category": "trampas"
+  },
+  {
+   "id": 242,
+   "key": "poison_vent",
+   "name": "Respiradero venenoso",
+   "color": [
+    0.4,
+    0.65,
+    0.25
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "metal",
+   "category": "trampas"
+  },
+  {
+   "id": 243,
+   "key": "crumbling_floor",
+   "name": "Suelo frágil",
+   "color": [
+    0.55,
+    0.5,
+    0.45
+   ],
+   "hardness": 0.3,
+   "shape": "slab",
+   "light": 0,
+   "sound": "stone",
+   "category": "trampas"
+  },
+  {
+   "id": 244,
+   "key": "boulder_spawner",
+   "name": "Generador de rocas",
+   "color": [
+    0.45,
+    0.42,
+    0.4
+   ],
+   "hardness": 2.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "trampas"
+  },
+  {
+   "id": 245,
+   "key": "pressure_plate",
+   "name": "Placa de presión",
+   "color": [
+    0.65,
+    0.6,
+    0.55
+   ],
+   "hardness": 0.8,
+   "shape": "slab",
+   "light": 0,
+   "sound": "metal",
+   "category": "trampas"
+  },
+  {
+   "id": 246,
+   "key": "dungeon_bars",
+   "name": "Barrotes de mazmorra",
+   "color": [
+    0.35,
+    0.35,
+    0.38
+   ],
+   "hardness": 1.8,
+   "shape": "fence",
+   "light": 0,
+   "sound": "metal",
+   "category": "trampas"
+  },
+  {
+   "id": 247,
+   "key": "workbench",
+   "name": "Mesa de trabajo",
+   "color": [
+    0.55,
+    0.4,
+    0.2
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "construccion"
+  },
+  {
+   "id": 248,
+   "key": "furnace",
+   "name": "Horno",
+   "color": [
+    0.35,
+    0.35,
+    0.38
+   ],
+   "hardness": 1.8,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 249,
+   "key": "anvil",
+   "name": "Yunque",
+   "color": [
+    0.45,
+    0.45,
+    0.48
+   ],
+   "hardness": 1.9,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 250,
+   "key": "titan_anvil",
+   "name": "Yunque titán",
+   "color": [
+    0.55,
+    0.45,
+    0.75
+   ],
+   "hardness": 2.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 251,
+   "key": "loom",
+   "name": "Telar",
+   "color": [
+    0.7,
+    0.55,
+    0.35
+   ],
+   "hardness": 1.1,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "construccion"
+  },
+  {
+   "id": 252,
+   "key": "cooking_pot",
+   "name": "Olla de cocina",
+   "color": [
+    0.3,
+    0.3,
+    0.32
+   ],
+   "hardness": 1.5,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  },
+  {
+   "id": 253,
+   "key": "alchemy_table",
+   "name": "Mesa de alquimia",
+   "color": [
+    0.2,
+    0.6,
+    0.55
+   ],
+   "hardness": 1.2,
+   "shape": "solid",
+   "light": 0,
+   "sound": "wood",
+   "category": "construccion"
+  },
+  {
+   "id": 254,
+   "key": "sculpting_forge",
+   "name": "Forja de escultura",
+   "color": [
+    0.9,
+    0.6,
+    0.1
+   ],
+   "hardness": 2.0,
+   "shape": "solid",
+   "light": 0,
+   "sound": "stone",
+   "category": "construccion"
+  }
+ ]
+}

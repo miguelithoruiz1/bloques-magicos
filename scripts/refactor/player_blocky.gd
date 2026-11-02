@@ -39,15 +39,18 @@ class_name PlayerBlocky
 
 enum Perspective { FIRST, SECOND, THIRD, TOP }
 
-const WALK_SPEED := 4.0
-const SPRINT_SPEED := 6.5
-const CROUCH_SPEED := 2.0
+# 3.0: valores del documento §7 (antes 4.0/6.5/2.0/7.0/
+# 18.0/1.5). Salto 9.0 con gravedad 26.0 = 1.56 bloques,
+# por encima del mínimo de 1.5 del documento.
+const WALK_SPEED := 5.5
+const SPRINT_SPEED := 8.25
+const CROUCH_SPEED := 2.75
 const FLY_SPEED := 6.0
-const JUMP_VELOCITY := 7.0
-const GRAVITY := 18.0
+const JUMP_VELOCITY := 9.0
+const GRAVITY := 26.0
 const PITCH_MIN := deg_to_rad(-85.0)
 const PITCH_MAX := deg_to_rad(85.0)
-const EYE_HEIGHT := 1.5
+const EYE_HEIGHT := 1.52
 const TOP_HEIGHT := 9.0
 # Ala delta 2.0 (plan de Cube): al caer, la velocidad de caída
 # no pasa de -2.5 bloques/s. No es vuelo libre: solo frena la
@@ -65,6 +68,9 @@ var pitch := 0.0
 var crouching := false
 var sprinting := false
 var jumping := false
+var mounted := false # 3.0: encima de una montura, la física no manda.
+var dodge_boost := Vector3.ZERO # 3.0: impulso de esquiva de un frame.
+var speed_mult := 1.0 # 3.0: raza y capa lo ajustan.
 ## Función opcional (x, z) -> altura del suelo (índice del bloque
 ## superior + 1). La variante la conecta con VoxelWorldGenerator
 ## porque el terreno MultiMesh no tiene cuerpos de colisión:
@@ -270,6 +276,11 @@ func _apply_perspective() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	# 3.0 montura: quieto, sin gravedad ni entrada; la
+	# montura mueve al jugador desde RefactorMain.
+	if mounted:
+		velocity = Vector3.ZERO
+		return
 	# Entrada efectiva de este frame. move_input lo alimenta el HUD
 	# táctil cada frame; si viene en cero, se lee teclado/mando
 	# como respaldo EN UNA VARIABLE LOCAL (nunca se escribe en
@@ -309,6 +320,7 @@ func _physics_process(delta: float) -> void:
 		speed = CROUCH_SPEED
 	if flying:
 		speed = FLY_SPEED
+	speed *= speed_mult
 
 	var dir := move_direction(effective, yaw)
 	if flying:
@@ -339,6 +351,10 @@ func _physics_process(delta: float) -> void:
 	if not flying and not on_ground and glider_enabled and velocity.y < -GLIDE_MAX_FALL:
 		velocity.y = glide_fall(velocity.y)
 		gliding = true
+	# 3.0 esquiva: impulso de un frame, se consume aquí.
+	if dodge_boost.length() > 0.01:
+		velocity += dodge_boost
+		dodge_boost = Vector3.ZERO
 	move_and_slide()
 	for wing in _wings:
 		(wing as MeshInstance3D).visible = gliding and perspective != Perspective.FIRST

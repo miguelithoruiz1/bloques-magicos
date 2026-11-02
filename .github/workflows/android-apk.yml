@@ -31,12 +31,17 @@ jobs:
       - name: Reubicar plantillas de exportación
         # La imagen las instala en /root/... pero el runner
         # corre como otro usuario: Godot las busca en $HOME.
+        # Si el traslado falla, no se aborta aquí: el paso de
+        # exportación mostrará el error real de plantillas.
         run: |
           mkdir -p ~/.local/share/godot/export_templates/
           if [ -d "/root/.local/share/godot/export_templates/${GODOT_VERSION}.stable" ]; then
             mv "/root/.local/share/godot/export_templates/${GODOT_VERSION}.stable" \
-               ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+               ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable || \
+            cp -r "/root/.local/share/godot/export_templates/${GODOT_VERSION}.stable" \
+               ~/.local/share/godot/export_templates/ || echo "AVISO: no se pudo reubicar la plantilla"
           fi
+          ls ~/.local/share/godot/export_templates/ || true
           godot --version
 
       - name: Validar sintaxis GDScript de todo el proyecto
@@ -44,10 +49,10 @@ jobs:
         # script nuevo o modificado tiene un error, el paso
         # falla y NO se compila el APK.
         run: |
-          godot --headless --import
+          godot --headless --path . --import
           for script in scripts/refactor/cognitive_profile.gd scripts/refactor/adaptive_hud.gd scripts/refactor/educational_blocks_pbr.gd scripts/refactor/central_plaza.gd scripts/refactor/neuro_manager.gd scripts/refactor/night_lighting.gd scripts/refactor/refactor_main.gd scripts/refactor/voxel_world_generator.gd scripts/refactor/settings_refactor.gd scripts/refactor/settings_scene.gd; do
             echo "Comprobando $script"
-            godot --headless --check-only --script "$script"
+            godot --headless --path . --check-only --script "$script"
           done
 
       - name: Generar keystore de depuración y activar TV
@@ -61,16 +66,22 @@ jobs:
           if command -v keytool >/dev/null 2>&1; then
             keytool -genkeypair -v -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" || true
           fi
-          sed -i 's#keystore/debug=""#keystore/debug="debug.keystore"#' export_presets.cfg || true
-          sed -i 's#keystore/debug_user=""#keystore/debug_user="androiddebugkey"#' export_presets.cfg || true
-          sed -i 's#keystore/debug_password=""#keystore/debug_password="android"#' export_presets.cfg || true
+          # Solo se apunta al keystore si el archivo existe de verdad:
+          # apuntar a un archivo inexistente rompe la exportación.
+          if [ -f debug.keystore ]; then
+            sed -i 's#keystore/debug=""#keystore/debug="debug.keystore"#' export_presets.cfg || true
+            sed -i 's#keystore/debug_user=""#keystore/debug_user="androiddebugkey"#' export_presets.cfg || true
+            sed -i 's#keystore/debug_password=""#keystore/debug_password="android"#' export_presets.cfg || true
+          else
+            echo "AVISO: no se generó debug.keystore; la exportación usará su firma debug por defecto"
+          fi
           sed -i 's#package/show_in_android_tv=false#package/show_in_android_tv=true#' export_presets.cfg || true
           grep -E 'keystore/debug=|show_in_android_tv' export_presets.cfg || true
 
       - name: Compilar APK (debug)
         run: |
           mkdir -p build
-          godot --headless --export-debug "Android" "build/${EXPORT_NAME}.apk"
+          godot --headless --path . --export-debug "Android" "build/${EXPORT_NAME}.apk"
           ls -lh build/
 
       - name: Subir el APK como artefacto

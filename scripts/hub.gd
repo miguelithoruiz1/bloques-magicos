@@ -1,10 +1,36 @@
 extends Node3D
-## Plaza / Hub de Bloques Mágicos (1.12.0): entrada principal del
-## juego. El avatar camina con los controles de paseo que ya
-## existen: cruceta ▲ avanza, ▼ retrocede, ◀ ▶ giran 45°, OK corto
-## entra al portal que está delante, OK largo abre Ajustes.
-## Teclado: flechas + Enter. Táctil: botones «Entrar» y «Ajustes»
-## en pantalla. No se toca ningún mundo, nivel ni guardado libre:
+## Plaza / Hub de Bloques Mágicos (1.14.0): entrada principal del
+## juego. Controles duales unificados con el mundo (1.13.0):
+## joystick virtual abajo a la izquierda + arrastre en la mitad
+## derecha para girar la vista (TouchControls reutilizable, misma
+## lógica pura en InputController, sin duplicar joystick/cámara).
+## Teclado: flechas + Enter. Mando: cruceta/joystick izquierdo +
+## OK, igual que en la 1.13.0; con mando activo los controles
+## táctiles se ocultan solos (TouchControls). Táctil: botones
+## «Entrar» y «Ajustes» en pantalla, sin tapar por el joystick ni
+## por el área de cámara (ver TouchControls, variante Plaza).
+##
+## La Plaza se mueve por pasos en rejilla (0,2 s / velocidad de
+## caminar por paso) y el joystick ALIMENTA esa lógica, no la
+## reemplaza por movimiento continuo: joystick mantenido hacia
+## adelante = pasos repetidos hacia adelante; hacia atrás = pasos
+## atrás; hacia los lados = giro continuo de la vista; al soltarlo,
+## se detiene. El sprint del joystick (100% sostenido) acorta el
+## tiempo entre pasos a 0.65×, como el paseo de main.gd.
+##
+## Yaw continuo (decisión 1.14.0, documentada): el yaw ya no es
+## solo pasos de 45°. El arrastre derecho y el joystick lateral
+## lo giran de forma continua y suave; la dirección de avance se
+## cuantiza a los 4 rumbos de la rejilla a partir de ese yaw
+## (InputController.hub_forward_step), así que pasos y vista
+## siempre son coherentes. La cámara sigue al avatar y mira al
+## avatar (look_at a su cabeza); su dirección es horizontal, con
+## altura 1.5 (1ª persona) o 3.2 (2ª persona) sobre el suelo, así
+## que nunca mira al vacío ni atraviesa el suelo. Los giros de
+## 45° del mando/teclado (move_left/move_right) se conservan
+## encima de este yaw continuo.
+## OK corto entra al portal que está delante, OK largo abre
+## Ajustes. No se toca ningún mundo, nivel ni guardado libre:
 ## solo se lee progreso.json para las estrellas y los candados, y
 ## se pasa a main.tscn con GameState como siempre.
 ##
@@ -20,6 +46,8 @@ const LevelsData := preload("res://scripts/levels_data.gd")
 const ProgressSave := preload("res://scripts/progress_save.gd")
 const SettingsSave := preload("res://scripts/settings_save.gd")
 const AudioBank := preload("res://scripts/audio_bank.gd")
+const InputController := preload("res://scripts/input_controller.gd")
+const TouchControlsScene := preload("res://touch_controls.tscn")
 
 const OK_HOLD_SECONDS := 0.35
 
@@ -43,6 +71,9 @@ var _info_label: Label
 var _mensaje_label: Label
 var _audio_bank = null
 var _tts_voice := ""
+## 1.14.0: controles duales reutilizados del mundo.
+var _touch_controls = null
+var _input_ctrl = null
 
 
 func _ready() -> void:
@@ -53,7 +84,7 @@ func _ready() -> void:
 	_build_avatar()
 	_build_pet()
 	_build_hud()
-	_build_touch()
+	_build_touch_controls()
 	_audio_bank = AudioBank.new()
 	add_child(_audio_bank)
 	_init_tts()
@@ -237,62 +268,29 @@ func _build_hud() -> void:
 		botones.add_child(b)
 
 
-func _build_touch() -> void:
-	# Cruceta táctil abajo a la izquierda (96 px de margen, fuera del
-	# centro): usa el mismo truco que el paseo de main.gd, inyectar
-	# las acciones move_* para que mando y táctil compartan la misma
-	# lógica de paso y giro. Solo visible con control táctil o en la
-	# exportación de celular; en TV con mando queda oculta.
-	var layer := CanvasLayer.new()
-	add_child(layer)
-	var dpad := GridContainer.new()
-	dpad.columns = 3
-	dpad.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	dpad.offset_left = 96.0
-	dpad.offset_top = -320.0
-	dpad.offset_right = 96.0 + 3 * 88.0 + 2 * 10.0
-	dpad.offset_bottom = -96.0
-	dpad.add_theme_constant_override("h_separation", 10)
-	dpad.add_theme_constant_override("v_separation", 10)
-	layer.add_child(dpad)
-	var spacer := func() -> Control:
-		var sp := Control.new()
-		sp.custom_minimum_size = Vector2(88, 88)
-		return sp
-	dpad.add_child(spacer.call())
-	dpad.add_child(_touch_dir_button("▲", "move_forward"))
-	dpad.add_child(spacer.call())
-	dpad.add_child(_touch_dir_button("◀", "move_left"))
-	dpad.add_child(spacer.call())
-	dpad.add_child(_touch_dir_button("▶", "move_right"))
-	dpad.add_child(spacer.call())
-	dpad.add_child(_touch_dir_button("▼", "move_back"))
-	dpad.add_child(spacer.call())
-	dpad.visible = (String(_ajustes.get("control", "tv")) == "tactil" or OS.has_feature("phone"))
-
-
-func _touch_dir_button(text: String, action: String) -> Button:
-	var b := Button.new()
-	b.text = text
-	b.custom_minimum_size = Vector2(88, 88)
-	b.focus_mode = Control.FOCUS_NONE
-	b.add_theme_font_size_override("font_size", 36)
-	b.button_down.connect(_send_touch_action.bind(action, true))
-	b.button_up.connect(_send_touch_action.bind(action, false))
-	return b
-
-
-func _send_touch_action(action: String, pressed: bool) -> void:
-	if pressed:
-		Input.action_press(action)
-	else:
-		Input.action_release(action)
+func _build_touch_controls() -> void:
+	# 1.14.0: adiós a la cruceta ▲▼◀▶. La Plaza usa la misma
+	# escena TouchControls del mundo (joystick abajo a la
+	# izquierda + arrastre en la mitad derecha), con la variante
+	# Plaza: sin tap/hold (aquí no se coloca nada) y con el área
+	# de cámara terminando 200 px antes del borde inferior, por
+	# encima de los botones «Entrar» / «Ajustes» (180 px). El
+	# joystick queda a 190 px del borde, también por encima de
+	# esa fila, y no tapa los botones (están centrados, en otra
+	# franja vertical). Con mando conectado, TouchControls se
+	# oculta sola y el mando sigue mandando por las acciones
+	# move_*/place_block, igual que en la 1.13.0.
+	_input_ctrl = InputController.new()
+	_touch_controls = TouchControlsScene.instantiate()
+	_touch_controls.enable_interact = false
+	_touch_controls.camera_bottom_offset = -200.0
+	add_child(_touch_controls)
 
 
 func _hint_texto() -> String:
 	match String(_ajustes.get("control", "tv")):
 		"tactil":
-			return "Toca Entrar para entrar al portal más cercano · Botón Ajustes para ajustes"
+			return "Joystick: caminar y girar · Arrastra a la derecha: girar la vista · Entrar: portal cercano · Ajustes: ajustes"
 		"teclado":
 			return "Flechas: caminar y girar · Enter: entrar · Atrás: Ajustes"
 		_:
@@ -329,6 +327,11 @@ func _update_hud() -> void:
 
 
 func _update_avatar_camera(delta: float) -> void:
+	# 1.14.0: _yaw ya es continuo (arrastre/joystick lateral), y
+	# esta cámara lo sigue tal cual: mira siempre a la cabeza del
+	# avatar (look_at), con dirección horizontal y altura 1.5
+	# (1ª persona) o 3.2 (2ª persona) sobre el suelo: nunca mira
+	# al vacío ni atraviesa el suelo.
 	var pos := Vector3(float(_celda.x) + 0.5, 0.0, float(_celda.y) + 0.5)
 	_avatar.position = pos
 	_avatar.rotation.y = _yaw
@@ -350,20 +353,55 @@ func _process(delta: float) -> void:
 	elif ok_event == "long":
 		_ir_ajustes()
 		return
+	# 1.14.0: cámara por arrastre derecho (TouchControls). La
+	# sensibilidad de Ajustes ya viene aplicada dentro de
+	# TouchControls (su _sens_cache lee sensibilidad_camara);
+	# aquí solo se aplica el factor 0.5 de menos_movimiento, como
+	# hace main.gd, sin duplicar la sensibilidad. La Plaza no
+	# tiene pitch: ese delta se descarta. Al consumir los deltas
+	# se ponen a cero, igual que en main.gd.
+	if _touch_controls != null and _touch_controls.visible:
+		var move_factor := 0.5 if bool(_ajustes.get("menos_movimiento", false)) else 1.0
+		_yaw += _touch_controls.camera_yaw_delta * move_factor
+		_touch_controls.camera_yaw_delta = 0.0
+		_touch_controls.camera_pitch_delta = 0.0
+	# Giros de 45° del mando/teclado: se conservan encima del yaw
+	# continuo, igual que en la 1.13.0.
 	if Input.is_action_just_pressed("move_left"):
 		_yaw += deg_to_rad(45.0)
 	elif Input.is_action_just_pressed("move_right"):
 		_yaw -= deg_to_rad(45.0)
+	# 1.14.0: joystick táctil (mismo vector que el mundo). Eje
+	# dominante manda: adelante/atrás = pasos repetidos, lados =
+	# giro continuo. Al soltar, move_vector vuelve a cero y todo
+	# se detiene (el temporizador se resetea abajo).
+	var joy := Vector2.ZERO
+	if _touch_controls != null and _touch_controls.visible:
+		joy = _touch_controls.move_vector
+	var sprinting := false
+	if _input_ctrl != null:
+		sprinting = _input_ctrl.update_sprint(joy.length(), delta)
+	var joy_fb := 0
+	if joy.length() >= InputController.DEADZONE and absf(joy.y) > absf(joy.x):
+		joy_fb = 1 if joy.y > 0.0 else -1
+	elif joy.length() >= InputController.DEADZONE:
+		# Lateral dominante: giro continuo, a la derecha resta
+		# yaw (igual que move_right), escalado por «giro».
+		_yaw -= joy.x * InputController.hub_turn_rate(float(_ajustes.get("giro", 1.0))) * delta
 	var fb := 0
 	if Input.is_action_pressed("move_forward"):
 		fb += 1
 	if Input.is_action_pressed("move_back"):
 		fb -= 1
+	if fb == 0:
+		fb = joy_fb
 	if fb != 0:
 		_move_timer -= delta
 		if _move_timer <= 0.0:
 			_paso(fb)
-			_move_timer = 0.2 / float(_ajustes.get("caminar", 1.0))
+			# Sprint solo cuando el paso viene del joystick: el
+			# camino de teclado/mando conserva su intervalo.
+			_move_timer = InputController.hub_step_interval(float(_ajustes.get("caminar", 1.0)), sprinting and joy_fb != 0)
 	else:
 		_move_timer = 0.0
 	_pet_timer -= delta
@@ -399,12 +437,10 @@ func _poll_ok(delta: float) -> String:
 
 
 func _paso(dir: int) -> void:
-	var f := Vector3(-sin(_yaw), 0.0, -cos(_yaw))
-	var paso := Vector2i.ZERO
-	if absf(f.x) > absf(f.z):
-		paso = Vector2i(1 if f.x > 0.0 else -1, 0)
-	else:
-		paso = Vector2i(0, 1 if f.z > 0.0 else -1)
+	# 1.14.0: la dirección de avance se cuantiza desde el yaw
+	# continuo (InputController.hub_forward_step, única fuente);
+	# con yaw en pasos de 45° da exactamente lo mismo que antes.
+	var paso := InputController.hub_forward_step(_yaw)
 	var siguiente := _celda + paso * dir
 	siguiente.x = clampi(siguiente.x, -11, 11)
 	siguiente.y = clampi(siguiente.y, -8, 8)

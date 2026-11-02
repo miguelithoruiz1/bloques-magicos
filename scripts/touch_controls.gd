@@ -1,20 +1,33 @@
 extends CanvasLayer
-## TouchControls 1.13.0 — nodo raíz CanvasLayer para la UI móvil
-## del mundo (main.tscn). Solo se añade en main.gd, nunca en la
-## Plaza (la Plaza ya tiene su propia cruceta desde la 1.12.0).
+## TouchControls 1.14.0 — nodo raíz CanvasLayer para la UI móvil
+## del mundo (main.tscn) Y de la Plaza (hub.tscn). La lógica pura
+## (joystick normalizado, cámara por arrastre, hold) vive en
+## InputController y NO se duplica: esta escena solo construye la
+## UI y emite el vector / los deltas.
+##
+## Variante Plaza (hub.gd la instancia con estos dos parámetros
+## antes de añadirla al árbol; el mundo no los toca y queda igual
+## que en la 1.13.0):
+## - enable_interact = false: el área de cámara solo gira la
+##   vista; no emite tap_interact ni hold_interact (en la Plaza
+##   no se coloca ni se quita nada).
+## - camera_bottom_offset = -200.0: el área de cámara termina
+##   200 px antes del borde inferior, por encima de la fila de
+##   botones «Entrar» / «Ajustes» (margen 96 + alto 84 = 180 px),
+##   para no taparlos. En el mundo el valor es -170.0 (la franja
+##   de la paleta queda libre para sus botones).
 ##
 ## Layout (horizontal, stretch/mode = canvas_items en
 ## project.godot, así que escala con la resolución):
 ## - Joystick virtual, zona FIJA abajo a la izquierda, POR ENCIMA
-##   de la paleta (para no tapar sus botones): base 240×240.
-## - Área de cámara, mitad derecha, desde arriba hasta 170 px
-##   antes del borde inferior (la franja de la paleta queda libre
-##   para tocar sus botones).
+##   de la paleta (mundo) / de la fila de botones (Plaza):
+##   base 240×240, borde inferior a 190 px (por encima de ambas
+##   franjas, 170 px mundo / 180 px Plaza).
+## - Área de cámara, mitad derecha, desde arriba hasta
+##   camera_bottom_offset antes del borde inferior.
 ## - El área de cámara distingue: arrastre > 24 px = girar cámara;
 ##   toque corto (< 0.45 s, sin arrastre) = colocar; mantener
-##   >= 0.45 s sin arrastre = quitar. Eso es el «pulsar para
-##   interactuar» de Minecraft clásico, mapeado a las funciones
-##   de colocar/quitar que ya existen en main.gd.
+##   >= 0.45 s sin arrastre = quitar. Solo con enable_interact.
 ##
 ## Foco: si hay un mando conectado, la capa se oculta sola
 ## (visible = false) y no interfiere; al desconectarse vuelve si
@@ -27,6 +40,11 @@ const SettingsSave := preload("res://scripts/settings_save.gd")
 
 signal tap_interact(screen_pos: Vector2)
 signal hold_interact(screen_pos: Vector2)
+
+## 1.14.0: parámetros de variante (ver cabecera). El mundo usa
+## los valores por defecto; la Plaza los cambia antes de añadir.
+@export var enable_interact := true
+@export var camera_bottom_offset := -170.0
 
 var move_vector := Vector2.ZERO
 var camera_yaw_delta := 0.0
@@ -92,7 +110,7 @@ func _build_ui() -> void:
 	_cam_area.offset_left = 0.0
 	_cam_area.offset_top = 0.0
 	_cam_area.offset_right = 0.0
-	_cam_area.offset_bottom = -170.0
+	_cam_area.offset_bottom = camera_bottom_offset
 	_cam_area.mouse_filter = Control.MOUSE_FILTER_STOP
 	_cam_area.gui_input.connect(_on_cam_gui_input)
 	root.add_child(_cam_area)
@@ -115,8 +133,9 @@ func _process(delta: float) -> void:
 		move_vector = Vector2.ZERO
 		gesture_active = false
 		return
-	# Hold del área de cámara (quitar al mantener).
-	if _cam_finger >= 0 and not _cam_dragged:
+	# Hold del área de cámara (quitar al mantener). Solo con
+	# interacción activa: en la Plaza no hay nada que quitar.
+	if enable_interact and _cam_finger >= 0 and not _cam_dragged:
 		if _cam_hold.hold_update(delta) == "hold":
 			_cam_hold_fired = true
 			hold_interact.emit(_cam_start)
@@ -163,7 +182,7 @@ func _on_cam_gui_input(event: InputEvent) -> void:
 			gesture_active = true
 		elif not t.pressed and t.index == _cam_finger:
 			var result := _cam_hold.hold_release()
-			if result == "tap" and not _cam_dragged:
+			if enable_interact and result == "tap" and not _cam_dragged:
 				tap_interact.emit(_cam_start)
 			_cam_finger = -1
 			gesture_active = false

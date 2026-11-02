@@ -127,3 +127,34 @@ static func step_direction(vec: Vector2) -> Vector2i:
 	if absf(vec.x) >= absf(vec.y):
 		return Vector2i(1 if vec.x > 0.0 else -1, 0)
 	return Vector2i(0, 1 if vec.y > 0.0 else -1)
+
+
+## 1.14.0 — Plaza: paso hacia adelante a partir de un yaw
+## CONTINUO. El vector de avance es (-sin(yaw), -cos(yaw)) y se
+## cuantiza al eje dominante, igual que hacía hub.gd con pasos de
+## 45°: el yaw continuo de la cámara por arrastre sigue dando
+## pasos coherentes en la rejilla (4 rumbos), sin movimiento
+## continuo ni diagonales. Es la única fuente de esta cuantización:
+## hub.gd `_paso()` la usa, no la duplica.
+static func hub_forward_step(yaw: float) -> Vector2i:
+	var f := Vector2(-sin(yaw), -cos(yaw))
+	if absf(f.x) > absf(f.y):
+		return Vector2i(1 if f.x > 0.0 else -1, 0)
+	return Vector2i(0, 1 if f.y > 0.0 else -1)
+
+
+## 1.14.0 — Plaza: intervalo entre pasos repetidos. Base
+## 0.2 / caminar (la de siempre); con sprint del joystick
+## sostenido al 100% se acorta a 0.65×, como el paseo de main.gd.
+static func hub_step_interval(caminar: float, sprinting: bool) -> float:
+	var base := 0.2 / caminar
+	return base * 0.65 if sprinting else base
+
+
+## 1.14.0 — Plaza: velocidad de giro continuo del joystick
+## lateral, en rad/s a deflexión máxima, escalada por el ajuste
+## «giro» (0.5 lento / 1.0 normal / 1.5 rápido). Signo: el
+## llamador resta (joystick a la derecha = girar a la derecha,
+## igual que move_right, que resta 45° al yaw).
+static func hub_turn_rate(giro: float) -> float:
+	return deg_to_rad(120.0) * giro

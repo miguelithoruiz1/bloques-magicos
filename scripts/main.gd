@@ -27,6 +27,7 @@ const LevelsData := preload("res://scripts/levels_data.gd")
 const LevelLogic := preload("res://scripts/level_logic.gd")
 const LevelHints := preload("res://scripts/level_hints.gd")
 const ProgressSave := preload("res://scripts/progress_save.gd")
+const SettingsSave := preload("res://scripts/settings_save.gd")
 
 ## 1.10.0: el mundo ya no tiene borde fijo. El terreno se genera por
 ## chunks de 16×16 alrededor del cursor y del avatar (radio 2 chunks =
@@ -205,6 +206,8 @@ var _win_stream: AudioStream
 
 var _tts_voice := ""
 var _audio_bank = null
+var _ajustes: Dictionary = {}
+var _portal_nivel: Node3D = null
 
 var _mouse_down := false
 var _mouse_start := Vector2.ZERO
@@ -212,6 +215,8 @@ var _mouse_dragged := false
 
 
 func _ready() -> void:
+	_ajustes = SettingsSave.load_settings()
+	_walk_view = int(_ajustes.get("vista", 0))
 	_build_shared()
 	_build_environment()
 	# 1.11.0: en libre, el tema es el mundo elegido (pradera "libre",
@@ -240,6 +245,8 @@ func _ready() -> void:
 	_palette.down_requested.connect(func() -> void: set_cursor_height(-1))
 	_palette.world_reset.connect(_on_world_reset)
 	_palette.menu_requested.connect(_go_to_menu)
+	_palette.settings_requested.connect(_go_to_settings)
+	_palette.next_requested.connect(_ir_siguiente_o_plaza)
 	# 1.3: giro de cámara por pasos con el mando (desde la paleta TV).
 	_palette.rotate_step_requested.connect(_on_rotate_step)
 	# 1.4: entrar al modo caminar (desde la paleta TV).
@@ -278,9 +285,11 @@ func _process(delta: float) -> void:
 	var ok_event := _poll_ok(delta)
 
 	if _level_completed:
-		# Nivel superado: el mundo queda en pausa y OK vuelve al menú.
+		# Nivel superado: el mundo queda en pausa. OK entra por el
+		# portal al siguiente nivel; si era el último, vuelve a la
+		# Plaza. Atrás también vuelve a la Plaza (ver _unhandled_input).
 		if ok_event == "short":
-			_go_to_menu()
+			_ir_siguiente_o_plaza()
 	elif _walk_mode:
 		# 1.4: en modo caminar el mando mueve al avatar (ver
 		# _handle_walk_mode); el mundo de construcción queda en pausa.
@@ -460,8 +469,13 @@ func _handle_palette_mode(delta: float, ok_event: String) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Nivel superado: el mundo no recibe más input, solo OK → menú.
+	# Nivel superado: el mundo no recibe más input; OK → siguiente
+	# nivel y Atrás → Plaza.
 	if _level_completed:
+		if event is InputEventKey:
+			var kc := event as InputEventKey
+			if kc.keycode == KEY_ESCAPE and kc.pressed and not kc.echo:
+				_go_to_hub()
 		return
 	# 1.4: en modo caminar, Atrás sale del modo (no va al menú) y el
 	# resto del input del mundo queda en pausa.
@@ -809,7 +823,7 @@ func _handle_walk_mode(delta: float, ok_event: String) -> void:
 		_walk_move_timer -= delta
 		if _walk_move_timer <= 0.0:
 			_step_walk(fb)
-			_walk_move_timer = 0.2
+			_walk_move_timer = 0.2 / float(_ajustes.get("caminar", 1.0))
 	else:
 		_walk_move_timer = 0.0
 
@@ -2270,13 +2284,13 @@ func speak(text: String, clip := "") -> void:
 		return
 	if _tts_voice == "":
 		return
-	DisplayServer.tts_speak(text, _tts_voice, 50, 1.0, 1.0, 0, true)
+	DisplayServer.tts_speak(text, _tts_voice, int(50 * float(_ajustes.get("volumen_voces", 1.0))), 1.0, 1.0, 0, true)
 
 
 func _build_audio() -> void:
 	_pop_stream = _make_tone(520.0, 160.0, 0.16, 0.5)
 	_toc_stream = _make_tone(210.0, 140.0, 0.09, 0.45)
-	_win_stream = _make_tone(600.0, 1400.0, 0.6, 0.5)
+	_win_stream = _make_tone(600.0, 1400.0, 0.6, 0.5 * float(_ajustes.get("volumen_musica", 1.0)))
 	for i in range(4):
 		var p := AudioStreamPlayer.new()
 		add_child(p)
@@ -2324,6 +2338,7 @@ func _start_level() -> void:
 	_level_def = LevelsData.get_nivel(GameState.mundo, GameState.nivel)
 	_level_placed = []
 	_level_completed = false
+	_palette.set_next_visible(false)
 	_hide_sky_bodies()
 	_level_progress = ProgressSave.load_progress()
 	_level_target = -1
@@ -2430,6 +2445,8 @@ func _complete_level() -> void:
 	if nuevo:
 		ProgressSave.save_progress(_level_progress)
 	_palette.show_celebration("¡Lo lograste! ⭐")
+	_palette.set_next_visible(true)
+	_mostrar_portal_siguiente()
 	_play_sound(_win_stream)
 	var mundo_nombre := String(LevelsData.get_mundo(GameState.mundo).get("nombre", ""))
 	if ProgressSave.stars_for(_level_progress, GameState.mundo) >= LevelsData.get_niveles(GameState.mundo).size():
@@ -2470,13 +2487,80 @@ func _hide_sky_bodies() -> void:
 		_moon_body.visible = false
 
 
-## Vuelve al menú inicial. En juego libre guarda antes si hay cambios;
-## en un nivel no hay nada que guardar (mundo.json queda intacto).
+## Vuelve a la Plaza (1.12.0: la Plaza es la entrada principal; el
+## menú clásico vive dentro de Ajustes). En juego libre guarda antes
+## si hay cambios; en un nivel no hay nada que guardar (el tablero
+## del nivel es temporal y mundo.json queda intacto).
 func _go_to_menu() -> void:
+	_go_to_hub()
+
+
+func _go_to_hub() -> void:
 	_clear_hints()
 	if not _level_mode and _dirty:
 		_save_now()
-	get_tree().change_scene_to_file("res://menu.tscn")
+	get_tree().change_scene_to_file("res://hub.tscn")
+
+
+func _go_to_settings() -> void:
+	_clear_hints()
+	if not _level_mode and _dirty:
+		_save_now()
+	get_tree().change_scene_to_file("res://settings.tscn")
+
+
+## 1.12.0: tras completar un nivel, aparece un portal dorado en el
+## centro del tablero y un mensaje: OK entra al siguiente nivel,
+## Atrás (o el botón Plaza) vuelve a la Plaza. Si era el último
+## nivel del mundo, OK también vuelve a la Plaza.
+func _mostrar_portal_siguiente() -> void:
+	if not _level_mode:
+		return
+	if _portal_nivel != null:
+		return
+	var siguiente := GameState.nivel + 1
+	var total := LevelsData.get_niveles(GameState.mundo).size()
+	if siguiente < total:
+		_palette.show_message("¡Portal abierto! OK: Nivel %d · Atrás: Plaza" % (siguiente + 1))
+	else:
+		_palette.show_message("¡Mundo completado! OK o Atrás: Plaza")
+	_portal_nivel = Node3D.new()
+	_portal_nivel.position = Vector3(8.5, 0.0, 8.5)
+	for sx in [-0.9, 0.9]:
+		var pilar := MeshInstance3D.new()
+		var malla := BoxMesh.new()
+		malla.size = Vector3(0.35, 2.4, 0.35)
+		pilar.mesh = malla
+		pilar.material_override = _make_material(Color(1.0, 0.85, 0.20))
+		pilar.position = Vector3(sx, 1.2, 0.0)
+		_portal_nivel.add_child(pilar)
+	var dintel := MeshInstance3D.new()
+	var malla_dintel := BoxMesh.new()
+	malla_dintel.size = Vector3(2.2, 0.4, 0.4)
+	dintel.mesh = malla_dintel
+	dintel.material_override = _make_material(Color(1.0, 0.85, 0.20))
+	dintel.position = Vector3(0.0, 2.5, 0.0)
+	_portal_nivel.add_child(dintel)
+	var etiqueta := Label3D.new()
+	etiqueta.text = "Siguiente nivel" if siguiente < total else "Plaza"
+	etiqueta.font_size = 64
+	etiqueta.pixel_size = 0.02
+	etiqueta.position = Vector3(0.0, 3.4, 0.0)
+	_portal_nivel.add_child(etiqueta)
+	add_child(_portal_nivel)
+
+
+func _ir_siguiente_o_plaza() -> void:
+	if not _level_mode:
+		_go_to_hub()
+		return
+	var siguiente := GameState.nivel + 1
+	var total := LevelsData.get_niveles(GameState.mundo).size()
+	if siguiente < total and ProgressSave.is_unlocked(_level_progress, GameState.mundo, siguiente):
+		GameState.nivel = siguiente
+		get_tree().change_scene_to_file("res://main.tscn")
+	else:
+		_go_to_hub()
 
 
 # ---------------------------------------------------------------------------

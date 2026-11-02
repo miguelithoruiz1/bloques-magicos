@@ -9,6 +9,7 @@ extends Control
 const LevelsData := preload("res://scripts/levels_data.gd")
 const ProgressSave := preload("res://scripts/progress_save.gd")
 const AudioBank := preload("res://scripts/audio_bank.gd")
+const SettingsSave := preload("res://scripts/settings_save.gd")
 
 var _pantalla := "principal" # principal | mundos | niveles
 var _mundo_sel := ""
@@ -17,6 +18,7 @@ var _tts_voice := ""
 var _tts_lang := ""
 var _tts_name := ""
 var _audio_bank = null
+var _ajustes: Dictionary = {}
 
 var _title_label: Label
 var _buttons_box: VBoxContainer
@@ -25,6 +27,7 @@ var _hint_label: Label
 
 
 func _ready() -> void:
+	_ajustes = SettingsSave.load_settings()
 	_audio_bank = AudioBank.new()
 	add_child(_audio_bank)
 	_init_tts()
@@ -87,7 +90,7 @@ func _build_ui() -> void:
 
 
 func _style_label(label: Label, font_size: int) -> void:
-	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_font_size_override("font_size", int(font_size * float(_ajustes.get("texto", 1.0))))
 	label.add_theme_color_override("font_color", Color.WHITE)
 	label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.45))
 	label.add_theme_constant_override("shadow_offset_x", 2)
@@ -100,7 +103,7 @@ func _add_button(texto: String, habilitado: bool, accion: Callable) -> Button:
 	var b := Button.new()
 	b.text = texto
 	b.custom_minimum_size = Vector2(640, 96)
-	b.add_theme_font_size_override("font_size", 34)
+	b.add_theme_font_size_override("font_size", int(34 * float(_ajustes.get("texto", 1.0))))
 	if habilitado:
 		b.focus_mode = Control.FOCUS_ALL
 		b.pressed.connect(accion)
@@ -157,6 +160,7 @@ func _show_principal() -> void:
 	_pantalla = "principal"
 	_clear_buttons()
 	_title_label.text = "Bloques Mágicos"
+	_add_button("Volver a la Plaza", true, _volver_plaza)
 	_add_button("Jugar libre", true, _jugar_libre)
 	_add_button("🏙️ Ciudad libre", true, _jugar_libre_mundo.bind("ciudad"))
 	_add_button("🚀 Espacio libre", true, _jugar_libre_mundo.bind("espacio"))
@@ -166,6 +170,7 @@ func _show_principal() -> void:
 		total_max += LevelsData.get_niveles(String(m["id"])).size()
 	_add_button("Mundos  ⭐ %d/%d" % [total, total_max], true, _show_mundos)
 	_add_button("🔊 Probar voz", true, _probar_voz)
+	_add_button("⚙️ Ajustes", true, _ir_ajustes)
 	_finish_buttons()
 	speak("Bloques Mágicos. Elige: jugar libre o mundos.", "frase_elige_modo")
 
@@ -231,6 +236,14 @@ func _empezar_nivel(mundo_id: String, indice: int) -> void:
 	get_tree().change_scene_to_file("res://main.tscn")
 
 
+func _volver_plaza() -> void:
+	get_tree().change_scene_to_file("res://hub.tscn")
+
+
+func _ir_ajustes() -> void:
+	get_tree().change_scene_to_file("res://settings.tscn")
+
+
 # ---------------------------------------------------------------------------
 # Voz (TTS del sistema), igual que en main.gd
 # ---------------------------------------------------------------------------
@@ -277,4 +290,4 @@ func speak(text: String, clip := "") -> void:
 		return
 	if _tts_voice == "":
 		return
-	DisplayServer.tts_speak(text, _tts_voice, 50, 1.0, 1.0, 0, true)
+	DisplayServer.tts_speak(text, _tts_voice, int(50 * float(_ajustes.get("volumen_voces", 1.0))), 1.0, 1.0, 0, true)

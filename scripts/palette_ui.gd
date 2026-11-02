@@ -15,6 +15,8 @@ signal up_requested
 signal down_requested
 signal world_reset
 signal menu_requested
+signal settings_requested
+signal next_requested
 ## Giro de cámara por pasos con el mando (1.3): grados por cada OK
 ## sobre «Girar ←»/«Girar →» en la paleta del TV (la paleta queda abierta).
 signal rotate_step_requested(degrees: float)
@@ -115,6 +117,7 @@ var _announce_tween: Tween
 var _goal_label: Label
 var _celebration_label: Label
 var _reset_button: Button
+var _next_button: Button
 var _reset_bar: ProgressBar
 var _reset_hold := 0.0
 var _reset_fired := false
@@ -172,6 +175,11 @@ func select_color(index: int) -> void:
 			if (entry["button"] as Button).visible:
 				_select("color", index)
 			return
+
+
+func set_next_visible(visible: bool) -> void:
+	if _next_button != null:
+		_next_button.visible = visible
 
 
 func set_info(text: String) -> void:
@@ -290,10 +298,24 @@ func _build_top_bar(root: Control) -> void:
 	_style_label(hint, 12)
 	reset_box.add_child(hint)
 
-	var menu_button := _make_button("Menú", Vector2(104, 44), 16)
+	var menu_button := _make_button("Plaza", Vector2(104, 44), 16)
 	_apply_button_colors(menu_button, Color(0.45, 0.45, 0.55))
 	menu_button.pressed.connect(func() -> void: menu_requested.emit())
 	top.add_child(menu_button)
+
+	var settings_button := _make_button("Ajustes", Vector2(104, 44), 16)
+	_apply_button_colors(settings_button, Color(0.45, 0.45, 0.55))
+	settings_button.pressed.connect(func() -> void: settings_requested.emit())
+	top.add_child(settings_button)
+
+	# 1.12.0: botón táctil «Siguiente» para el portal de fin de nivel.
+	# Oculto siempre salvo al completar un nivel (main lo muestra);
+	# el mando usa OK para lo mismo, así que no cambia su flujo.
+	_next_button = _make_button("Siguiente ▶", Vector2(150, 44), 16)
+	_apply_button_colors(_next_button, Color(1.0, 0.85, 0.20))
+	_next_button.pressed.connect(func() -> void: next_requested.emit())
+	_next_button.visible = false
+	top.add_child(_next_button)
 
 
 func _build_message_label(root: Control) -> void:

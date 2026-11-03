@@ -45,20 +45,21 @@ jobs:
           godot --version
 
       - name: Configurar Editor Settings (Java y Android SDK)
-        # Causa del fallo de la corrida 2: la imagen godot-ci ya
-        # trae editor_settings con Java/Android, pero escrito
-        # para root (/root/.config/godot). En Actions el runner
-        # corre con otro $HOME, así que Godot no lo ve y la
-        # exportación falla con "A valid Java SDK path is
-        # required in Editor Settings". Se escribe el archivo
-        # en el $HOME real de la corrida, con Java 17 de la
-        # imagen (/usr/lib/jvm/java-17-openjdk-amd64) y el SDK
-        # en /usr/lib/android-sdk, detectando Java si existe.
+        # Causa del fallo de la corrida 3, probada en local con
+        # Godot 4.3: el archivo anterior empezaba solo con
+        # "[resource]" y Godot lo rechazaba con "Parse Error:
+        # Unrecognized file type: resource"; en el siguiente
+        # --import lo regeneraba con java_sdk_path vacío, y la
+        # exportación volvía a fallar con el mismo error de
+        # Java. Un .tres válido DEBE empezar con la cabecera
+        # '[gd_resource type="EditorSettings" format=3]'.
+        # Con esa cabecera, probado en local, las rutas
+        # sobreviven al --import. Se escribe el archivo en el
+        # $HOME real de la corrida (el de la imagen vive en
+        # /root/.config y el runner no lo ve), con Java 17 de
+        # la imagen y el SDK en /usr/lib/android-sdk.
         run: |
           mkdir -p ~/.config/godot
-          if [ -f "/root/.config/godot/editor_settings-${GODOT_VERSION}.tres" ]; then
-            cp "/root/.config/godot/editor_settings-${GODOT_VERSION}.tres" ~/.config/godot/ || true
-          fi
           JAVA_DIR=""
           if command -v java >/dev/null 2>&1; then
             JAVA_DIR="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
@@ -71,6 +72,8 @@ jobs:
           fi
           ANDROID_DIR="${ANDROID_HOME:-/usr/lib/android-sdk}"
           cat > ~/.config/godot/editor_settings-${GODOT_VERSION}.tres <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
           [resource]
           export/android/android_sdk_path = "$ANDROID_DIR"
           export/android/java_sdk_path = "$JAVA_DIR"

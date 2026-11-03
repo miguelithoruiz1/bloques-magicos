@@ -44,6 +44,11 @@ var _title_panel: Control = null
 var _play_btn: Button = null
 var _pause_first_btn: Button = null
 var _pause_panel: Control = null
+# 4.0.1: nodo de Ajustes abierto (si lo hay) y marca de tiempo del
+# último Atrás, para que un mismo toque no se procese dos veces
+# (evento ui_cancel + notificación GO_BACK del sistema).
+var _settings_node: Control = null
+var _last_back_ms := 0
 var _message_label: Label = null
 var _message_timer := 0.0
 var _seed_field: LineEdit = null
@@ -90,6 +95,10 @@ var _snapshot_count := 0
 
 
 func _ready() -> void:
+	# 4.0.1: Atrás NUNCA cierra la app por defecto. Esto se pone
+	# aquí, en la escena principal, y no solo en RefactorController,
+	# para que valga en título, mundo, pausa y Ajustes por igual.
+	get_tree().set_auto_accept_quit(false)
 	_settings = SettingsRefactor.load_settings()
 	# 4.0: el perfil es la fuente de verdad; los ajustes son
 	# su espejo (SettingsScene actualiza ambos al cambiarlos).
@@ -395,8 +404,12 @@ func _wire_signals() -> void:
 
 
 func _on_back_action(action: String) -> void:
-	# Se ejecuta ANTES de que RefactorController cambie de escena:
-	# guardar aquí es seguro y síncrono.
+	# Respaldo del controlador: en 4.0.1 el Atrás lo decide
+	# handle_system_back, pero si el controlador emite
+	# open_pause, se abre la pausa (nunca hub legacy, nunca
+	# quit). back_to_plaza solo guarda, por compatibilidad.
+	if action == "open_pause":
+		_set_pause(true)
 	if action == "back_to_plaza":
 		_save_world()
 
@@ -412,23 +425,64 @@ func _set_pause(value: bool) -> void:
 		get_viewport().gui_release_focus()
 
 
-## 3.0.2 TV/mando a distancia: la cruceta mueve
-## (respaldo ui_* en PlayerBlocky), OK pone bloque
-## y Atrás abre/cierra la pausa. Con título, pausa
-## o modal abierto, la UI se encarga sola.
-func _input(event: InputEvent) -> void:
-	if _title_panel != null and _title_panel.visible:
+## 4.0.1 Atrás global, un solo manejador: refactor_main decide
+## y RefactorController solo le reenvía la notificación del
+## sistema. Antes había dos lógicas distintas (aquí y en el
+## controlador), y el controlador al cerrar un panel solo lo
+## ocultaba sin despausar ni liberar, y sin panel en mundo
+## saltaba a hub.tscn legacy. Resultado en el teléfono: en
+## cualquier parte, Atrás sacaba de la aplicación.
+## Pila, de dentro hacia fuera:
+##   1. Ajustes abierto -> se cierra bien (closed, se libera,
+##      se recargan ajustes) y se vuelve a donde estaba.
+##   2. Modal abierto (inventario, etc.) -> se cierra.
+##   3. Pausa abierta -> se reanuda (despausa de verdad).
+##   4. En mundo, sin panel -> se abre la pausa. NUNCA quit().
+##   5. En título -> diálogo de salida; solo su botón Salir
+##      llama a quit(). NUNCA quit() directo.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST or what == NOTIFICATION_WM_CLOSE_REQUEST:
+		handle_system_back()
+		get_viewport().set_input_as_handled()
+
+
+func handle_system_back() -> void:
+	# Un mismo toque de Atrás puede llegar como ui_cancel y
+	# como notificación del sistema: el segundo, si llega en
+	# menos de 300 ms, se ignora para no abrir y cerrar la
+	# pausa en el mismo toque.
+	var now_ms := Time.get_ticks_msec()
+	if now_ms - _last_back_ms < 300:
 		return
+	_last_back_ms = now_ms
+	if _settings_node != null:
+		_close_settings_node()
+		get_viewport().gui_release_focus()
+		return
+	if _ui != null and _ui.close_open_modal():
+		get_viewport().gui_release_focus()
+		return
+	if _pause_panel != null and _pause_panel.visible:
+		_set_pause(false)
+		return
+	if _started:
+		_set_pause(true)
+		return
+	if _controller != null and _controller.has_method("show_exit_dialog"):
+		_controller.show_exit_dialog()
+		return
+	# Sin controlador: en título no se sale solo; se abre la
+	# pausa no tiene sentido aquí, así que no se hace nada.
+
+
+func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
-		if _ui != null and _ui.close_open_modal():
-			get_viewport().gui_release_focus()
-			return
-		if _pause_panel != null and _pause_panel.visible:
-			_set_pause(false)
-		elif _started:
-			_set_pause(true)
+		handle_system_back()
+		get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed("ui_accept"):
+		if _title_panel != null and _title_panel.visible:
+			return
 		if _started and (_pause_panel == null or not _pause_panel.visible) and _ui != null and not _ui.has_open_modal():
 			_on_place()
 
@@ -1068,27 +1122,39 @@ func _open_settings() -> void:
 	var node := scene.instantiate() as Control
 	node.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_ui_layer.add_child(node)
+	_settings_node = node
 	if _controller != null and _controller.has_method("register_panel"):
 		_controller.register_panel(node)
-	node.closed.connect(func():
-		if _controller != null and _controller.has_method("unregister_panel"):
-			_controller.unregister_panel(node)
-		node.queue_free()
-		_settings = SettingsRefactor.load_settings()
-		if _profile != null:
-			_profile = CognitiveProfile.load_or_create()
-			_settings["perfil_cognitivo"] = _profile.profile_name()
-			_settings["modo_desarrollador"] = _profile.developer_mode
-		if _adaptive_hud != null:
-			_adaptive_hud.setup(_profile, 0)
-			_adaptive_hud.set_hud_rows_visible(false)
-		if _plaza != null:
-			_plaza.setup(_profile)
-		if _player != null:
-			_player.camera_sensitivity = SettingsRefactor.camera_sensitivity_factor(_settings)
-			_player.invert_y = bool(_settings.get("invert_y", false))
-		if _ui != null and _ui.has_method("_apply_settings"):
-			_ui._apply_settings())
+	node.closed.connect(func(): _close_settings_node())
+
+
+func _close_settings_node() -> void:
+	# Cierre único de Ajustes, usado tanto por su botón
+	# "← Volver" (señal closed) como por el Atrás global.
+	# Antes el controlador solo ocultaba el panel (visible =
+	# false) sin liberar ni recargar: el menú quedaba roto.
+	var node := _settings_node
+	_settings_node = null
+	if node == null:
+		return
+	if _controller != null and _controller.has_method("unregister_panel"):
+		_controller.unregister_panel(node)
+	node.queue_free()
+	_settings = SettingsRefactor.load_settings()
+	if _profile != null:
+		_profile = CognitiveProfile.load_or_create()
+		_settings["perfil_cognitivo"] = _profile.profile_name()
+		_settings["modo_desarrollador"] = _profile.developer_mode
+	if _adaptive_hud != null:
+		_adaptive_hud.setup(_profile, 0)
+		_adaptive_hud.set_hud_rows_visible(false)
+	if _plaza != null:
+		_plaza.setup(_profile)
+	if _player != null:
+		_player.camera_sensitivity = SettingsRefactor.camera_sensitivity_factor(_settings)
+		_player.invert_y = bool(_settings.get("invert_y", false))
+	if _ui != null and _ui.has_method("_apply_settings"):
+		_ui._apply_settings()
 
 
 func _process(delta: float) -> void:

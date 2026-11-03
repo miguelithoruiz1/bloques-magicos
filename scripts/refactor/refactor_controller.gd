@@ -36,15 +36,22 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
-		_handle_back()
+		# 4.0.1: refactor_main es el único que decide qué
+		# hace Atrás (ver handle_system_back). Este controlador
+		# solo reenvía la notificación del sistema; ya no
+		# tiene su propia lógica de ui_cancel, porque eso
+		# duplicaba el manejo y rompía el menú.
+		var parent := get_parent()
+		if parent != null and parent.has_method("handle_system_back"):
+			parent.handle_system_back()
+		else:
+			_handle_back()
 		# Consumir la notificación: no llamar a quit() aquí jamás.
 		get_viewport().set_input_as_handled()
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
-		_handle_back()
-		get_viewport().set_input_as_handled()
+func show_exit_dialog() -> void:
+	_show_exit_dialog()
 
 
 ## Marca si la escena actual es un mundo (true) o título (false).
@@ -70,18 +77,22 @@ func top_open_panel() -> Control:
 
 
 func _handle_back() -> void:
+	# Respaldo solo si la escena principal no tiene
+	# handle_system_back (no debería pasar en 4.0.1).
+	# Corregido: cerrar un panel por su señal closed cuando
+	# la tiene (Ajustes se libera y recarga), no solo
+	# ocultarlo; y sin panel en mundo, abrir la pausa, no
+	# saltar a hub.tscn legacy ni salir de la app.
 	var panel := top_open_panel()
 	if panel != null:
-		panel.visible = false
+		if panel.has_signal("closed"):
+			panel.emit_signal("closed")
+		else:
+			panel.visible = false
 		back_pressed_handled.emit("close_panel")
 		return
 	if _in_world:
-		# Pausa → Plaza. El botón de pausa de TouchAndTVControls
-		# abre el panel de pausa; si el usuario pulsa Atrás con el
-		# juego en marcha (sin panel), también vuelve a la Plaza:
-		# es la ruta segura, nunca un quit().
-		back_pressed_handled.emit("back_to_plaza")
-		get_tree().change_scene_to_file("res://hub.tscn")
+		back_pressed_handled.emit("open_pause")
 		return
 	_show_exit_dialog()
 
